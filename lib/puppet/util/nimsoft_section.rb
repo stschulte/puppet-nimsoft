@@ -30,4 +30,12 @@ class Puppet::Util::NimsoftSection
     @children.each { |c| s += c.to_cfg(indent+1) }
     s +=  "   "*indent + "</#{name.gsub('/','#')}>\n"
   end
+
+  def subsection(name)
+    return self unless name
+    name.split('/').inject(self) do |section, subsection| 
+      section.child(subsection) || Puppet::Util::NimsoftSection.new(subsection, section)
+    end
+  end
+
 end

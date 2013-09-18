@@ -19,42 +19,19 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @section
   end
 
-  def self.map_fields(mapping_table = {})
-    mapping_table.each_pair do |puppet_attribute, nimsoft_section_and_attribute|
-      define_method(puppet_attribute) do
-        # nimsoft_attribute can be something like subsection/key so we need to
-        # split subsection and key apart
-        targetsection = element 
-        if nimsoft_section_and_attribute.include? '/'
-          subsections = nimsoft_section_and_attribute.split('/')
-          nimsoft_attribute = subsections.pop.intern
-          targetsection = subsections.inject(element) do |section, subsection|
-            section.child(subsection) if section
-          end
-        else
-          nimsoft_attribute = nimsoft_section_and_attribute.intern
-        end
-        if targetsection
-          targetsection.attributes[nimsoft_attribute] || :absent
-        else
-          :absent
-        end
+  def self.map_property(puppet_attribute, key, sectionname = nil)
+    define_method(puppet_attribute) do
+      if element
+        e = sectionname ? element.subsection(sectionname) : element
+        e.attributes[key] || :absent
+      else
+        :absent
       end
-
-      define_method(puppet_attribute.to_s + "=") do |new_value|
-        # nimsoft_attribute can be something like subsection/key so we need to
-        # split subsection and key apart
-        targetsection = element
-        if nimsoft_section_and_attribute.include? '/'
-          subsections = nimsoft_section_and_attribute.split('/')
-          nimsoft_attribute = subsections.pop.intern
-          targetsection = subsections.inject(element) do |section, subsection|
-            section.child(subsection) || Puppet::Util::NimsoftSection.new(subsection, section)
-          end
-        else
-          nimsoft_attribute = nimsoft_section_and_attribute.intern
-        end
-        targetsection.attributes[nimsoft_attribute] = new_value
+    end
+    define_method(puppet_attribute.to_s + "=") do |new_value|
+      if element
+        e = sectionname ? element.subsection(sectionname) : element
+        e.attributes[:key] = new_value
       end
     end
   end

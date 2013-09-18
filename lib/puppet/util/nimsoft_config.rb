@@ -43,8 +43,12 @@ class Puppet::Util::NimsoftConfig
   end
 
   def section(name)
-    name.split('/').inject(self) do |section, subsection| 
-      section.child(subsection) || Puppet::Util::NimsoftSection.new(subsection, section)
+    sectionname,  subsections = name.split('/',2)
+    section = child(sectionname) || Puppet::Util::NimsoftSection.new(sectionname, self)
+    if subsections
+      section(subsections)
+    else
+      section
     end
   end
 
