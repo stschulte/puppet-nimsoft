@@ -8,21 +8,21 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @sectionname = sectionname
 
     @config = Puppet::Util::NimsoftConfig.add(@filename)
-    @section = @config.section(@sectionname)
+    @root = @config.section(@sectionname)
   end
 
   def self.config
     @config
   end
 
-  def self.section
-    @section
+  def self.root
+    @root
   end
 
   def self.map_property(puppet_attribute, key, sectionname = nil)
     define_method(puppet_attribute) do
       if element
-        e = sectionname ? element.subsection(sectionname) : element
+        e = sectionname.nil? ? element : element.subsection(sectionname)
         e.attributes[key] || :absent
       else
         :absent
@@ -42,8 +42,8 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
 
   def self.instances
     instances = []
-    if section
-      instances = section.children.map do |element|
+    if root
+      instances = root.children.map do |element|
         new(:name => element.name, :ensure => :present, :element => element)
       end
     end
