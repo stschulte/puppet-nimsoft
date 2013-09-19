@@ -63,6 +63,16 @@ Set different thresholds
 Use `puppet resource nimsoft_disk` on a machine with the cdm probe installed
 to get a list of all parameters.
 
+## nimsoft\_queue
+
+The `nimsoft_queue` type can be used to describe a queue for your hub.
+
+    nimsoft_queue { 'HUB-alarm':
+      ensure  => enabled,
+      type    => attach,
+      subject => 'alarm',
+    }
+
 Develop a new type and provider
 -------------------------------
 The nimsoft providers all work pretty similar:
