@@ -30,8 +30,12 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     end
     define_method(puppet_attribute.to_s + "=") do |new_value|
       if element
-        e = sectionname ? element.subsection(sectionname) : element
-        e.attributes[:key] = new_value
+        e = sectionname.nil? ? element : element.subsection(sectionname)
+        if new_value == :absent
+          e.attributes.delete key
+        else
+          e.attributes[key] = new_value
+        end
       end
     end
   end
@@ -65,7 +69,10 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   def create
     @property_hash[:element] = Puppet::Util::NimsoftSection.new(name, self.class.root)
     self.class.resource_type.validproperties.each do |attr|
-      element[attr] = resource[attr] if resource[attr]
+      next if attr == :ensure
+      if respond_to?("#{attr}=") and resource[attr]
+        send("#{attr}=", resource[attr])
+      end
     end
   end
 
