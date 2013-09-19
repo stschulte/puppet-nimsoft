@@ -40,10 +40,6 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @property_hash[:element]
   end
 
-  def element=(new_value)
-    @property_hash[:element] = new_value
-  end
-  
   def self.instances
     instances = []
     if section
@@ -67,7 +63,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   end
 
   def create
-    element = Puppet::Util::NimsoftSection.new(name, self.class.section)
+    @property_hash[:element] = Puppet::Util::NimsoftSection.new(name, self.class.root)
     self.class.resource_type.validproperties.each do |attr|
       element[attr] = resource[attr] if resource[attr]
     end
