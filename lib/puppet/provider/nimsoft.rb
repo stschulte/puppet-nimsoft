@@ -8,7 +8,6 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @sectionname = sectionname
 
     @config = Puppet::Util::NimsoftConfig.add(@filename)
-    @root = @config.section(@sectionname)
   end
 
   def self.config
@@ -16,6 +15,10 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   end
 
   def self.root
+    unless @root
+      @config.parse unless @config.loaded?
+      @root = @config.section(@sectionname)
+    end
     @root
   end
 

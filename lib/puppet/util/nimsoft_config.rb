@@ -23,10 +23,17 @@ class Puppet::Util::NimsoftConfig
   def initialize(filename)
     @name = filename
     @children = []
+    @loaded = false
+  end
 
-    if File.exists?(filename)
+  def loaded?
+    @loaded
+  end
+
+  def parse
+    if File.exists?(@name)
       current_section = self
-      File.read(filename).each_line do |line|
+      File.read(@name).each_line do |line|
         case line.chomp!
         when /^\s*<([^\/]+)>.*$/
           name = $1.gsub('#','/')
@@ -39,6 +46,7 @@ class Puppet::Util::NimsoftConfig
           current_section = current_section.parent
         end
       end
+      @loaded = true
     end
   end
 
