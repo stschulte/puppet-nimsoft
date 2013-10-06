@@ -4,6 +4,10 @@ class Puppet::Util::NimsoftConfig
 
   attr_accessor :name, :children
 
+  def self.initvars
+    @configfiles = {}
+  end
+
   def self.add(filename)
     @configfiles ||= {}
     if @configfiles.include? filename
@@ -12,7 +16,7 @@ class Puppet::Util::NimsoftConfig
       @configfiles[filename] = new(filename)
     end
   end
-  
+
   def self.flush(filename)
     @configfiles ||= {}
     if @configfiles[filename]
@@ -71,6 +75,6 @@ class Puppet::Util::NimsoftConfig
   end
 
   def to_cfg
-    @children.inject("") { |content, section| content += section.to_cfg(0) }
+    @children.inject("") { |content, section| content += section.to_cfg }
   end
 end
