@@ -51,11 +51,22 @@ describe Puppet::Util::NimsoftConfig do
     it "should parse sections and attributes" do
       instance.parse
       instance.children.map(&:name).should == ['foo', '/var/tmp']
+      instance.children.each do |child|
+        child.parent.should == instance
+      end
       instance.child('foo')[:fookey1].should == 'foovalue1'
       instance.child('foo')[:fookey2].should == 'foovalue2 with spaces'
       instance.child('foo')[:fookey3].should == 'foovalue3'
       instance.child('foo').child('bar').child('baz')[:bazkey1].should == 'bazvalue1'
       instance.child('/var/tmp')[:special].should == 'replace slashes'
+    end
+  end
+
+  describe "#loaded?" do
+    it "should be considered loaded after parsing" do
+      instance.should_not be_loaded
+      instance.parse
+      instance.should be_loaded
     end
   end
 
@@ -66,4 +77,54 @@ describe Puppet::Util::NimsoftConfig do
     end
   end
 
+  describe "#sync" do
+    it "should write the modified config to disk" do
+      instance.parse
+      instance.path('foo/bar/baz')[:bazkey3] = 'new value'
+      Puppet::Util::NimsoftSection.new('newsection', instance)[:key1] = 'value1'
+      instance.sync
+      File.read(filename).should == File.read(my_fixture('modify_and_sync.cfg'))
+    end
+
+    it "should create the file if necessary" do
+      FileUtils.rm(filename)
+      instance.parse
+      instance.path('foo/bar/baz')[:bazkey3] = 'new value'
+      Puppet::Util::NimsoftSection.new('newsection', instance)[:key1] = 'value1'
+      instance.sync
+      File.read(filename).should == File.read(my_fixture('create_and_sync.cfg'))
+    end
+  end
+
+  describe "#path" do
+    before :each do
+      instance.parse
+    end
+
+    it "should return the specified section" do
+      section = instance.path('foo')
+      section.parent.should == instance
+      section.name.should == 'foo'
+      section[:fookey1].should == 'foovalue1'
+    end
+
+    it "should return the specified subsection" do
+      section = instance.path('foo/bar/baz')
+      section.parent.parent.parent.should == instance
+      section.name.should == 'baz'
+      section[:bazkey1].should == 'bazvalue1'
+    end
+
+    it "should create a new section if necessary" do
+      section = instance.path('new_section')
+      section.parent.should == instance
+      section.name.should == 'new_section'
+    end
+
+    it "should create a new subsection if necessary" do
+      section = instance.path('new_section/subsection/subsubsection')
+      section.parent.parent.parent.should == instance
+      section.name.should == 'subsubsection'
+    end
+  end
 end
