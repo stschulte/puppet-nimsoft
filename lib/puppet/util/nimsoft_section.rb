@@ -38,11 +38,10 @@ class Puppet::Util::NimsoftSection
     s +=  "   "*indent + "</#{name.gsub('/','#')}>\n"
   end
 
-  def subsection(name)
+  def path(name)
     return self unless name
-    name.split('/').inject(self) do |section, subsection| 
-      section.child(subsection) || Puppet::Util::NimsoftSection.new(subsection, section)
+    name.split('/').inject(self) do |section, subsectionname|
+      section.child(subsectionname) || Puppet::Util::NimsoftSection.new(subsectionname, section)
     end
   end
-
 end

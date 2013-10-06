@@ -54,11 +54,11 @@ class Puppet::Util::NimsoftConfig
     end
   end
 
-  def section(name)
-    sectionname,  subsections = name.split('/',2)
+  def path(name)
+    sectionname, subsections = name.split('/',2)
     section = child(sectionname) || Puppet::Util::NimsoftSection.new(sectionname, self)
     if subsections
-      section(subsections)
+      section.path(subsections)
     else
       section
     end
