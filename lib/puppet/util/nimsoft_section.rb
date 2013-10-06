@@ -8,6 +8,7 @@ class Puppet::Util::NimsoftSection
     @name = name
     @children = []
     @attributes = {}
+    @attribute_order = []
   end
 
   def child(name)
@@ -20,12 +21,18 @@ class Puppet::Util::NimsoftSection
 
   def []=(name, value)
     @attributes[name] = value
+    @attribute_order << name unless @attribute_order.include? name
+  end
+
+  def del_attr(name)
+    @attributes.delete(name)
+    @attribute_order.delete(name)
   end
 
   def to_cfg(indent=0)
     s = "   "*indent + "<#{name.gsub('/', '#')}>\n"
-    @attributes.each_pair do |key,value|
-      s +=  "   "*(indent+1) + "#{key} = #{value}\n"
+    @attribute_order.each do |key|
+      s +=  "   "*(indent+1) + "#{key} = #{@attributes[key]}\n"
     end
     @children.each { |c| s += c.to_cfg(indent+1) }
     s +=  "   "*indent + "</#{name.gsub('/','#')}>\n"
