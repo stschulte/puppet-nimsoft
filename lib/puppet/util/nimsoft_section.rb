@@ -29,6 +29,11 @@ class Puppet::Util::NimsoftSection
     @attribute_order.delete(name)
   end
 
+  def clear_attr
+    @attributes.clear
+    @attribute_order.clear
+  end
+
   def to_cfg(indent=0)
     s = "   "*indent + "<#{name.gsub('/', '#')}>\n"
     @attribute_order.each do |key|
