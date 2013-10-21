@@ -2,7 +2,7 @@ require 'puppet/util/nimsoft_section'
 
 class Puppet::Util::NimsoftConfig
 
-  attr_accessor :name, :children
+  attr_accessor :name, :children, :tabsize
 
   def self.initvars
     @configfiles = {}
@@ -28,6 +28,7 @@ class Puppet::Util::NimsoftConfig
     @name = filename
     @children = []
     @loaded = false
+    @tabsize = 3
   end
 
   def loaded?
@@ -75,6 +76,6 @@ class Puppet::Util::NimsoftConfig
   end
 
   def to_cfg
-    @children.inject("") { |content, section| content += section.to_cfg }
+    @children.inject("") { |content, section| content += section.to_cfg(tabsize) }
   end
 end

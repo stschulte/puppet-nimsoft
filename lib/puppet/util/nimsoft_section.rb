@@ -34,13 +34,13 @@ class Puppet::Util::NimsoftSection
     @attribute_order.clear
   end
 
-  def to_cfg(indent=0)
-    s = "   "*indent + "<#{name.gsub('/', '#')}>\n"
+  def to_cfg(tabsize = 3, indent = 0)
+    s = " "*tabsize*indent + "<#{name.gsub('/', '#')}>\n"
     @attribute_order.each do |key|
-      s +=  "   "*(indent+1) + "#{key} = #{@attributes[key]}\n"
+      s +=  " "*tabsize*(indent+1) + "#{key} = #{@attributes[key]}\n"
     end
-    @children.each { |c| s += c.to_cfg(indent+1) }
-    s +=  "   "*indent + "</#{name.gsub('/','#')}>\n"
+    @children.each { |c| s += c.to_cfg(tabsize, indent+1) }
+    s +=  " "*tabsize*indent + "</#{name.gsub('/','#')}>\n"
   end
 
   def path(name)
