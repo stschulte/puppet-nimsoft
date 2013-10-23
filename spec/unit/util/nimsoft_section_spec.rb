@@ -42,15 +42,25 @@ describe Puppet::Util::NimsoftSection do
 EOS
     end
 
+    it "should use the specified tabsize for indention" do
+      section = described_class.new('root')
+      section[:a] = 'value1'
+      section.to_cfg(2, 0).should == <<'EOS'
+<root>
+  a = value1
+</root>
+EOS
+    end
+
     it "should indent the section when specified" do
       section = described_class.new('root')
       section[:a] = 'value1'
-      section.to_cfg(1).should == <<'EOS'
+      section.to_cfg(3, 1).should == <<'EOS'
    <root>
       a = value1
    </root>
 EOS
-      section.to_cfg(2).should == <<'EOS'
+      section.to_cfg(3, 2).should == <<'EOS'
       <root>
          a = value1
       </root>
