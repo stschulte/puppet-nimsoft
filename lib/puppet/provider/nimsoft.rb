@@ -22,22 +22,20 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @root
   end
 
-  def self.map_property(puppet_attribute, key, sectionname = nil)
+  def self.map_property(puppet_attribute, nimsoft_attribute, options = {})
     define_method(puppet_attribute) do
       if element
-        e = sectionname.nil? ? element : element.subsection(sectionname)
-        e.attributes[key] || :absent
+        element.path(options[:section])[nimsoft_attribute,] || :absent
       else
         :absent
       end
     end
     define_method(puppet_attribute.to_s + "=") do |new_value|
       if element
-        e = sectionname.nil? ? element : element.subsection(sectionname)
         if new_value == :absent
-          e.attributes.delete key
+          element.path(options[:section]).del_attr nimsoft_attribute,
         else
-          e.attributes[key] = new_value
+          element.path(options[:section])[nimsoft_attribute] = new_value
         end
       end
     end

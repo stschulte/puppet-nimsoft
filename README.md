@@ -89,15 +89,25 @@ The nimsoft providers all work pretty similar:
 2. If a resource is out of sync, the tree is modified and written back to
    disk.
 
-But you may also encounter the sitation of two providers managing the same
-configuration file, like a `cdm_disk` provider and `cdm_cpu` provider both
-managing the `cdm.cfg` file. So you also have to be able to share the
-in-memory-representation of your configuration files among different
-providers.
+Parsing configuration files is done by the `Puppet::Util::NimsoftConfig`
+class. Here is simple way to request a file:
 
-This is all done by the generic `Puppet::Provider::Nimsoft` provider that
-you should enherit from. Let's take the `cdm_disk` as a step by step example.
-You'll first have to create the basic sketch of your provider:
+    config = Puppet::Util::NimsoftConfig.add('cdm.cfg') # should be an absolute path
+    config.parse unless config.loaded?
+
+The first line will either create a new `Puppet::Util::NimsoftConfig` object or -
+if the file was already added before - will return an already present object that
+represents our configuration file. This way seperate providers can modifiy the
+same configuration file and modifications of the tree structure of provider 1
+can directly be seen by provider 2, thus eleminating the need to parse the
+configuration file multiple times. So you can e.g. create a `cdm_disk` and a
+`cdm_cpu` provider both managing the `cdm.cfg` file.
+
+If you want to develop a new provider for a new custom type you should
+inherit from the `Puppet::Provider::Nimsoft` provider
+
+Let's take the `cdm_disk` as a step by step example. You'll first have to
+create the basic sketch of your provider:
 
     require 'puppet/provider/nimsoft'
     Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
@@ -105,28 +115,33 @@ You'll first have to create the basic sketch of your provider:
     end
 
 The `register_config` method is inherited from the `Puppet::Provider::Nimsoft`
-provider and will trigger the parsing og the specified configuration file
-and will take the specified section as the rootsection for your provider. You
-should never have two providers managing the same section. If more than one
-provider handles the same configuration file it is only loaded once.
+provider and will trigger the parsing of the specified configuration file
+and will take the specified section as the rootsection for your provider.
 
-Your provider also has the class method `section` which will return the
-specified `Puppet::Util::NimsoftSection` you have passed to the `register_config`
-method and each provider has the instace method `element` which will return
-the subtree that is specific to a certain provider instance. You can modify
-the tree as you like and can then run the class method `config.sync` to save
-your changes to disk.
+Each subsection within that new root section is processed as a new instance
+of your custom type. The element title will be the `name` of that instance.
 
-But in most cases you don't need all this and can just specify how your puppet
-properties map to a tree object. You can do this with the `map_fields`
-method which will create getter and setter methods for your properties that
-will return or modify the corresponding elements in your tree:
+At a class level you can use the classs method `root` to get a
+`Puppet::Util::NimsoftSection` object that represents the root section you
+have defined earlier and `config` to get the representation of your
+configuration file.
+
+Each provider instance can use the method `element` to get the subtree that
+is mapped to the provider instance.
+
+You can modify the tree as you like and then run the class method
+`config.sync` to save your changes back to disk.
+
+In case each section within your `root` section represents a provider
+instance and in case your resource properties are simple attributes within
+these sections, you can use the method `map_fields` to save you a lot of
+typing and create getter and setter methods.
 
     require 'puppet/provider/nimsoft'
     Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
       register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
-      map_fields :active   => 'active'
-      map_fields :warning  => 'warning/threshold'
-      map_fields :critical => 'error/threshold'
+      map_fields :active,   :active
+      map_fields :warning,  :threshold, :section => 'warning'
+      map_fields :critical, :threshold, :section => 'error'
     end
 
