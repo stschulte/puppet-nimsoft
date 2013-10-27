@@ -73,6 +73,12 @@ The `nimsoft_queue` type can be used to describe a queue for your hub.
       subject => 'alarm',
     }
 
+Running the tests
+-----------------
+
+This project requires the `puppetlabs_spec_helper` gem (available on rubygems.org)
+to run the spec tests. You can run them by executing `rake spec`.
+
 Develop a new type and provider
 -------------------------------
 The nimsoft providers all work pretty similar:
