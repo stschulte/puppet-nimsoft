@@ -1,6 +1,9 @@
 Puppet Nimsoft Module
 =====================
 
+[![Build Status](https://travis-ci.org/stschulte/puppet-nimsoft.png?branch=master)](https://travis-ci.org/stschulte/puppet-nimsoft)
+
+
 Nimsoft Monitoring is a monitoring solution from CA Technologies.
 
 The basic pattern to monitor your server is to first install a
