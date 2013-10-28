@@ -9,9 +9,9 @@ Nimsoft Monitoring is a monitoring solution from CA Technologies.
 The basic pattern to monitor your server is to first install a
 robot (the agent) on your target system and second deploy probes
 that are responsible for gathering metrics and sending alarms about
-specific monitor areas (e.g. the `cdm` probe, that monitors CPU, disk,
-and memory or the `logmon` probes that can analyse logfiles and
-searching for patterns)
+specific areas (e.g. there is the `cdm` probe, that monitors CPU, disk,
+and memory or the `logmon` probe that can analyse logfiles and
+search for text patterns)
 
 The configuration of these probes is stored in flat configuration files
 and is always local to the server you want to monitor.
@@ -56,7 +56,7 @@ Make sure a certain device is not monitored:
       ensure => absent,
     }
 
-Set different thresholds
+Set different thresholds on another device:
 
     nimsoft_disk { '/var':
       warning => 10,
@@ -68,7 +68,7 @@ to get a list of all parameters.
 
 ## nimsoft\_queue
 
-The `nimsoft_queue` type can be used to describe a queue for your hub.
+The `nimsoft_queue` type can be used to describe a queue on your hub.
 
     nimsoft_queue { 'HUB-alarm':
       ensure  => enabled,
@@ -93,18 +93,18 @@ The nimsoft providers all work pretty similar:
    disk.
 
 Parsing configuration files is done by the `Puppet::Util::NimsoftConfig`
-class. Here is simple way to request a file:
+class. Here is simple way to parse a configuration file:
 
     config = Puppet::Util::NimsoftConfig.add('cdm.cfg') # should be an absolute path
     config.parse unless config.loaded?
 
 The first line will either create a new `Puppet::Util::NimsoftConfig` object or -
 if the file was already added before - will return an already present object that
-represents our configuration file. This way seperate providers can modifiy the
+represents the configuration file. This way seperate providers can modifiy the
 same configuration file and modifications of the tree structure of provider 1
 can directly be seen by provider 2, thus eleminating the need to parse the
 configuration file multiple times. So you can e.g. create a `cdm_disk` and a
-`cdm_cpu` provider both managing the `cdm.cfg` file.
+`cdm_cpu` provider both managing the `cdm.cfg` file at the same time.
 
 If you want to develop a new provider for a new custom type you should
 inherit from the `Puppet::Provider::Nimsoft` provider
