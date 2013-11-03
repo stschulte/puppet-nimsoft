@@ -88,7 +88,7 @@ describe Puppet::Util::AgentilSystem do
   describe "class method systems" do
     it "should return a hash of systems" do
       h = described_class.systems
-      h.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      h.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
       h['PRO_sap01'].should be_a Puppet::Util::AgentilSystem
       h['PRO_sap01-2'].should be_a Puppet::Util::AgentilSystem
       h['DEV_sapdev'].should be_a Puppet::Util::AgentilSystem
@@ -127,10 +127,10 @@ describe Puppet::Util::AgentilSystem do
     end
 
     it "should create a new config entry if no existing element is provided" do
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
       new_instance = described_class.add('QAS_sapqas')
 
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD QAS_sapqas}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD QAS_sapqas}
       new_instance.name.should == 'QAS_sapqas'
       new_instance.id.should == 5
 
@@ -140,7 +140,7 @@ describe Puppet::Util::AgentilSystem do
     end
 
     it "should connect the new system object with an existing config entry if an element is provided" do
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
 
       existing_element = config.path('PROBE/SYSTEMS/SYSTEM1')
       new_instance = described_class.add('QAS_sapqas', existing_element)
@@ -157,18 +157,18 @@ describe Puppet::Util::AgentilSystem do
 
   describe "class method del" do
     it "should to nothing if system does not exist" do
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
       config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3 SYSTEM4}
       described_class.del 'QAS_sapqas'
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
       config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3 SYSTEM4}
     end
 
     it "should remove the system and the corresponding config section if system does exist" do
-      described_class.systems.keys.should == %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 PRO_sap01-2 DEV_sapdev DEAD}
       config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3 SYSTEM4}
       described_class.del 'PRO_sap01-2'
-      described_class.systems.keys.should == %w{PRO_sap01 DEV_sapdev DEAD}
+      described_class.systems.keys.should =~ %w{PRO_sap01 DEV_sapdev DEAD}
       config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3}
     end
 

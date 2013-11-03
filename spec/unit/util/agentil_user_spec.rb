@@ -85,7 +85,7 @@ describe Puppet::Util::AgentilUser do
   describe "class method users" do
     it "should return a hash of users" do
       h = described_class.users
-      h.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      h.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
       h['SAP_PROBE'].should be_a Puppet::Util::AgentilUser
       h['SAP_DEV_PROBE'].should be_a Puppet::Util::AgentilUser
       h['DDIC'].should be_a Puppet::Util::AgentilUser
@@ -123,10 +123,10 @@ describe Puppet::Util::AgentilUser do
     end
 
     it "should create a new config entry if no existing element is provided" do
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
       new_instance = described_class.add('AGENTIL_PROBE')
 
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC AGENTIL_PROBE}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC AGENTIL_PROBE}
       new_instance.name.should == 'AGENTIL_PROBE'
       new_instance.id.should == 4
 
@@ -137,7 +137,7 @@ describe Puppet::Util::AgentilUser do
     end
 
     it "should connect the new user object with an existing config entry if an element is provided" do
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
 
       existing_element = config.path('PROBE/USERS/USER2')
       new_instance = described_class.add('AGENTIL_PROBE', existing_element)
@@ -154,22 +154,22 @@ describe Puppet::Util::AgentilUser do
 
   describe "class method del" do
     it "should to nothing if user does not exist" do
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
       config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2 USER3}
 
       described_class.del 'NO_SUCH_USER'
 
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
       config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2 USER3}
     end
 
     it "should remove the system and the corresponding config section if user does exist" do
-      described_class.users.keys.should == %w{SAP_PROBE SAP_DEV_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE SAP_DEV_PROBE DDIC}
       config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2 USER3}
 
       described_class.del 'SAP_DEV_PROBE'
 
-      described_class.users.keys.should == %w{SAP_PROBE DDIC}
+      described_class.users.keys.should =~ %w{SAP_PROBE DDIC}
       config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2}
     end
 

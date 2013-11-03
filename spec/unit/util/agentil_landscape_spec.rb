@@ -84,7 +84,7 @@ describe Puppet::Util::AgentilLandscape do
   describe "class method landscapes" do
     it "should return a hash of landscapes" do
       h = described_class.landscapes
-      h.keys.should == [ 'sap01.example.com', 'sapdev.example.com' ]
+      h.keys.should =~ [ 'sap01.example.com', 'sapdev.example.com' ]
       h['sap01.example.com'].should be_a Puppet::Util::AgentilLandscape
       h['sapdev.example.com'].should be_a Puppet::Util::AgentilLandscape
     end
@@ -121,10 +121,10 @@ describe Puppet::Util::AgentilLandscape do
     end
 
     it "should create a new config entry if no existing element is provided" do
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com}
       new_instance = described_class.add('sap02.example.com')
 
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com sap02.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com sap02.example.com}
       new_instance.name.should == 'sap02.example.com'
       new_instance.id.should == 3
 
@@ -151,18 +151,18 @@ describe Puppet::Util::AgentilLandscape do
 
   describe "class method del" do
     it "should to nothing if landscape does not exist" do
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com}
       config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1 LANDSCAPE2}
       described_class.del 'sap02.example.com'
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com}
       config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1 LANDSCAPE2}
     end
 
     it "should remove the landscape and the corresponding config section if landscape does exist" do
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com}
       config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1 LANDSCAPE2}
       described_class.del 'sap01.example.com'
-      described_class.landscapes.keys.should == %w{sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sapdev.example.com}
       config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1}
     end
 

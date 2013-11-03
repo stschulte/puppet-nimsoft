@@ -94,7 +94,7 @@ describe Puppet::Util::AgentilTemplate do
   describe "class method templates" do
     it "should return a hash of templates" do
       h = described_class.templates
-      h.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      h.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
       h['Custom Template'].should be_a Puppet::Util::AgentilTemplate
       h['System Template for system id 1'].should be_a Puppet::Util::AgentilTemplate
       h['System Template for system id 2'].should be_a Puppet::Util::AgentilTemplate
@@ -134,10 +134,10 @@ describe Puppet::Util::AgentilTemplate do
     end
 
     it "should create a new config entry if no existing element is provided" do
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
       new_instance = described_class.add('New Template')
 
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3', 'New Template' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3', 'New Template' ]
       new_instance.name.should == 'New Template'
       new_instance.id.should == 1000004
 
@@ -148,7 +148,7 @@ describe Puppet::Util::AgentilTemplate do
     end
 
     it "should connect the new template object with an existing config entry if an element is provided" do
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
 
       existing_element = config.path('PROBE/TEMPLATES/TEMPLATE1000001')
       new_instance = described_class.add('New Template', existing_element)
@@ -165,22 +165,22 @@ describe Puppet::Util::AgentilTemplate do
 
   describe "class method del" do
     it "should to nothing if template does not exist" do
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
       config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002 TEMPLATE1000003}
 
       described_class.del 'no_such_template'
 
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
       config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002 TEMPLATE1000003}
     end
 
     it "should remove the template and the corresponding config section if template does exist" do
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 1', 'System Template for system id 2', 'System Template for system id 3' ]
       config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002 TEMPLATE1000003}
 
       described_class.del 'System Template for system id 1'
 
-      described_class.templates.keys.should == [ 'Custom Template', 'System Template for system id 2', 'System Template for system id 3' ]
+      described_class.templates.keys.should =~ [ 'Custom Template', 'System Template for system id 2', 'System Template for system id 3' ]
       config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002}
     end
 
