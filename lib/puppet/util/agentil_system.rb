@@ -196,7 +196,7 @@ class Puppet::Util::AgentilSystem
   def templates
     templates = []
     if template_element = @element.child('TEMPLATES')
-      template_element.attributes.values.map(&:to_i).each do |assigned_id|
+      template_element.values_in_order.map(&:to_i).each do |assigned_id|
         match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
           template.id == assigned_id
         end.first

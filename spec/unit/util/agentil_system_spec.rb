@@ -415,7 +415,7 @@ describe Puppet::Util::AgentilSystem do
 
       it "should only return resolveable templates" do
         system = described_class.systems['DEAD']
-        system.templates.should == [ 'Custom Template', 'Another custom template' ]
+        system.templates.should =~ [ 'Custom Template', 'Another custom template' ]
       end
     end
 

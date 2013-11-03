@@ -105,6 +105,10 @@ Puppet::Type.newtype(:agentil_system) do
     desc "The names of the templates that should be assigned to the
       SAP system. These assignments can be seen in the `sapbasis_agentil`
       probe GUI but actally have no influence in what will be monitored."
+
+      def insync?(is)
+        is.sort == @should.sort
+      end
   end
 
   autorequire(:agentil_landscape) do

@@ -195,6 +195,30 @@ describe Puppet::Type.type(:agentil_system) do
     end
   end
 
+  describe "when checking insync" do
+    describe "for templates" do
+      it "should consider two emty arrays as insync" do
+        described_class.new(:name => 'foo', :templates => []).parameter(:templates).must be_insync []
+      end
+
+      it "should consider insync if the order of templates is identical" do
+        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must be_insync %w{t1 t2 t3}
+      end
+
+      it "should consider insync if the order of templates is different" do
+        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must be_insync %w{t3 t1 t2}
+      end
+
+      it "should not be in sync if there is a template to many" do
+        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2 t3 t4}
+      end
+
+      it "should not be in sync if there is a template to less" do
+        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2}
+      end
+    end
+  end
+
   describe "autorequire" do
     let :landscape_provider do
       Puppet::Type.type(:agentil_landscape).provide(:fake_agentil_landscape_provider) { mk_resource_methods }
