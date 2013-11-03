@@ -123,6 +123,40 @@ EOS
     end
   end
 
+  describe "keys_in_order" do
+    it "should return an empty array if section has no attributes" do
+      section = described_class.new('root')
+      section.keys_in_order.should be_empty
+    end
+
+    it "should return the keys in the correct order" do
+      section = described_class.new('root')
+      section[:first] = 'foo'
+      section[:second] = 'bar'
+      section[:remove_later] = '123'
+      section[:third] = 'baz'
+      section.del_attr(:remove_later)
+      section.keys_in_order.should == [:first, :second, :third ]
+    end
+  end
+
+  describe "values_in_order" do
+    it "should return an empty array if section has no attributes" do
+      section = described_class.new('root')
+      section.values_in_order.should be_empty
+    end
+
+    it "should return the values in the correct order" do
+      section = described_class.new('root')
+      section[:first] = 'foo'
+      section[:second] = 'bar'
+      section[:remove_later] = '123'
+      section[:third] = 'baz'
+      section.del_attr(:remove_later)
+      section.values_in_order.should == %w{foo bar baz}
+    end
+  end
+
   describe "path" do
     it "should return self when no path is given" do
       section = described_class.new('root')

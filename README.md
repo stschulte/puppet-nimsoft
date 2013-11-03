@@ -92,6 +92,155 @@ The `nimsoft_queue` type can be used to describe a queue on your hub.
       subject => 'alarm',
     }
 
+### Agentil probe
+
+Agentil has developed the `sapbasis_agentil` probe that is able to monitor all
+your SAP instances. While the `sapbasis_agentil` configuratio file follows the
+same rules as any other nimsoft configuration file, it is special in the way
+how it handles arrays (e.g. one system can be assigned to more than one
+template) and it is able to establish references between landscapes, systems,
+users and templates by assiging numerical IDs to every landscape, system, etc.
+This way it is nearly impossible to use the native nimsoft deployment mechanism
+by overwriting cfg files with cfx files.
+
+The custom types for handling different aspects of your `sapbasis_agentil`
+configuration file however is able to establish relationships, remove systems
+and landscapes, generating new ids for new systems etc.
+
+#### agentil\_landscape
+
+The `agentil_landscape` type can be used to describe a landscape (a landscape
+is like a container and describes one system identifier. Each landscape
+can consist of one or more systems). If you are familiar with the
+`sapbasis_agentil` probe interface, a landscape represents the first
+hierarchy level inside the configuratio GUI.
+
+    agentil_landscape { 'sapdev.example.com'
+      ensure      => present,
+      sid         => 'DEV'
+      company     => 'My Company'
+      description => 'managed by puppet',
+    }
+
+The above example will make sure that the `sapdev.example.com` landscape
+exists and that properties like system identifier, company, and description
+have the correct value. Please note that if you set `ensure => absent`,
+puppet will make sure that the landscape is absent but will not automatically
+remove any assigned system. So make sure you have appropiate `agentil_system`
+resources with `ensure => absent` for every assigned system, too.
+
+#### agentil\_user
+
+The `agentil_user` type can be used to describe a SAP user. The
+`sapbasis_agentil` probe needs a designated user to connect to your SAP
+systems in order to gether the different metrics. Instead of providing valid
+credentials each time you add a SAP system, you can describe one user
+that is valid on every system and then simply reference this user in
+each of your system definitions. You of course also have one user
+for development, quality assurence and production if you like.
+
+Example:
+
+    agentil_user { 'SAP_PROBE':
+      ensure   => present,
+      password => 'encrypted_password',
+    }
+
+*Note*: In order to get the encrypted password you currently have to set the
+password in the probe GUI once and check the configuration file afterwards.
+When you know the correct encrypted password, you can use puppet to make sure
+it stays the same.
+
+#### agentil\_template
+
+The `agentil_template` resource describes a template. A template consists of
+a collection of jobs and monitors to easily choose what aspects of your SAP
+system you want to monitor. There are actually three types of templates:
+
+1. Templates created by the probe vendor that are shipped with the probe
+   itself (the id 1 to 999999 are reserved for these ones)
+2. Custom templates starting with id 1000000.
+3. System templates
+
+Vendor templates are completly ignored by the `agentil_template` type and you
+can only manage custom templates and system template. Here is how they work:
+In the probe GUI you can only see 1) and 2) so you will start by creating a
+custom template and (un)check the monitors that should apply to your systems.
+If you now assign this template to a group of systems, the probe GUI will
+implicitly create a system template for each individual system that is
+derived from the inital template. You can now define system specific
+customizations (e.g. a different threshold for a specific alarm) that
+will only modify the system template.
+
+You can now manage both templates through puppet, but be aware that you have
+to manage both the initial template and the system templates through puppet
+(puppet will not automically create or modify your system templates).
+
+Example:
+
+    agentil_template { 'System template for System sap01':
+      ensure    => present,
+      system    => 'true',
+      monitors  => [ 1, 4, 10, 20, 33 ],
+      jobs      => [ 4, 5, 12, 177, 3 ],
+      instances => [ 'D00_sap01', 'D01_sap01' ],
+    }
+
+The instances property will create a customization for job 177
+(instance availability) to monitor the correct instances.
+
+The best way to define a template is currently to create the template through
+the probe GUI and then run `puppet resource agentil_template` to get the
+correct job ids and monitor ids. If you got these, you'll be able to define
+appropiate puppet resources.
+
+##### agentil\_system
+
+This resource can be used to describe an agentil system. If you are familiar
+with the probe GUI, these are basically your ABAP and SAP connectors and the
+second hiearchy level after the landscape.
+
+The agentil system basically tells the probe how to reach an instance and
+what jobs and monitors should be used to monitor the instance. To do that
+you can define the user that is able to login and the client to connect to.
+You can also assign different templates that the probe GUI merges into
+a system template (with puppet you have to define both the original template
+and the system template).
+
+This can be expressed through puppet now:
+
+Example:
+
+    agentil_system { 'PRO_sap01':
+      ensure    => present,
+      landscape => 'PRO',
+      sid       => 'PRO',
+      host      => 'sap01.example.com',
+      ip        => '192.168.0.1',
+      stack     => 'abap',
+      user      => 'SAP_PROBE',
+      client    => '000',
+      group     => 'LOGON_GROUP_01',
+      default   => 'System template for System sap01',
+      templates => [
+        'Custom ABAP Production',
+        'Custom ABAP Generic',
+      ]
+    }
+
+The landscape, the user and all templates have to be present so the puppet
+type is be able translate the names into the corresponding ids to create a
+valid configuration file. Puppet will raise an error if a name connot be
+found.
+
+Please note that you should provide a system template as the `default`
+property and this one is repsponsible to define the actual monitoring tasks.
+The system template should also be a correct merge of your non-system
+templates you have provided as for the `template` property as these will
+be shown in the probe GUI as assigned templates.
+
+#### Complete example
+
 Running the tests
 -----------------
 

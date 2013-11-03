@@ -34,6 +34,14 @@ class Puppet::Util::NimsoftSection
     @attribute_order.clear
   end
 
+  def keys_in_order
+    @attribute_order
+  end
+
+  def values_in_order
+    @attribute_order.map { |attr| @attributes[attr] }
+  end
+
   def to_cfg(tabsize = 3, indent = 0)
     s = " "*tabsize*indent + "<#{name.gsub('/', '#')}>\n"
     @attribute_order.each do |key|
