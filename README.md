@@ -92,6 +92,44 @@ The `nimsoft_queue` type can be used to describe a queue on your hub.
       subject => 'alarm',
     }
 
+### Agentil probe
+
+Agentil has developed the `sapbasis_agentil` probe that is able to monitor all
+your SAP instances. While the `sapbasis_agentil` configuratio file follows the
+same rules as any other nimsoft configuration file, it is special in the way
+how it handles arrays (e.g. one system can be assigned to more than one
+template) and it is able to establish references between landscapes, systems,
+users and templates by assiging numerical IDs to every landscape, system, etc.
+This way it is nearly impossible to use the native nimsoft deployment mechanism
+by overwriting cfg files with cfx files.
+
+The custom types for handling different aspects of your `sapbasis_agentil`
+configuration file however is able to establish relationships, remove systems
+and landscapes, generating new ids for new systems etc.
+
+#### agentil\_landscape
+
+The `agentil_landscape` type can be used to describe a landscape (a landscape
+is like a container and describes one system identifier. Each landscape
+can consist of one or more systems). If you are familiar with the
+`sapbasis_agentil` probe interface, a landscape represents the first
+hierarchy level inside the configuratio GUI.
+
+    agentil_landscape { 'sapdev.example.com'
+      ensure      => present,
+      sid         => 'DEV'
+      company     => 'My Company'
+      description => 'managed by puppet',
+    }
+
+The above example will make sure that the `sapdev.example.com` landscape
+exists and that properties like system identifier, company, and description
+have the correct value. Please note that if you set `ensure => absent`,
+puppet will make sure that the landscape is absent but will not automatically
+remove any assigned system.
+
+#### Complete example
+
 Running the tests
 -----------------
 
