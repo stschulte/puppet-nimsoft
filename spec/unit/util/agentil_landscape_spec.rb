@@ -134,7 +134,7 @@ describe Puppet::Util::AgentilLandscape do
     end
 
     it "should connect the new landscape object with an existing config entry if an element is provided" do
-      described_class.landscapes.keys.should == %w{sap01.example.com sapdev.example.com}
+      described_class.landscapes.keys.should =~ %w{sap01.example.com sapdev.example.com}
 
       existing_element = config.path('PROBE/LANDSCAPES/LANDSCAPE1')
       new_instance = described_class.add('sap02.example.com', existing_element)
