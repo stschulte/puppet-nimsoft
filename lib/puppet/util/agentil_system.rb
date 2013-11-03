@@ -151,7 +151,7 @@ class Puppet::Util::AgentilSystem
 
   def ip
     if ips_element = @element.child('INSTANCE_IPS')
-      ips_element.attributes.values
+      ips_element.values_in_order
     else
       []
     end
