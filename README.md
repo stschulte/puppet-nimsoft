@@ -4,34 +4,48 @@ Puppet Nimsoft Module
 [![Build Status](https://travis-ci.org/stschulte/puppet-nimsoft.png?branch=master)](https://travis-ci.org/stschulte/puppet-nimsoft)
 
 
+What is Nimsoft?
+----------------
+
 Nimsoft Monitoring is a monitoring solution from CA Technologies.
 
 The basic pattern to monitor your server is to first install a
-robot (the agent) on your target system and second deploy probes
-that are responsible for gathering metrics and sending alarms about
-specific areas (e.g. there is the `cdm` probe, that monitors CPU, disk,
-and memory or the `logmon` probe that can analyse logfiles and
-search for text patterns)
+robot (the agent software) on your target machine and once the connection
+to your master server (or nearest hub) is established, you can deploy probes
+onto your server. Each probe is repsonsible for a one or more dedicated
+areas like checking disk utilization (`cdm` probe) or parsing logfiles
+(`logmon` probe). A probe will most likely gather quality of service
+metrics (e.g. current disk utilization every 5 minutes) and send alarms
+when certain thresholds are exceeded (e.g. disk more than 90% full). Each probe
+is independet from another and will run as a seperate executable on the
+target machine.
 
 The configuration of these probes is stored in flat configuration files
-and is always local to the server you want to monitor.
+(`<probename>.cfg`) and is always local to the server you want to monitor.
 
-This aim of this repository is to publish puppet types and providers to
+Why managing nimsoft through puppet?
+------------------------------------
+The aim of this repository is to publish puppet types and providers to
 be able to manage specific parts of your probe configuration files as
 puppet resources.
 
-Example:
-You run an apache webserver on your host and you deploy the apache
-package and configuration with puppet. So inside your puppet manifest
-you most likely already have all the information you'd need to setup your
-monitoring, e.g. making the sure you have a certain profile in your
-logmon probe activated to parse the apache error log.
+Imagine you run a webserver with apache and naturally you use puppet
+to make sure that the `apache` package is installed and the correct
+apache configuration files or vhosts are in place. Theres a good chance
+that the all the information needed to monitor your webserver through
+nimsoft is already available inside your apache module, e.g. the
+name of your `vhost` or the port your application is listening on,
+so it makes sense to hook your monitoring into your puppet manifests
+(e.g. checking your application with the `netconnect` probe and parsing
+your error logs with the `logmon` probe).
 
-Instead of seperating the provisioning process and the monitoring
-configuration you should conbine it, so the `apache` puppet class should
-be able to automatically configure the necessary probes to setup the
+So instead of seperating the provisioning process and the monitoring
+configuration, you will be able combine both, so the `apache` puppet
+class will automatically configure the necessary probes to setup the
 monitoring.
 
+This goal can be archived by expressing monitoring rules as puppet
+resources and this repository tries to deliver these resources.
 
 New facts
 ---------
@@ -44,11 +58,13 @@ New functions
 New custom types
 ----------------
 
-## nimsoft\_disk
+### nimsoft core probes
+
+#### nimsoft\_disk
 
 The `nimsoft_disk` type can be used to describe a filesystem you want to
-monitor. It will modify the `disk/alarm/fixed` section of your configuration
-file. Example:
+monitor. It will modify the `disk/alarm/fixed` section of your `cdm`
+configuration file. Example:
 
 Make sure a certain device is not monitored:
 
@@ -66,7 +82,7 @@ Set different thresholds on another device:
 Use `puppet resource nimsoft_disk` on a machine with the cdm probe installed
 to get a list of all parameters.
 
-## nimsoft\_queue
+#### nimsoft\_queue
 
 The `nimsoft_queue` type can be used to describe a queue on your hub.
 
