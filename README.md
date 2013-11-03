@@ -128,6 +128,28 @@ have the correct value. Please note that if you set `ensure => absent`,
 puppet will make sure that the landscape is absent but will not automatically
 remove any assigned system.
 
+#### agentil\_user
+
+The `agentil_user` type can be used to describe a SAP user. The
+`sapbasis_agentil` probe needs a designated user to connect to your SAP
+systems in order to gether the different metrics. Instead of providing valid
+credentials each time you add a SAP system, you can describe one user
+that is valid on every system and then simply reference this user in
+each of your system definitions. You of course also have one user
+for development, quality assurence and production if you like.
+
+Example:
+
+    agentil_user { 'SAP_PROBE':
+      ensure   => present,
+      password => 'encrypted_password',
+    }
+
+*Note*: In order to get the encrypted password you currently have to set the
+password in the probe GUI once and check the configuration file afterwards.
+When you know the correct encrypted password, you can use puppet to make sure
+it stays the same.
+
 #### Complete example
 
 Running the tests
