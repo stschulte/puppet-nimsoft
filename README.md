@@ -150,6 +150,49 @@ password in the probe GUI once and check the configuration file afterwards.
 When you know the correct encrypted password, you can use puppet to make sure
 it stays the same.
 
+#### agentil\_template
+
+The `agentil_template` resource describes a template. A template consists of
+a collection of jobs and monitors to easily choose what aspects of your SAP
+system you want to monitor. There are actually three types of templates:
+
+1. Templates created by the probe vendor that are shipped with the probe
+   itself (the id 1 to 999999 are reserved for these ones)
+2. Custom templates starting with id 1000000.
+3. System templates
+
+Vendor templates are completly ignored by the `agentil_template` type and you
+can only manage custom templates and system template. Here is how they work:
+In the probe GUI you can only see 1) and 2) so you will start by creating a
+custom template and (un)check the monitors that should apply to your systems.
+If you now assign this template to a group of systems, the probe GUI will
+implicitly create a system template for each individual system that is
+derived from the inital template. You can now define system specific
+customizations (e.g. a different threshold for a specific alarm) that
+will only modify the system template.
+
+You can now manage both templates through puppet, but be aware that you have
+to manage both the initial template and the system templates through puppet
+(puppet will not automically create or modify your system templates).
+
+Example:
+
+    agentil_template { 'System template for System sap01':
+      ensure    => present,
+      system    => 'true',
+      monitors  => [ 1, 4, 10, 20, 33 ],
+      jobs      => [ 4, 5, 12, 177, 3 ],
+      instances => [ 'D00_sap01', 'D01_sap01' ],
+    }
+
+The instances property will create a customization for job 177
+(instance availability) to monitor the correct instances.
+
+The best way to define a template is currently to create the template through
+the probe GUI and then run `puppet resource agentil_template` to get the
+correct job ids and monitor ids. If you got these, you'll be able to define
+appropiate puppet resources.
+
 #### Complete example
 
 Running the tests
