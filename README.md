@@ -126,7 +126,8 @@ The above example will make sure that the `sapdev.example.com` landscape
 exists and that properties like system identifier, company, and description
 have the correct value. Please note that if you set `ensure => absent`,
 puppet will make sure that the landscape is absent but will not automatically
-remove any assigned system.
+remove any assigned system. So make sure you have appropiate `agentil_system`
+resources with `ensure => absent` for every assigned system, too.
 
 #### agentil\_user
 
@@ -192,6 +193,51 @@ The best way to define a template is currently to create the template through
 the probe GUI and then run `puppet resource agentil_template` to get the
 correct job ids and monitor ids. If you got these, you'll be able to define
 appropiate puppet resources.
+
+##### agentil\_system
+
+This resource can be used to describe an agentil system. If you are familiar
+with the probe GUI, these are basically your ABAP and SAP connectors and the
+second hiearchy level after the landscape.
+
+The agentil system basically tells the probe how to reach an instance and
+what jobs and monitors should be used to monitor the instance. To do that
+you can define the user that is able to login and the client to connect to.
+You can also assign different templates that the probe GUI merges into
+a system template (with puppet you have to define both the original template
+and the system template).
+
+This can be expressed through puppet now:
+
+Example:
+
+    agentil_system { 'PRO_sap01':
+      ensure    => present,
+      landscape => 'PRO',
+      sid       => 'PRO',
+      host      => 'sap01.example.com',
+      ip        => '192.168.0.1',
+      stack     => 'abap',
+      user      => 'SAP_PROBE',
+      client    => '000',
+      group     => 'LOGON_GROUP_01',
+      default   => 'System template for System sap01',
+      templates => [
+        'Custom ABAP Production',
+        'Custom ABAP Generic',
+      ]
+    }
+
+The landscape, the user and all templates have to be present so the puppet
+type is be able translate the names into the corresponding ids to create a
+valid configuration file. Puppet will raise an error if a name connot be
+found.
+
+Please note that you should provide a system template as the `default`
+property and this one is repsponsible to define the actual monitoring tasks.
+The system template should also be a correct merge of your non-system
+templates you have provided as for the `template` property as these will
+be shown in the probe GUI as assigned templates.
 
 #### Complete example
 
