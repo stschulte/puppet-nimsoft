@@ -14,10 +14,17 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @config
   end
 
+  def self.initvars
+    @config = nil
+    @root = nil
+    @filename = nil
+    @sectionname = nil
+  end
+
   def self.root
     unless @root
       @config.parse unless @config.loaded?
-      @root = @config.section(@sectionname)
+      @root = @config.path(@sectionname)
     end
     @root
   end
@@ -25,7 +32,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   def self.map_property(puppet_attribute, nimsoft_attribute, options = {})
     define_method(puppet_attribute) do
       if element
-        element.path(options[:section])[nimsoft_attribute,] || :absent
+        element.path(options[:section])[nimsoft_attribute] || :absent
       else
         :absent
       end
@@ -33,7 +40,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     define_method(puppet_attribute.to_s + "=") do |new_value|
       if element
         if new_value == :absent
-          element.path(options[:section]).del_attr nimsoft_attribute,
+          element.path(options[:section]).del_attr nimsoft_attribute
         else
           element.path(options[:section])[nimsoft_attribute] = new_value
         end
@@ -69,10 +76,12 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
 
   def create
     @property_hash[:element] = Puppet::Util::NimsoftSection.new(name, self.class.root)
-    self.class.resource_type.validproperties.each do |attr|
-      next if attr == :ensure
-      if respond_to?("#{attr}=") and resource[attr]
-        send("#{attr}=", resource[attr])
+    if self.class.resource_type
+      self.class.resource_type.validproperties.each do |attr|
+        next if attr == :ensure
+        if respond_to?("#{attr}=") and resource[attr]
+          send("#{attr}=", resource[attr])
+        end
       end
     end
   end
