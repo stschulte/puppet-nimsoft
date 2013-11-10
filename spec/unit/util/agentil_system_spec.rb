@@ -8,6 +8,7 @@ describe Puppet::Util::AgentilSystem do
 
   before :each do
     described_class.initvars
+    Puppet::Util::AgentilTemplate.initvars
     Puppet::Util::AgentilLandscape.initvars
     Puppet::Util::AgentilUser.initvars
     Puppet::Util::NimsoftConfig.initvars
