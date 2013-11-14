@@ -20,13 +20,6 @@ describe Puppet::Provider::Nimsoft do
     described_class.initvars
   end
 
-  describe "register_config" do
-    it "should return the config tree" do
-      Puppet::Util::NimsoftConfig.expects(:add).with('foo').returns config
-      described_class.register_config('foo', 'foo/instances').should == config
-    end
-  end
-
   describe "root" do
     before :each do
       described_class.register_config('foo', 'foo/instances')
