@@ -6,12 +6,10 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   def self.register_config(filename, sectionname)
     @filename = filename
     @sectionname = sectionname
-
-    @config = Puppet::Util::NimsoftConfig.add(@filename)
   end
 
   def self.config
-    @config
+    @config ||= Puppet::Util::NimsoftConfig.add(@filename)
   end
 
   def self.initvars
@@ -24,8 +22,8 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
 
   def self.root
     unless @root
-      @config.parse unless @config.loaded?
-      @root = @config.path(@sectionname)
+      config.parse unless config.loaded?
+      @root = config.path(@sectionname)
     end
     @root
   end
