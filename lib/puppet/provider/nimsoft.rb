@@ -15,8 +15,6 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   def self.initvars
     @config = nil
     @root = nil
-    @filename = nil
-    @sectionname = nil
     super
   end
 
