@@ -92,6 +92,50 @@ The `nimsoft_queue` type can be used to describe a queue on your hub.
       subject => 'alarm',
     }
 
+### oracle probe
+
+#### nimsoft\_oracle\_connection
+
+The `nimsoft_oracle_connection` can be used to describe a database connection
+that can be used by the `oracle` probe to monitor your oracle database
+instances. Example:
+
+    nimsoft_oracle_connection { 'PROD':
+      ensure      => present,
+      description => 'The productional database',
+      connection  => 'host.example.com:1521/PROD', # or some tnsnames.ora entry
+      user        => 'nmuser',
+      password    => 'secret',
+    }
+
+The connection string can either be a service entry that can be resolved
+through the `tnsnames.ora` file or an easy connect string of the form
+`host[:port]/service_name`.
+
+#### nimsoft\_oracle\_profile
+
+The `nimsoft_oracle_profile` type can be used to describe a monitoring
+profile that is used to monitor a database instance. You cannot define custom
+checkpoints at the moment so every new profile that is created through puppet
+will inherit all monitoring options form your template. You can however define
+custom checkpoints in the `oracle` probe GUI and puppet will not destroy these.
+
+
+Example:
+
+    nimsoft_oracle_profile { 'PROD':
+      ensure      => present,
+      active      => yes,
+      description => 'Billing database',
+      connection  => 'PROD',
+      source      => 'host.example.com',
+    }
+
+
+Hint: If the connection name of your `nimsoft_oracle_profile` instance matches
+the name of a `nimsoft_oracle_connection` resource, the `connection` will be
+autorequired and you do not have to define an explicit require.
+
 ### Agentil probe
 
 Agentil has developed the `sapbasis_agentil` probe that is able to monitor all
