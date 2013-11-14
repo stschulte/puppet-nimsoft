@@ -19,6 +19,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @root = nil
     @filename = nil
     @sectionname = nil
+    super
   end
 
   def self.root
