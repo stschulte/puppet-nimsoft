@@ -25,5 +25,28 @@ Puppet::Type.newtype(:nimsoft_oracle_connection) do
 
   newproperty(:password) do
   end
+
+  newproperty(:retry) do
+    desc "Specifies the number of retries to connect to the database until
+      the probe will give up"
+
+    validate do |value|
+      unless /^\d+$/.match(value)
+        raise Puppet::Error, "retry must be a positive number, not #{value.inspect}"
+      end
+    end
+  end
+
+  newproperty(:retry_delay) do
+    desc "If retry has been set to value greater than zero, retry_delay will
+      specify how long the probe will wait between connection attempts. The
+      value can be specified in seconds or minutes (e.g `30 sec` or `1 min`)"
+
+    validate do |value|
+      unless /^\d+ (sec|min)$/.match(value)
+        raise Puppet::Error, "retry_delay must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
+      end
+    end
+  end
       
 end

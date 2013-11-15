@@ -106,6 +106,8 @@ instances. Example:
       connection  => 'host.example.com:1521/PROD', # or some tnsnames.ora entry
       user        => 'nmuser',
       password    => 'secret',
+      retry       => '0',
+      retry_delay => '10 sec',
     }
 
 The connection string can either be a service entry that can be resolved

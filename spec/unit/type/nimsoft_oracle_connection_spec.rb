@@ -15,7 +15,7 @@ describe Puppet::Type.type(:nimsoft_oracle_connection) do
       end
     end
 
-    [:ensure, :description, :user, :password].each do |property|
+    [:ensure, :description, :user, :password, :retry, :retry_delay].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -72,6 +72,43 @@ describe Puppet::Type.type(:nimsoft_oracle_connection) do
 
       it "should allow alphanumerical password" do
         described_class.new(:name => 'FOO', :password => 'J4Cv2jpk6OFIPYI7ObEBUecrdtqERC')[:password].should == 'J4Cv2jpk6OFIPYI7ObEBUecrdtqERC'
+      end
+    end
+
+    describe "retry" do
+      it "should  allow zero" do
+        described_class.new(:name => 'FOO', :retry => '0')[:retry].should == '0'
+      end
+
+      it "should allow a positive number" do
+        described_class.new(:name => 'FOO', :retry => '5')[:retry].should == '5'
+        described_class.new(:name => 'FOO', :retry => '12')[:retry].should == '12'
+      end
+
+      it "should not allow a negative number" do
+        expect { described_class.new(:name => 'FOO', :retry => '-5') }.to raise_error Puppet::Error, /retry must be a positive number, not "-5"/
+      end
+
+      it "should not allow a non numeric value" do
+        expect { described_class.new(:name => 'FOO', :retry => '5s') }.to raise_error Puppet::Error, /retry must be a positive number, not "5s"/ 
+      end
+    end
+
+    describe "retry delay" do
+      it "should allow a timespan defined in seconds" do
+        described_class.new(:name => 'FOO', :retry_delay => '10 sec')[:retry_delay].should == '10 sec'
+      end
+
+      it "should allow a timespan defined in minutes" do
+        described_class.new(:name => 'FOO', :retry_delay => '5 min')[:retry_delay].should == '5 min'
+      end
+
+      it "should not allow a negative number" do
+        expect { described_class.new(:name => 'FOO', :retry_delay => '-5 min') }.to raise_error Puppet::Error, /retry_delay must be a positive number and must be specified in "sec" or "min", not "-5 min"/
+      end
+
+      it "should not allow random text" do
+        expect { described_class.new(:name => 'FOO', :retry_delay => '10 foo') }.to raise_error Puppet::Error, /retry_delay must be a positive number and must be specified in "sec" or "min", not "10 foo"/
       end
     end
   end

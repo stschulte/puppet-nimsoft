@@ -37,16 +37,19 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
       :ensure      => 'present',
       :user        => 'nmuser',
       :password    => 'my password',
-      :description => 'A new fancy connection'
+      :description => 'A new fancy connection',
+      :retry       => '3',
+      :retry_delay => '4 min',
     )
   end
 
   let :resource_modify do
     Puppet::Type.type(:nimsoft_oracle_connection).new(
-      :name     => 'db01 connection',
-      :ensure   => 'present',
-      :user     => 'nmuser',
-      :password => 'qwwhj1231sad'
+      :name        => 'db01 connection',
+      :ensure      => 'present',
+      :user        => 'nmuser',
+      :password    => 'qwwhj1231sad',
+      :retry_delay => '3 sec'
     )
   end
 

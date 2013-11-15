@@ -8,4 +8,6 @@ Puppet::Type.type(:nimsoft_oracle_connection).provide(:nimsoft, :parent => Puppe
   map_property :password, :password
   map_property :description, :description
   map_property :connection, :conn_string
+  map_property :retry, :retry
+  map_property :retry_delay, :retry_delay
 end
