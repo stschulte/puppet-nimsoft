@@ -15,7 +15,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
       end
     end
 
-    [:ensure, :description, :active, :connection, :source].each do |property|
+    [:ensure, :description, :active, :connection, :source, :interval, :heartbeat].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -74,6 +74,42 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
 
       it "should allow a fqdn" do
         described_class.new(:name => 'FOO', :source => 'host01.example.com')[:source].should == 'host01.example.com'
+      end
+    end
+
+    describe "interval" do
+      it "should allow a timespan defined in seconds" do
+        described_class.new(:name => 'FOO', :interval => '10 sec')[:interval].should == '10 sec'
+      end
+
+      it "should allow a timespan defined in minutes" do
+        described_class.new(:name => 'FOO', :interval => '5 min')[:interval].should == '5 min'
+      end
+
+      it "should not allow a negative number" do
+        expect { described_class.new(:name => 'FOO', :interval => '-5 min') }.to raise_error Puppet::Error, /interval must be a positive number and must be specified in "sec" or "min", not "-5 min"/
+      end
+
+      it "should not allow random text" do
+        expect { described_class.new(:name => 'FOO', :interval => '10 foo') }.to raise_error Puppet::Error, /interval must be a positive number and must be specified in "sec" or "min", not "10 foo"/
+      end
+    end
+
+    describe "heartbeat" do
+      it "should allow a timespan defined in seconds" do
+        described_class.new(:name => 'FOO', :heartbeat => '10 sec')[:heartbeat].should == '10 sec'
+      end
+
+      it "should allow a timespan defined in minutes" do
+        described_class.new(:name => 'FOO', :heartbeat => '5 min')[:heartbeat].should == '5 min'
+      end
+
+      it "should not allow a negative number" do
+        expect { described_class.new(:name => 'FOO', :heartbeat => '-5 min') }.to raise_error Puppet::Error, /heartbeat must be a positive number and must be specified in "sec" or "min", not "-5 min"/
+      end
+
+      it "should not allow random text" do
+        expect { described_class.new(:name => 'FOO', :heartbeat => '10 foo') }.to raise_error Puppet::Error, /heartbeat must be a positive number and must be specified in "sec" or "min", not "10 foo"/
       end
     end
   end

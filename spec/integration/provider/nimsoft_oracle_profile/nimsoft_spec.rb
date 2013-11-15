@@ -38,6 +38,8 @@ describe Puppet::Type.type(:nimsoft_oracle_profile).provider(:nimsoft), '(integr
       :description => 'A new profile',
       :connection  => 'new connection',
       :source      => 'host3.example.com',
+      :interval    => '30 min',
+      :heartbeat   => '20 sec'
     )
   end
 
@@ -46,7 +48,8 @@ describe Puppet::Type.type(:nimsoft_oracle_profile).provider(:nimsoft), '(integr
       :name        => 'PRO',
       :ensure      => 'present',
       :active      => 'no',
-      :description => 'Old PROD database'
+      :description => 'Old PROD database',
+      :heartbeat   => '1 min'
     )
   end
 

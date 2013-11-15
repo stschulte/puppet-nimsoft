@@ -7,6 +7,8 @@ Puppet::Type.type(:nimsoft_oracle_profile).provide(:nimsoft, :parent => Puppet::
   map_property :description, :description
   map_property :connection, :connection
   map_property :source, :alarm_source
+  map_property :interval, :interval
+  map_property :heartbeat, :heartbeat
 
   def active
     if value = element[:active]

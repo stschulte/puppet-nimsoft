@@ -131,6 +131,8 @@ Example:
       description => 'Billing database',
       connection  => 'PROD',
       source      => 'host.example.com',
+      heartbeat   => '5 sec',
+      interval    => '5 min',
     }
 
 

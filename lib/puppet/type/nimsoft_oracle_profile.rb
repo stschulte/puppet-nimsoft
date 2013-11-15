@@ -30,6 +30,28 @@ Puppet::Type.newtype(:nimsoft_oracle_profile) do
     desc "The alarm source that should be used in outgoing events"
   end
 
+  newproperty(:interval) do
+    desc "Specifies the default interval between two checkpoint
+      executions if no specific value is defined in the checkpoint
+      itself"
+
+    validate do |value|
+      unless /^\d+ (sec|min)$/.match(value)
+        raise Puppet::Error, "interval must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
+      end
+    end
+  end
+
+  newproperty(:heartbeat) do
+    desc "Specifies the interval at which all checkpoint schedules
+      will be tested and trigger eventual checkpoint executions."
+    validate do |value|
+      unless /^\d+ (sec|min)$/.match(value)
+        raise Puppet::Error, "heartbeat must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
+      end
+    end
+  end
+
   autorequire(:nimsoft_oracle_connection) do
     self[:connection]
   end
