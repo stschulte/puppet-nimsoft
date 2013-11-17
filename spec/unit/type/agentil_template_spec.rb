@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_template) do
       end
     end
 
-    [:system, :jobs, :monitors, :instances].each do |property|
+    [:system, :jobs, :monitors ].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -78,16 +78,6 @@ describe Puppet::Type.type(:agentil_template) do
         expect { described_class.new(:name => 'foo', :jobs => '12a') }.to raise_error Puppet::Error, /job.*numeric/
         expect { described_class.new(:name => 'foo', :jobs => '1a2') }.to raise_error Puppet::Error, /job.*numeric/
         expect { described_class.new(:name => 'foo', :jobs => [ '12', '1a2' ]) }.to raise_error Puppet::Error, /job.*numeric/
-      end
-    end
-
-    describe "instances" do
-      it "should allow a single instance" do
-        described_class.new(:name => 'foo', :instances => 'D00_sap01')[:instances].should == %w{D00_sap01}
-      end
-
-      it "should allow multiple instances as an array" do
-        described_class.new(:name => 'foo', :instances => [ 'D00_sap01', 'D01_sap01'])[:instances].should == %w{D00_sap01 D01_sap01}
       end
     end
   end

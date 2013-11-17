@@ -30,7 +30,6 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       :system    => 'true',
       :jobs      => [ '122', '55' ],
       :monitors  => [ '22', '33' ],
-      :instances => [ 'sap_inst00' ]
     )
     resource.provider = provider
     resource
@@ -56,7 +55,6 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
         template.expects(:system=).with(:true)
         template.expects(:jobs=).with([ '122', '55' ])
         template.expects(:monitors=).with([ '22', '33' ])
-        template.expects(:instances=).with(['sap_inst00' ])
         provider.create
       end
 
@@ -89,7 +87,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     end
   end
 
-  [:system, :jobs, :monitors, :instances].each do |property|
+  [:system, :jobs, :monitors ].each do |property|
     describe "when managing #{property}" do
       it "should delegate the getter method to the AgentilUser object" do
         template.expects(property).returns "value_for_#{property}"

@@ -152,48 +152,4 @@ class Puppet::Util::AgentilTemplate
       end
     end
   end
-
-  def instances
-    instances = []
-    if cust_element = @element.child('CUSTO')
-      if job_element = cust_element.child('JOB177')
-        if instance_element = job_element.child('EXPECTED_INSTANCES')
-          instances = instance_element.values_in_order
-        end
-      end
-    end
-    instances
-  end
-
-  def instances=(new_value)
-    if new_value.empty?
-      if cust_element = @element.child('CUSTO')
-        if job_element = cust_element.child('JOB177')
-          cust_element.children.delete(job_element)
-        end
-        @element.children.delete(cust_element) if cust_element.children.empty?
-      end
-    else
-      job_element = @element.path('CUSTO/JOB177')
-      job_element[:ID] = '177'
-      job_element[:CUSTOMIZED] = 'true'
-      mandinst_element = job_element.path('MANDATORY_INSTANCES')
-      crit_element = job_element.path('CRITICITIES')
-      autoclear_element = job_element.path('AUTO_CLEARS')
-      expinst_element = job_element.path('EXPECTED_INSTANCES')
-
-      mandinst_element.clear_attr
-      crit_element.clear_attr
-      autoclear_element.clear_attr
-      expinst_element.clear_attr
-
-      new_value.each_with_index do |expected_instance, index|
-        attr = sprintf("INDEX%03d", index).intern
-        mandinst_element[attr] = 'true'
-        crit_element[attr] = '5'
-        autoclear_element[attr] = 'true'
-        expinst_element[attr] = expected_instance
-      end
-    end
-  end
 end

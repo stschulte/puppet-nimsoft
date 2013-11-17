@@ -16,11 +16,7 @@ Puppet::Type.newtype(:agentil_template) do
           system    => 'true',
           monitors  => [ 1, 4, 10, 20, 33 ],
           jobs      => [ 4, 5, 12, 177, 3 ],
-          instances => [ D00_sap01, D01_sap01 ],
-        }
-
-    The instances property will cause a customization of job 177 (instance
-    availability) to include the specified instances"
+        }"
 
   ensurable
 
@@ -55,11 +51,5 @@ Puppet::Type.newtype(:agentil_template) do
         raise Puppet::Error, "Monitor ID has to be numeric, not #{value}"
       end
     end
-  end
-
-  newproperty(:instances, :array_matching => :all) do
-    desc "An array of instances. This does only make sense for a system
-      template and will cause a customization of job 177 which is responsible
-      to check instance availability"
   end
 end

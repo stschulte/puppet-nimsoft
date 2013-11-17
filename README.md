@@ -231,11 +231,7 @@ Example:
       system    => 'true',
       monitors  => [ 1, 4, 10, 20, 33 ],
       jobs      => [ 4, 5, 12, 177, 3 ],
-      instances => [ 'D00_sap01', 'D01_sap01' ],
     }
-
-The instances property will create a customization for job 177
-(instance availability) to monitor the correct instances.
 
 The best way to define a template is currently to create the template through
 the probe GUI and then run `puppet resource agentil_template` to get the

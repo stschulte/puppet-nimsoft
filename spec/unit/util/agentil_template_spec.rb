@@ -248,64 +248,6 @@ describe Puppet::Util::AgentilTemplate do
       described_class.templates['System Template for system id 1']
     end
 
-    describe "getting instances" do
-      it "should return an empty array if no customization" do
-        template.element.expects(:child).with('CUSTO').returns nil
-        template.instances.should be_empty
-      end
-
-      it "should return an empty array if no customization for job 177" do
-        template.element.child('CUSTO').expects(:child).with('JOB177').returns nil
-        template.instances.should be_empty
-      end
-
-      it "should return an array of instances found in job177" do
-        template.instances.should == [ 'sap01_PRO_00', 'sap01_PRO_01' ]
-      end
-    end
-
-    describe "setting instances" do
-      it "should remove the job177 customizations if empty" do
-        template.element.child('CUSTO').children.expects(:delete).with template.element.path('CUSTO/JOB177')
-        template.instances = []
-      end
-
-      it "should also remove the CUSTO section if job177 was the only customization" do
-        template.element.children.expects(:delete).with template.element.child('CUSTO')
-        template.instances = []
-      end
-
-      it "should modify MANDATORY_INSTANCES, CRITICITIES, AUTO_CLEARS and EXPECTED_INSTANCES for job177" do
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-        template.element.path('CUSTO/JOB177/MANDATORY_INSTANCES').attributes.should == {:INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
-        template.element.path('CUSTO/JOB177/CRITICITIES').attributes.should == {:INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
-        template.element.path('CUSTO/JOB177/AUTO_CLEARS').attributes.should == {:INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
-      end
-        
-      it "should add a CUSTO/JOB177 section first" do
-        template.element.child('CUSTO').children.delete template.element.path('CUSTO/JOB177')
-        template.element.child('CUSTO').child('JOB177').should be_nil
-
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-
-        template.element.path('CUSTO/JOB177')[:ID].should == '177'
-        template.element.path('CUSTO/JOB177')[:CUSTOMIZED].should == 'true'
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
-      end
-
-      it "should add a CUSTO section first" do
-        template.element.children.delete template.element.child('CUSTO')
-        template.element.child('CUSTO').should be_nil
-
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-
-        template.element.path('CUSTO/JOB177')[:ID].should == '177'
-        template.element.path('CUSTO/JOB177')[:CUSTOMIZED].should == 'true'
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
-      end
-    end
-
     describe "getting jobs" do
       it "should return an empty array if no jobs" do
         template.element.expects(:child).with('JOBS').returns nil
