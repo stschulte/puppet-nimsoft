@@ -3,7 +3,7 @@ require 'puppet/util/nimsoft_section'
 
 class Puppet::Util::AgentilTemplate
 
-  attr_reader :name, :element
+  attr_reader :name, :element, :custom_jobs
 
   def self.filename
     '/opt/nimsoft/probes/application/sapbasis_agentil/sapbasis_agentil.cfg'
@@ -87,6 +87,15 @@ class Puppet::Util::AgentilTemplate
     @element[:NAME] = name
     @element[:ID] ||= self.class.genid.to_s
     @element[:VERSION] ||= '1'
+
+    @custom_jobs = []
+    if cust = @element.child('CUSTO')
+      cust.children.each do |child|
+        if match = /^JOB(\d+)$/.match(child.name)
+          @custom_jobs << match.captures[0].to_i
+        end
+      end
+    end
   end
 
   def id
@@ -149,6 +158,30 @@ class Puppet::Util::AgentilTemplate
       monitor_element.clear_attr
       new_value.each_with_index do |monitorid, index|
         monitor_element[sprintf("INDEX%03d", index).intern] = monitorid.to_s
+      end
+    end
+  end
+
+  def customized?(jobid)
+    @custom_jobs.include?(jobid)
+  end
+
+  def add_custom_job(jobid)
+    @custom_jobs << jobid unless @custom_jobs.include? jobid
+    custom_job = @element.path("CUSTO/JOB#{jobid}")
+    custom_job[:ID] = jobid.to_s
+    custom_job[:CUSTOMIZED] = 'true'
+    custom_job
+  end
+
+  def del_custom_job(jobid)
+    if @custom_jobs.delete jobid
+      cust = @element.child('CUSTO')
+      if job = cust.child("JOB#{jobid}")
+        cust.children.delete(job)
+      end
+      if cust.children.empty?
+        @element.children.delete cust
       end
     end
   end

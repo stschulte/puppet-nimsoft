@@ -245,7 +245,88 @@ describe Puppet::Util::AgentilTemplate do
 
     let :template do
       described_class.parse
-      described_class.templates['System Template for system id 1']
+      described_class.templates['System Template for system id 3']
+    end
+
+    describe "getting custom jobs" do
+      it "should return an empty array if template has no customizations" do
+        new_template.custom_jobs.should == []
+      end
+
+      it "should return an array of jobids" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+      end
+    end
+
+    describe "add_custom_job" do
+      it "should add an entry to the custom_jobs list" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.add_custom_job 600
+        template.custom_jobs.should == [ 177, 79, 78, 600 ]
+        template.add_custom_job 30
+        template.custom_jobs.should == [ 177, 79, 78, 600, 30 ]
+      end
+
+      it "should add a subsection to the custo section" do
+        template.element.path('CUSTO').child('JOB600').should be_nil
+
+        custom_job = template.add_custom_job 600
+        new_child = template.element.path('CUSTO').child('JOB600')
+
+        custom_job.should == new_child
+        new_child[:ID].should == '600'
+        new_child[:CUSTOMIZED].should == 'true'
+      end
+
+      it "should crate the custo section if it does not already exist" do
+        new_template.element.child('CUSTO').should be_nil
+        new_template.custom_jobs.should be_empty
+
+        custom_job = new_template.add_custom_job 177
+
+        new_template.element.child('CUSTO').should_not be_nil
+        new_template.element.child('CUSTO').child('JOB177').should == custom_job
+      end
+    end
+
+    describe "del_custom_job" do
+      it "should do nothing if job is not customized" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.del_custom_job 99
+        template.custom_jobs.should == [ 177, 79, 78 ]
+      end
+
+      it "should remove the entry from the custom_jobs list" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.del_custom_job 79
+        template.custom_jobs.should == [ 177, 78 ]
+        template.del_custom_job 177
+        template.custom_jobs.should == [ 78 ]
+        template.del_custom_job 78
+        template.custom_jobs.should == [ ]
+      end
+
+      it "should remove the subsection from the custo section" do
+        template.element.child('CUSTO').children.map(&:name).should include 'JOB79'
+        template.del_custom_job 79
+        template.element.child('CUSTO').children.map(&:name).should_not include 'JOB79'
+      end
+
+      it "should not touch other customizations" do
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB79', 'JOB78' ]
+        template.del_custom_job 79
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB78' ]
+      end
+
+      it "should remove the custo section if this was the last customization" do
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB79', 'JOB78' ]
+
+        template.del_custom_job 177
+        template.del_custom_job 79
+        template.del_custom_job 78
+
+        template.element.child('CUSTO').should be_nil
+      end
     end
 
     describe "getting jobs" do
