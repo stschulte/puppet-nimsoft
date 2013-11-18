@@ -3,7 +3,7 @@ require 'puppet/util/nimsoft_section'
 
 class Puppet::Util::AgentilTemplate
 
-  attr_reader :name, :element
+  attr_reader :name, :element, :custom_jobs
 
   def self.filename
     '/opt/nimsoft/probes/application/sapbasis_agentil/sapbasis_agentil.cfg'
@@ -87,6 +87,15 @@ class Puppet::Util::AgentilTemplate
     @element[:NAME] = name
     @element[:ID] ||= self.class.genid.to_s
     @element[:VERSION] ||= '1'
+
+    @custom_jobs = []
+    if cust = @element.child('CUSTO')
+      cust.children.each do |child|
+        if match = /^JOB(\d+)$/.match(child.name)
+          @custom_jobs << match.captures[0].to_i
+        end
+      end
+    end
   end
 
   def id
@@ -153,46 +162,26 @@ class Puppet::Util::AgentilTemplate
     end
   end
 
-  def instances
-    instances = []
-    if cust_element = @element.child('CUSTO')
-      if job_element = cust_element.child('JOB177')
-        if instance_element = job_element.child('EXPECTED_INSTANCES')
-          instances = instance_element.values_in_order
-        end
-      end
-    end
-    instances
+  def customized?(jobid)
+    @custom_jobs.include?(jobid)
   end
 
-  def instances=(new_value)
-    if new_value.empty?
-      if cust_element = @element.child('CUSTO')
-        if job_element = cust_element.child('JOB177')
-          cust_element.children.delete(job_element)
-        end
-        @element.children.delete(cust_element) if cust_element.children.empty?
+  def add_custom_job(jobid)
+    @custom_jobs << jobid unless @custom_jobs.include? jobid
+    custom_job = @element.path("CUSTO/JOB#{jobid}")
+    custom_job[:ID] = jobid.to_s
+    custom_job[:CUSTOMIZED] = 'true'
+    custom_job
+  end
+
+  def del_custom_job(jobid)
+    if @custom_jobs.delete jobid
+      cust = @element.child('CUSTO')
+      if job = cust.child("JOB#{jobid}")
+        cust.children.delete(job)
       end
-    else
-      job_element = @element.path('CUSTO/JOB177')
-      job_element[:ID] = '177'
-      job_element[:CUSTOMIZED] = 'true'
-      mandinst_element = job_element.path('MANDATORY_INSTANCES')
-      crit_element = job_element.path('CRITICITIES')
-      autoclear_element = job_element.path('AUTO_CLEARS')
-      expinst_element = job_element.path('EXPECTED_INSTANCES')
-
-      mandinst_element.clear_attr
-      crit_element.clear_attr
-      autoclear_element.clear_attr
-      expinst_element.clear_attr
-
-      new_value.each_with_index do |expected_instance, index|
-        attr = sprintf("INDEX%03d", index).intern
-        mandinst_element[attr] = 'true'
-        crit_element[attr] = '5'
-        autoclear_element[attr] = 'true'
-        expinst_element[attr] = expected_instance
+      if cust.children.empty?
+        @element.children.delete cust
       end
     end
   end

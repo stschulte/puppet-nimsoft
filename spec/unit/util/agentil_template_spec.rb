@@ -245,64 +245,87 @@ describe Puppet::Util::AgentilTemplate do
 
     let :template do
       described_class.parse
-      described_class.templates['System Template for system id 1']
+      described_class.templates['System Template for system id 3']
     end
 
-    describe "getting instances" do
-      it "should return an empty array if no customization" do
-        template.element.expects(:child).with('CUSTO').returns nil
-        template.instances.should be_empty
+    describe "getting custom jobs" do
+      it "should return an empty array if template has no customizations" do
+        new_template.custom_jobs.should == []
       end
 
-      it "should return an empty array if no customization for job 177" do
-        template.element.child('CUSTO').expects(:child).with('JOB177').returns nil
-        template.instances.should be_empty
-      end
-
-      it "should return an array of instances found in job177" do
-        template.instances.should == [ 'sap01_PRO_00', 'sap01_PRO_01' ]
+      it "should return an array of jobids" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
       end
     end
 
-    describe "setting instances" do
-      it "should remove the job177 customizations if empty" do
-        template.element.child('CUSTO').children.expects(:delete).with template.element.path('CUSTO/JOB177')
-        template.instances = []
+    describe "add_custom_job" do
+      it "should add an entry to the custom_jobs list" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.add_custom_job 600
+        template.custom_jobs.should == [ 177, 79, 78, 600 ]
+        template.add_custom_job 30
+        template.custom_jobs.should == [ 177, 79, 78, 600, 30 ]
       end
 
-      it "should also remove the CUSTO section if job177 was the only customization" do
-        template.element.children.expects(:delete).with template.element.child('CUSTO')
-        template.instances = []
+      it "should add a subsection to the custo section" do
+        template.element.path('CUSTO').child('JOB600').should be_nil
+
+        custom_job = template.add_custom_job 600
+        new_child = template.element.path('CUSTO').child('JOB600')
+
+        custom_job.should == new_child
+        new_child[:ID].should == '600'
+        new_child[:CUSTOMIZED].should == 'true'
       end
 
-      it "should modify MANDATORY_INSTANCES, CRITICITIES, AUTO_CLEARS and EXPECTED_INSTANCES for job177" do
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-        template.element.path('CUSTO/JOB177/MANDATORY_INSTANCES').attributes.should == {:INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
-        template.element.path('CUSTO/JOB177/CRITICITIES').attributes.should == {:INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
-        template.element.path('CUSTO/JOB177/AUTO_CLEARS').attributes.should == {:INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
+      it "should crate the custo section if it does not already exist" do
+        new_template.element.child('CUSTO').should be_nil
+        new_template.custom_jobs.should be_empty
+
+        custom_job = new_template.add_custom_job 177
+
+        new_template.element.child('CUSTO').should_not be_nil
+        new_template.element.child('CUSTO').child('JOB177').should == custom_job
       end
-        
-      it "should add a CUSTO/JOB177 section first" do
-        template.element.child('CUSTO').children.delete template.element.path('CUSTO/JOB177')
-        template.element.child('CUSTO').child('JOB177').should be_nil
+    end
 
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-
-        template.element.path('CUSTO/JOB177')[:ID].should == '177'
-        template.element.path('CUSTO/JOB177')[:CUSTOMIZED].should == 'true'
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
+    describe "del_custom_job" do
+      it "should do nothing if job is not customized" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.del_custom_job 99
+        template.custom_jobs.should == [ 177, 79, 78 ]
       end
 
-      it "should add a CUSTO section first" do
-        template.element.children.delete template.element.child('CUSTO')
+      it "should remove the entry from the custom_jobs list" do
+        template.custom_jobs.should == [ 177, 79, 78 ]
+        template.del_custom_job 79
+        template.custom_jobs.should == [ 177, 78 ]
+        template.del_custom_job 177
+        template.custom_jobs.should == [ 78 ]
+        template.del_custom_job 78
+        template.custom_jobs.should == [ ]
+      end
+
+      it "should remove the subsection from the custo section" do
+        template.element.child('CUSTO').children.map(&:name).should include 'JOB79'
+        template.del_custom_job 79
+        template.element.child('CUSTO').children.map(&:name).should_not include 'JOB79'
+      end
+
+      it "should not touch other customizations" do
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB79', 'JOB78' ]
+        template.del_custom_job 79
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB78' ]
+      end
+
+      it "should remove the custo section if this was the last customization" do
+        template.element.child('CUSTO').children.map(&:name).should == [ 'JOB177', 'JOB79', 'JOB78' ]
+
+        template.del_custom_job 177
+        template.del_custom_job 79
+        template.del_custom_job 78
+
         template.element.child('CUSTO').should be_nil
-
-        template.instances = [ 'instance_01', 'instance_02', 'instance_03' ]
-
-        template.element.path('CUSTO/JOB177')[:ID].should == '177'
-        template.element.path('CUSTO/JOB177')[:CUSTOMIZED].should == 'true'
-        template.element.path('CUSTO/JOB177/EXPECTED_INSTANCES').attributes.should == {:INDEX000 => 'instance_01', :INDEX001 => 'instance_02', :INDEX002 => 'instance_03' }
       end
     end
 
