@@ -29,7 +29,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       :ensure    => 'present',
       :system    => 'true',
       :jobs      => [ '122', '55' ],
-      :monitors  => [ '22', '33' ],
+      :monitors  => [ '22', '33' ]
     )
     resource.provider = provider
     resource
