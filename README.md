@@ -307,6 +307,35 @@ Example:
 
 #### Complete example
 
+Helper scripts
+--------------
+
+After you make configuration changes you have to restart the probe. So if puppet
+modifies a file, it'll also have to restart the effected probe. You can use the
+`restart_probe.sh` script to do that (you can find it in the `files` directory).
+You may want to use it inside a manifest, e.g.
+
+    # Make sure the script is present on your robot
+    file { '/opt/nimsoft/scripts/restart.sh':
+      ensure => file,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+      source => 'puppet:///modules/nimsoft/restart.sh',
+    }
+
+    # Define an exec resource with refreshonly
+    exec { 'restart_cdm_probe':
+      command     => '/opt/nimsoft/scripts/restart.sh cdm',
+      refreshonly => true
+    }
+
+    # Trigger the exec resource if something changes
+    nimsoft_disk { '/dev':
+      ensure => absent,
+      notify => Exec['restart_cdm_probe']
+    }
+
 Running the tests
 -----------------
 
