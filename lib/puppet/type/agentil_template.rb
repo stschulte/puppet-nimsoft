@@ -41,6 +41,10 @@ Puppet::Type.newtype(:agentil_template) do
         raise Puppet::Error, "Job ID has to be numeric, not #{value}"
       end
     end
+
+    munge do |value|
+      value.to_i
+    end
   end
 
   newproperty(:monitors, :array_matching => :all) do
@@ -50,6 +54,10 @@ Puppet::Type.newtype(:agentil_template) do
       unless /^\d+$/.match(value)
         raise Puppet::Error, "Monitor ID has to be numeric, not #{value}"
       end
+    end
+
+    munge do |value|
+      value.to_i
     end
   end
 end

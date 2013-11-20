@@ -53,8 +53,8 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
         resource
         Puppet::Util::AgentilTemplate.expects(:add).with('NEW_TEMPLATE').returns template
         template.expects(:system=).with(:true)
-        template.expects(:jobs=).with([ '122', '55' ])
-        template.expects(:monitors=).with([ '22', '33' ])
+        template.expects(:jobs=).with([ 122, 55 ])
+        template.expects(:monitors=).with([ 22, 33 ])
         provider.create
       end
 

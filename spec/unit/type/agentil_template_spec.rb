@@ -49,11 +49,11 @@ describe Puppet::Type.type(:agentil_template) do
 
     describe "for monitors" do
       it "should allow a single numeric monitor id" do
-        described_class.new(:name => 'foo', :monitors => '20')[:monitors].should == %w{20}
+        described_class.new(:name => 'foo', :monitors => '20')[:monitors].should == [ 20 ]
       end
 
       it "should allow multiple numeric monitor ids as an array" do
-        described_class.new(:name => 'foo', :monitors => [ '20', '4', '12' ])[:monitors].should == %w{20 4 12}
+        described_class.new(:name => 'foo', :monitors => [ '20', '4', '12' ])[:monitors].should == [ 20, 4, 12 ]
       end
 
       it "should not allow non numeric ids" do
@@ -66,11 +66,11 @@ describe Puppet::Type.type(:agentil_template) do
 
     describe "for jobs" do
       it "should allow a single numeric job id" do
-        described_class.new(:name => 'foo', :jobs => '20')[:jobs].should == %w{20}
+        described_class.new(:name => 'foo', :jobs => '20')[:jobs].should == [ 20 ]
       end
 
       it "should allow multiple numeric job ids as an array" do
-        described_class.new(:name => 'foo', :jobs => [ '20', '4', '12' ])[:jobs].should == %w{20 4 12}
+        described_class.new(:name => 'foo', :jobs => [ '20', '4', '12' ])[:jobs].should == [ 20, 4, 12 ]
       end
 
       it "should not allow non numeric ids" do
