@@ -57,7 +57,7 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
         :template => 'System Template for system id 1'
       )
 
-      run_in_catalog(resource)
+      run_in_catalog(resource).changed?.should == [ resource ]
       File.read(input).should == File.read(my_fixture('add_to_existing_default.cfg'))
     end
 
@@ -68,7 +68,7 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
         :template => 'System Template for system id 4'
       )
 
-      run_in_catalog(resource)
+      run_in_catalog(resource).changed?.should == [ resource ]
       File.read(input).should == File.read(my_fixture('create_new.cfg'))
     end
   end
@@ -83,8 +83,8 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
         :autoclear   => 'true',
         :template    => 'System Template for system id 1'
       )
-      run_in_catalog(resource)
 
+      run_in_catalog(resource).changed?.should be_empty
       File.read(input).should == File.read(my_fixture('sample.cfg'))
     end
 
@@ -97,8 +97,8 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
         :autoclear   => 'false',
         :template    => 'System Template for system id 1'
       )
-      run_in_catalog(resource)
 
+      run_in_catalog(resource).changed?.should == [ resource ]
       File.read(input).should == File.read(my_fixture('mod_autoclear.cfg'))
     end
 
@@ -111,8 +111,8 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
         :autoclear   => 'true',
         :template    => 'System Template for system id 1'
       )
-      run_in_catalog(resource)
 
+      run_in_catalog(resource).changed?.should == [ resource ]
       File.read(input).should == File.read(my_fixture('mod_multiple.cfg'))
     end
 
@@ -124,7 +124,8 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
           :criticality => 'info',
           :template    => 'System Template for system id 2'
         )
-        run_in_catalog(resource)
+
+        run_in_catalog(resource).changed?.should == [ resource ]
         File.read(input).should == File.read(my_fixture('move_different_template.cfg'))
       end
 
@@ -134,7 +135,8 @@ describe Puppet::Type.type(:agentil_instance).provider(:agentil), '(integration)
           :ensure   => :present,
           :template => 'System Template for system id 4'
         )
-        run_in_catalog(resource)
+
+        run_in_catalog(resource).changed?.should == [ resource ]
         File.read(input).should == File.read(my_fixture('move_different_template_and_delete.cfg'))
       end
     end

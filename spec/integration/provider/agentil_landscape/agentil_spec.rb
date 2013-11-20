@@ -82,14 +82,14 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
   describe "ensure => absent" do
     describe "when resource is currently absent" do
       it "should do nothing" do
-        run_in_catalog(resource_absent)
+        run_in_catalog(resource_absent).changed?.should be_empty
         File.read(input).should == File.read(my_fixture('sample.cfg'))
       end
     end
 
     describe "when resource is currently present" do
-      it "should remove the resource nothing" do
-        run_in_catalog(resource_destroy)
+      it "should remove the resource" do
+        run_in_catalog(resource_destroy).changed?.should == [ resource_destroy ]
         File.read(input).should == File.read(my_fixture('output_remove.cfg'))
       end
     end
@@ -98,19 +98,19 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
   describe "ensure => present" do
     describe "when resource is currently absent" do
       it "should add the resource" do
-        run_in_catalog(resource_create)
+        run_in_catalog(resource_create).changed?.should == [ resource_create ]
         File.read(input).should == File.read(my_fixture('output_add.cfg'))
       end
     end
 
     describe "when resource is currently present" do
       it "should do nothing if in sync" do
-        run_in_catalog(resource_present)
+        run_in_catalog(resource_present).changed?.should be_empty
         File.read(input).should == File.read(my_fixture('sample.cfg'))
       end
 
       it "should modify attributes if not in sync" do
-        run_in_catalog(resource_modify)
+        run_in_catalog(resource_modify).changed?.should == [ resource_modify ]
         File.read(input).should == File.read(my_fixture('output_modify.cfg'))
       end
     end
