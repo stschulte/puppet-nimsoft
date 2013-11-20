@@ -36,7 +36,7 @@ Puppet::Type.type(:agentil_system).provide(:agentil) do
     new_system.client = resource[:client] if resource[:client]
     new_system.group = resource[:group] if resource[:group]
     new_system.landscape = resource[:landscape]
-    new_system.default = resource[:default] if resource[:default]
+    new_system.template = resource[:template] if resource[:template]
     new_system.templates = resource[:templates] if resource[:templates]
   end
 
@@ -44,7 +44,7 @@ Puppet::Type.type(:agentil_system).provide(:agentil) do
     Puppet::Util::AgentilSystem.del name
   end
 
-  [:sid, :host, :ip, :stack, :user, :client, :group, :landscape, :default, :templates].each do |prop|
+  [:sid, :host, :ip, :stack, :user, :client, :group, :landscape, :template, :templates].each do |prop|
     define_method(prop) do
       @property_hash[:system].send(prop)
     end

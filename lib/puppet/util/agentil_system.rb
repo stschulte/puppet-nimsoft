@@ -232,7 +232,7 @@ class Puppet::Util::AgentilSystem
     end
   end
 
-  def default
+  def template
     if @element[:DEFAULT_TEMPLATE] and assigned_id = @element[:DEFAULT_TEMPLATE].to_i
       match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
         template.id == assigned_id
@@ -243,7 +243,7 @@ class Puppet::Util::AgentilSystem
     end
   end
 
-  def default=(new_value)
+  def template=(new_value)
     match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
       template.name == new_value
     end.first

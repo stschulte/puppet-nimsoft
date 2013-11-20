@@ -39,7 +39,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
       :client    => '000',
       :user      => 'SAP_PROBE',
       :group     => 'LOGON_GROUP_01',
-      :default   => 'System Template for system ABC_sap01',
+      :template  => 'System Template for system ABC_sap01',
       :templates => [ 'Template 1', 'Template 2' ]
     )
     resource.provider = provider
@@ -71,7 +71,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
         system.expects(:client=).with '000'
         system.expects(:group=).with 'LOGON_GROUP_01'
         system.expects(:landscape=).with 'ABC'
-        system.expects(:default=).with 'System Template for system ABC_sap01'
+        system.expects(:template=).with 'System Template for system ABC_sap01'
         system.expects(:templates=).with [ 'Template 1', 'Template 2' ]
 
         provider.create
@@ -106,7 +106,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
     end
   end
 
-  [:sid, :host, :ip, :stack, :user, :client, :group, :landscape, :default, :templates]. each do |property|
+  [:sid, :host, :ip, :stack, :user, :client, :group, :landscape, :template, :templates]. each do |property|
     describe "when managing #{property}" do
       it "should delegate the getter method to the AgentilLandscape class" do
         system.expects(property).returns "value_for_#{property}"

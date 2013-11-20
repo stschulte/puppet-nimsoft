@@ -370,34 +370,34 @@ describe Puppet::Util::AgentilSystem do
       end
     end
 
-    describe "getting default" do
+    describe "getting template" do
       it "should return nil if no template" do
         system = described_class.systems['DEAD']
         system.element.expects(:[]).with(:DEFAULT_TEMPLATE).returns nil
-        system.default.should be_nil
+        system.template.should be_nil
       end
 
       it "should return nil if template cannot be found" do
         system = described_class.systems['DEAD']
-        system.default.should be_nil
+        system.template.should be_nil
       end
 
       it "should return the template name" do
         system = described_class.systems['DEV_sapdev']
-        system.default.should == 'System Template for system id 3'
+        system.template.should == 'System Template for system id 3'
       end
     end
 
-    describe "setting default" do
+    describe "setting template" do
       it "should raise an error if template cannot be found" do
         system = described_class.systems['DEAD']
-        expect { system.default = 'no_such_template' }.to raise_error Puppet::Error, 'Template no_such_template not found'
+        expect { system.template = 'no_such_template' }.to raise_error Puppet::Error, 'Template no_such_template not found'
       end
 
       it "should update the DEFAULT_TEMPLATE with the appropiate id" do
         system = described_class.systems['DEAD']
         system.element.expects(:[]=).with(:DEFAULT_TEMPLATE, '1000003')
-        system.default = 'System Template for system id 3'
+        system.template = 'System Template for system id 3'
       end
 
     end
