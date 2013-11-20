@@ -42,7 +42,11 @@ Puppet::Type.newtype(:agentil_system) do
   end
 
   newproperty(:ip, :array_matching => :all) do
-    desc "One or more IP adresses that belong to the SAP system"
+    desc "The ip address of all instances as an array"
+
+    def insync?(is)
+      is.sort == @should.sort
+    end
   end
 
   newproperty(:stack) do
@@ -106,9 +110,9 @@ Puppet::Type.newtype(:agentil_system) do
       SAP system. These assignments can be seen in the `sapbasis_agentil`
       probe GUI but actally have no influence in what will be monitored."
 
-      def insync?(is)
-        is.sort == @should.sort
-      end
+    def insync?(is)
+      is.sort == @should.sort
+    end
   end
 
   autorequire(:agentil_landscape) do

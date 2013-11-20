@@ -196,6 +196,28 @@ describe Puppet::Type.type(:agentil_system) do
   end
 
   describe "when checking insync" do
+    describe "for ip" do
+      it "should consider two emty arrays as insync" do
+        described_class.new(:name => 'foo', :ip => []).parameter(:ip).must be_insync []
+      end
+
+      it "should consider insync if the order of ipaddresses is identical" do
+        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
+      end
+
+      it "should consider insync if the order of ipaddresses is different" do
+        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must be_insync %w{192.168.0.13 192.168.0.20 192.168.0.12}
+      end
+
+      it "should not be in sync if there is one ipaddresses too many" do
+        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20}).parameter(:ip).must_not be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
+      end
+
+      it "should not be in sync if there is one ipaddresses too less" do
+        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must_not be_insync %w{192.168.0.20 192.168.0.13}
+      end
+    end
+
     describe "for templates" do
       it "should consider two emty arrays as insync" do
         described_class.new(:name => 'foo', :templates => []).parameter(:templates).must be_insync []
@@ -209,11 +231,11 @@ describe Puppet::Type.type(:agentil_system) do
         described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must be_insync %w{t3 t1 t2}
       end
 
-      it "should not be in sync if there is a template to many" do
+      it "should not be in sync if there is one template too many" do
         described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2 t3 t4}
       end
 
-      it "should not be in sync if there is a template to less" do
+      it "should not be in sync if there is one template too less" do
         described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2}
       end
     end
