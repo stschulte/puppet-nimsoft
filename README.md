@@ -87,7 +87,8 @@ to get a list of all parameters.
 The `nimsoft_queue` type can be used to describe a queue on your hub.
 
     nimsoft_queue { 'HUB-alarm':
-      ensure  => enabled,
+      ensure  => present,
+      active  => yes,
       type    => attach,
       subject => 'alarm',
     }
@@ -403,8 +404,8 @@ typing and create getter and setter methods.
     require 'puppet/provider/nimsoft'
     Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
       register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
-      map_fields :active,   :active
-      map_fields :warning,  :threshold, :section => 'warning'
-      map_fields :critical, :threshold, :section => 'error'
+      map_fields :active
+      map_fields :warning, :section => 'warning', :attribute => :threshold
+      map_fields :critical, :section => 'error', :attribute => :threshold
     end
 

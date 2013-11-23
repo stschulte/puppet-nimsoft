@@ -4,22 +4,10 @@ Puppet::Type.type(:nimsoft_oracle_profile).provide(:nimsoft, :parent => Puppet::
 
   register_config '/opt/nimsoft/probes/database/oracle/oracle_monitor.cfg', 'profiles'
 
-  map_property :description, :description
-  map_property :connection, :connection
-  map_property :source, :alarm_source
-  map_property :interval, :interval
-  map_property :heartbeat, :heartbeat
-
-  def active
-    if value = element[:active]
-      value.intern
-    else
-      :absent
-    end
-  end
-
-  def active=(new_value)
-    element[:active] = new_value.to_s
-  end
-
+  map_property :active, :symbolize => true
+  map_property :description
+  map_property :connection
+  map_property :source, :attribute => :alarm_source
+  map_property :interval
+  map_property :heartbeat
 end

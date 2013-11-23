@@ -16,8 +16,10 @@ Puppet::Type.newtype(:nimsoft_queue) do
     isnamevar
   end
 
-  newproperty(:ensure) do
-    newvalues :enabled, :disabled, :absent
+  ensurable
+
+  newproperty(:active) do
+    newvalues :yes, :no
   end
 
   newproperty(:type) do
