@@ -93,6 +93,31 @@ The `nimsoft_queue` type can be used to describe a queue on your hub.
       subject => 'alarm',
     }
 
+#### nimsoft\_dirscan
+
+The `nimsoft_dirscan` type can be used to describe a profile for the
+`dirscan` probe. It can be used to check the size of a file or a group
+of files and can also be used to check the number of files in a given
+directory (and optional all subdirectories).
+
+Possible usecase: You deploy an application with puppet and this application
+writes a specific logfile. You now want nimsoft to trigger an alarm if this
+logfile exceeds a certain size limit (e.g. you expect the size to be less than
+10 megabytes). You also want to trigger an alarm if the logdirectory or the
+logfile is absent:
+
+    nimsoft_dirscan { 'foo logfile':
+      ensure      => present,
+      active      => yes,
+      description => 'Check debug.log of application foo'
+      directory   => '/opt/foo/log',
+      pattern     => 'debug.log',
+      recurse     => 'no',
+      direxists   => 'yes',
+      nofiles     => '1',
+      size        => '< 10M'
+    }
+
 ### oracle probe
 
 #### nimsoft\_oracle\_connection
