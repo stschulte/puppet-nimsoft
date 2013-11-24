@@ -26,20 +26,35 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     @root
   end
 
-  def self.map_property(puppet_attribute, nimsoft_attribute, options = {})
-    define_method(puppet_attribute) do
+  def self.map_property(property, options = {}, &block)
+    section = options[:section]
+    attribute = options[:attribute] || property
+    symbolize = options[:symbolize]
+
+    define_method(property) do
       if element
-        element.path(options[:section])[nimsoft_attribute] || :absent
+        if value = element.path(section)[attribute]
+          value = value.intern if symbolize
+          if block
+            block.call(:get, value)
+          else
+            value
+          end
+        else
+          :absent
+        end
       else
         :absent
       end
     end
-    define_method(puppet_attribute.to_s + "=") do |new_value|
+
+    define_method("#{property}=".intern) do |new_value|
       if element
         if new_value == :absent
-          element.path(options[:section]).del_attr nimsoft_attribute
+          element.path(section).del_attr attribute
         else
-          element.path(options[:section])[nimsoft_attribute] = new_value
+          value = block.nil? ? new_value : block.call(:set, new_value)
+          element.path(section)[attribute] = value.to_s
         end
       end
     end

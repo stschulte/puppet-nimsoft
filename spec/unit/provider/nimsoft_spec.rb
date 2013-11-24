@@ -46,27 +46,75 @@ describe Puppet::Provider::Nimsoft do
   describe "map_property" do
 
     it "should create getter and setter" do
-      described_class.map_property(:foo, :bar)
+      described_class.map_property(:foo)
 
       provider = described_class.new(:name => 'foo', :element => element)
       provider.should respond_to :foo
-      element.expects(:[]).with(:bar).returns 'bar_value'
-      element.expects(:[]=).with(:bar, 'new_bar_value')
 
+      element.expects(:[]).with(:foo).returns 'old_value'
+      provider.foo.should == 'old_value'
+
+      element.expects(:[]=).with(:foo, 'new_value')
+      provider.foo = 'new_value'
+    end
+
+    it "should allow passing an alternate nimsoft attribute" do
+      described_class.map_property(:foo, :attribute => :bar)
+
+      provider = described_class.new(:name => 'foo', :element => element)
+      provider.should respond_to :foo
+
+      element.expects(:[]).with(:bar).returns 'bar_value'
       provider.foo.should == 'bar_value'
+
+      element.expects(:[]=).with(:bar, 'new_bar_value')
       provider.foo = 'new_bar_value'
     end
 
     it "should allow passing a section" do
-      described_class.map_property(:foo, :bar, :section => 'subsection1/subsection2')
+      described_class.map_property(:foo, :attribute => :bar, :section => 'subsection1/subsection2')
 
       provider = described_class.new(:name => 'foo', :element => element)
       provider.should respond_to :foo
-      element.path('subsection1/subsection2').expects(:[]).with(:bar).returns 'bar_value'
-      element.path('subsection1/subsection2').expects(:[]=).with(:bar, 'new_bar_value')
 
-      provider.foo.should == 'bar_value'
-      provider.foo = 'new_bar_value'
+      element.path('subsection1/subsection2').expects(:[]).with(:bar).returns 'old_value'
+      provider.foo.should == 'old_value'
+
+      element.path('subsection1/subsection2').expects(:[]=).with(:bar, 'new_value')
+      provider.foo = 'new_value'
+    end
+
+    it "should allow symbolizing the value" do
+      described_class.map_property(:foo, :symbolize => true)
+
+      provider = described_class.new(:name => 'foo', :element => element)
+      provider.should respond_to :foo
+
+      element.expects(:[]).with(:foo).returns 'old_value'
+      provider.foo.should == :old_value
+
+      element.expects(:[]=).with(:foo, 'new_value')
+      provider.foo = :new_value
+    end
+
+    it "should use a provided block for value munging" do
+      described_class.map_property(:foo) do |action, value|
+        case action
+        when :get
+          value.downcase
+        when :set
+          value.upcase
+        end
+      end
+
+      provider = described_class.new(:name => 'foo', :element => element)
+      provider.should respond_to :foo
+
+      element.expects(:[]).with(:foo).returns 'CURRENT_VALUE'
+      provider.foo.should == 'current_value'
+
+      element.expects(:[]=).with(:foo, 'DESIRED_VALUE')
+      provider.foo = 'desired_value'
     end
   end
 

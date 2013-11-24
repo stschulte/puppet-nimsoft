@@ -4,10 +4,10 @@ Puppet::Type.type(:nimsoft_oracle_connection).provide(:nimsoft, :parent => Puppe
 
   register_config '/opt/nimsoft/probes/database/oracle/oracle_monitor.cfg', 'connections'
 
-  map_property :user, :user
-  map_property :password, :password
-  map_property :description, :description
-  map_property :connection, :conn_string
-  map_property :retry, :retry
-  map_property :retry_delay, :retry_delay
+  map_property :user
+  map_property :password
+  map_property :description
+  map_property :connection, :attribute => :conn_string
+  map_property :retry
+  map_property :retry_delay
 end
