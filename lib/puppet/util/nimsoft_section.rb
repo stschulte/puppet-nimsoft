@@ -45,7 +45,11 @@ class Puppet::Util::NimsoftSection
   def to_cfg(tabsize = 3, indent = 0)
     s = " "*tabsize*indent + "<#{name.gsub('/', '#')}>\n"
     @attribute_order.each do |key|
-      s +=  " "*tabsize*(indent+1) + "#{key} = #{@attributes[key]}\n"
+      if @attributes[key].to_s.empty?
+        s +=  " "*tabsize*(indent+1) + "#{key} =\n"
+      else
+        s +=  " "*tabsize*(indent+1) + "#{key} = #{@attributes[key]}\n"
+      end
     end
     @children.each { |c| s += c.to_cfg(tabsize, indent+1) }
     s +=  " "*tabsize*indent + "</#{name.gsub('/','#')}>\n"
