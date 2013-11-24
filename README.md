@@ -118,6 +118,30 @@ logfile is absent:
       size        => '< 10M'
     }
 
+#### nimsoft\_logmon\_profile
+
+The `nimsoft_logmon_profile` type can be used to describe a profile for
+the `logmon` probe. The logmon probe is able to monitor a logfile, to
+execute a command and check its error code, or to check a url. The
+`nimsoft_logmon_profile` type can currently only be used to monitor
+a logfile.
+
+Example:
+
+    nimsoft_logmon_profile { 'system log':
+      ensure       => present,
+      active       => yes,
+      file         => '/var/log/messages',
+      mode         => updates,
+      qos          => no,  # do not generate Quality of Service messages
+      alarm        => yes, # allow creation of alarm messages
+      alarm_maxsev => critical,
+    }
+
+Note that you are only defining the general profile here. You also
+have to add watcher rules for your profile. You can do that with
+an upcoming `nimsoft_logmon_watcher` resource type
+
 ### oracle probe
 
 #### nimsoft\_oracle\_connection
@@ -264,7 +288,7 @@ the probe GUI and then run `puppet resource agentil_template` to get the
 correct job ids and monitor ids. If you got these, you'll be able to define
 appropiate puppet resources.
 
-##### agentil\_system
+#### agentil\_system
 
 This resource can be used to describe an agentil system. If you are familiar
 with the probe GUI, these are basically your ABAP and SAP connectors and the
@@ -309,7 +333,7 @@ The system template should also be a correct merge of your non-system
 templates you have provided as for the `template` property as these will
 be shown in the probe GUI as assigned templates.
 
-##### agentil\_instance
+#### agentil\_instance
 
 The `agentil_instance` resource can be used to manage the customization of
 job 177 (instance availability) of a specified template. Let's assume you
@@ -331,7 +355,8 @@ Example:
     }
 
 
-#### Complete example
+Complete examples
+-----------------
 
 Helper scripts
 --------------
