@@ -73,15 +73,15 @@ Puppet::Type.type(:nimsoft_dirscan).provide(:nimsoft, :parent => Puppet::Provide
       if limit = size_condition[:limit] and type = size_condition[:type] and unit = size_condition[:unit]
         case type.intern
         when :le
-          "<= #{limit}#{unit[0].upcase}"
+          "<= #{limit}#{unit.chars.first.upcase}"
         when :ge
-          ">= #{limit}#{unit[0].upcase}"
+          ">= #{limit}#{unit.chars.first.upcase}"
         when :lt
-          "< #{limit}#{unit[0].upcase}"
+          "< #{limit}#{unit.chars.first.upcase}"
         when :gt
-          "> #{limit}#{unit[0].upcase}"
+          "> #{limit}#{unit.chars.first.upcase}"
         else
-          "#{limit}#{unit[0].upcase}"
+          "#{limit}#{unit.chars.first.upcase}"
         end
       end
     end
