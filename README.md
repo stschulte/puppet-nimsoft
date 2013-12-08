@@ -142,6 +142,25 @@ Note that you are only defining the general profile here. You also
 have to add watcher rules for your profile. You can do that with
 an upcoming `nimsoft_logmon_watcher` resource type
 
+#### nimsoft\_logmon\_watcher
+
+The `nimsoft_logmon_watcher` type can be used to describe a watcher rule for
+a specific logmon profile. A watcher rule describes a pattern that can appear
+in a logfile and describes the message that will be sent, if such an
+entry appears. A watcher rule does always belong to exactly one profile.
+
+Example:
+
+    nimsoft_logmon_watcher { 'system log/failed root login'
+      ensure   => present,
+      active   => yes,
+      match    => '/FAILED su for root by (.*)/',
+      message  => 'Possible breakin attempt detected: ${msg}',
+      severity => 'warning',
+    }
+
+The name of the resource must be of the for `profile_name/watcher_name`.
+
 ### oracle probe
 
 #### nimsoft\_oracle\_connection
