@@ -34,7 +34,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
     define_method(property) do
       if element
         if value = element.path(section)[attribute]
-          value = value.intern if symbolize
+          value = value.empty? ? :absent : value.intern if symbolize
           if block
             block.call(:get, value)
           else

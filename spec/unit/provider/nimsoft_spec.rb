@@ -44,7 +44,6 @@ describe Puppet::Provider::Nimsoft do
   end
 
   describe "map_property" do
-
     it "should create getter and setter" do
       described_class.map_property(:foo)
 
@@ -95,6 +94,19 @@ describe Puppet::Provider::Nimsoft do
 
       element.expects(:[]=).with(:foo, 'new_value')
       provider.foo = :new_value
+    end
+
+    it "should ignore empty values if symbolize is set" do
+      described_class.map_property(:foo, :symbolize => true)
+
+      provider = described_class.new(:name => 'foo', :element => element)
+      provider.should respond_to :foo
+
+      element.expects(:[]).with(:foo).returns ''
+      provider.foo.should == :absent
+
+      element.expects(:[]).with(:foo).returns nil
+      provider.foo.should == :absent
     end
 
     it "should use a provided block for value munging" do
