@@ -10,7 +10,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile).provider(:nimsoft), '(integr
       :name       => 'DEV',
       :ensure     => 'present',
       :active     => 'yes',
-      :connection => 'development',
+      :connection => 'development'
     )
   end
 
@@ -33,13 +33,20 @@ describe Puppet::Type.type(:nimsoft_oracle_profile).provider(:nimsoft), '(integr
 
   let :resource_create do
     Puppet::Type.type(:nimsoft_oracle_profile).new(
-      :name        => 'new profile',
-      :active      => :yes,
-      :description => 'A new profile',
-      :connection  => 'new connection',
-      :source      => 'host3.example.com',
-      :interval    => '30 min',
-      :heartbeat   => '20 sec'
+      :name                  => 'new profile',
+      :active                => :yes,
+      :description           => 'A new profile',
+      :connection            => 'new connection',
+      :source                => 'host3.example.com',
+      :interval              => '30 min',
+      :heartbeat             => '20 sec',
+      :clear_msg             => 'p_timeout_1',
+      :sql_timeout_msg       => 'sql_timeout_1',
+      :profile_timeout_msg   => 'p_timeout_1',
+      :severity              => 'major',
+      :profile_timeout       => '15 min',
+      :sql_timeout           => '30 sec',
+      :connection_failed_msg => 'connect_failed_1'
     )
   end
 

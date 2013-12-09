@@ -15,7 +15,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
       end
     end
 
-    [:ensure, :description, :active, :connection, :source, :interval, :heartbeat].each do |property|
+    [:ensure, :description, :active, :connection, :source, :interval, :heartbeat, :clear_msg, :sql_timeout_msg, :profile_timeout_msg, :severity, :profile_timeout, :sql_timeout, :connection_failed_msg].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -77,39 +77,43 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
       end
     end
 
-    describe "interval" do
-      it "should allow a timespan defined in seconds" do
-        described_class.new(:name => 'FOO', :interval => '10 sec')[:interval].should == '10 sec'
-      end
+    [:interval, :heartbeat, :profile_timeout, :sql_timeout].each do |time_property|
+      describe time_property.to_s do
+        it "should allow a timespan defined in seconds" do
+          described_class.new(:name => 'FOO', time_property => '10 sec')[time_property].should == '10 sec'
+        end
 
-      it "should allow a timespan defined in minutes" do
-        described_class.new(:name => 'FOO', :interval => '5 min')[:interval].should == '5 min'
-      end
+        it "should allow a timespan defined in minutes" do
+          described_class.new(:name => 'FOO', time_property => '5 min')[time_property].should == '5 min'
+        end
 
-      it "should not allow a negative number" do
-        expect { described_class.new(:name => 'FOO', :interval => '-5 min') }.to raise_error Puppet::Error, /interval must be a positive number and must be specified in "sec" or "min", not "-5 min"/
-      end
+        it "should not allow a negative number" do
+          expect { described_class.new(:name => 'FOO', time_property => '-5 min') }.to raise_error Puppet::Error, /#{time_property} must be a positive number and must be specified in "sec" or "min", not "-5 min"/
+        end
 
-      it "should not allow random text" do
-        expect { described_class.new(:name => 'FOO', :interval => '10 foo') }.to raise_error Puppet::Error, /interval must be a positive number and must be specified in "sec" or "min", not "10 foo"/
+        it "should not allow random text" do
+          expect { described_class.new(:name => 'FOO', time_property => '10 foo') }.to raise_error Puppet::Error, /#{time_property} must be a positive number and must be specified in "sec" or "min", not "10 foo"/
+        end
       end
     end
 
-    describe "heartbeat" do
-      it "should allow a timespan defined in seconds" do
-        described_class.new(:name => 'FOO', :heartbeat => '10 sec')[:heartbeat].should == '10 sec'
+    [:clear_msg, :profile_timeout_msg, :sql_timeout_msg, :connection_failed_msg].each do |msg_property|
+      describe msg_property.to_s do
+        it "should allow a message pool name" do
+          described_class.new(:name => 'FOO', msg_property => 'foo_timeout_1')[msg_property].should == 'foo_timeout_1'
+        end
+      end
+    end
+
+    describe "severity" do
+      [ :info, :warning, :minor, :major, :critical ].each do |criticality|
+        it "should support #{criticality}" do
+          described_class.new(:name => 'FOO', :severity => criticality.to_s)[:severity].should == criticality
+        end
       end
 
-      it "should allow a timespan defined in minutes" do
-        described_class.new(:name => 'FOO', :heartbeat => '5 min')[:heartbeat].should == '5 min'
-      end
-
-      it "should not allow a negative number" do
-        expect { described_class.new(:name => 'FOO', :heartbeat => '-5 min') }.to raise_error Puppet::Error, /heartbeat must be a positive number and must be specified in "sec" or "min", not "-5 min"/
-      end
-
-      it "should not allow random text" do
-        expect { described_class.new(:name => 'FOO', :heartbeat => '10 foo') }.to raise_error Puppet::Error, /heartbeat must be a positive number and must be specified in "sec" or "min", not "10 foo"/
+      it "should not allow something else" do
+        expect { described_class.new(:name => 'FOO', :severity => 'fatal') }.to raise_error Puppet::Error, /Invalid value/
       end
     end
   end

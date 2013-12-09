@@ -45,6 +45,7 @@ Puppet::Type.newtype(:nimsoft_oracle_profile) do
   newproperty(:heartbeat) do
     desc "Specifies the interval at which all checkpoint schedules
       will be tested and trigger eventual checkpoint executions."
+
     validate do |value|
       unless /^\d+ (sec|min)$/.match(value)
         raise Puppet::Error, "heartbeat must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
@@ -52,8 +53,52 @@ Puppet::Type.newtype(:nimsoft_oracle_profile) do
     end
   end
 
+  newproperty(:profile_timeout) do
+    desc "The timeout for the whole profile. Can be expressed in minutes
+      (e.g. `10 min`) or seconds (e.g. `30 sec`)"
+
+    validate do |value|
+      unless /^\d+ (sec|min)$/.match(value)
+        raise Puppet::Error, "profile_timeout must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
+      end
+    end
+  end
+
+  newproperty(:sql_timeout) do
+    desc "The timeout for each sql query that represents one checkpoint
+      Can be expressed in minutes (e.g. `10 min`) or seconds (e.g. `30 sec`)"
+
+    validate do |value|
+      unless /^\d+ (sec|min)$/.match(value)
+        raise Puppet::Error, "sql_timeout must be a positive number and must be specified in \"sec\" or \"min\", not #{value.inspect}"
+      end
+    end
+  end
+
+  newproperty(:profile_timeout_msg) do
+    desc "Messagename for profile timeout alarms"
+  end
+
+  newproperty(:sql_timeout_msg) do
+    desc "Messagename for sql timeout alarms"
+  end
+
+  newproperty(:clear_msg) do
+    desc "Messagename for timeout clear messages"
+  end
+
+  newproperty(:severity) do
+    desc "The severity used for timeout messages"
+    newvalues :info, :warning, :minor, :major, :critical
+  end
+
+  newproperty(:connection_failed_msg) do
+    desc "Messagename fot the message that should be sent in case no
+      connection to the database is possible"
+  end
+
   autorequire(:nimsoft_oracle_connection) do
     self[:connection]
   end
-      
+
 end
