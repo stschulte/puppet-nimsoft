@@ -161,6 +161,22 @@ Example:
 
 The name of the resource must be of the for `profile_name/watcher_name`.
 
+#### nimsoft\_process
+
+The `nimsoft_process` type can be used to describe a profile for the proceses
+probe. Example:
+
+    nimsoft_process { 'cron':
+      ensure      => present,
+      description => 'Make sure cron is running (managed by puppet)',
+      active      => yes,
+      pattern     => '/usr/sbin/cron',
+      match       => nameonly,
+      trackpid    => yes,
+      count       => '>= 1',
+      alarm_on    => [ 'down', 'restart' ],
+    }
+
 ### oracle probe
 
 #### nimsoft\_oracle\_connection
