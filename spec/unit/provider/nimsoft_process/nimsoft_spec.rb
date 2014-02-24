@@ -33,7 +33,7 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   let :provider do
     provider = described_class.new(:name => 'cron', :ensure => :present, :element => element)
     resource = Puppet::Type.type(:nimsoft_process).new(
-      :name => 'cron',
+      :name => 'cron'
     )
     resource.provider = provider
     provider
@@ -50,7 +50,7 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
       :pattern     => '/usr/sbin/console-kit-daemon --no-daemon',
       :match       => 'cmdline',
       :count       => '>= 1',
-      :alarm_on    => [ 'down', 'restart' ],
+      :alarm_on    => [ 'down', 'restart' ]
     )
     resource.provider = provider
     provider
