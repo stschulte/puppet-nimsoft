@@ -6,7 +6,6 @@ Puppet::Type.type(:nimsoft_process).provide(:nimsoft, :parent => Puppet::Provide
 
   map_property :active, :symbolize => :true
   map_property :trackpid, :attribute => :track_by_pid, :symbolize => :true
-  map_property :count
   map_property :description
   map_property :alarm_on, :attribute => :report do |action, value|
     case action
