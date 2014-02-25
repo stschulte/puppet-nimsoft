@@ -7,10 +7,7 @@ Puppet::Type.type(:nimsoft_disk).provide(:nimsoft, :parent => Puppet::Provider::
   map_property :active, :symbolize => true
   map_property :description
   map_property :device, :attribute => :disk
-  map_property :missing, :attribute => :active, :section => 'missing', :symbolize => :yes
-
-  map_property :warning, :attribute => :threshold, :section => 'warning'
-  map_property :critical, :attribute => :threshold, :section => 'error'
+  map_property :missing, :attribute => :active, :section => 'missing', :symbolize => true
 
   {
     :warning => 'warning',
