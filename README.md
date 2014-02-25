@@ -75,7 +75,7 @@ Make sure a certain device is not monitored:
 Set different thresholds on another device:
 
     nimsoft_disk { '/var':
-      ensure   => present
+      ensure   => present,
       warning  => 20,
       critical => 10,
     }
@@ -466,7 +466,7 @@ configuration file multiple times. So you can e.g. create a `cdm_disk` and a
 If you want to develop a new provider for a new custom type you should
 inherit from the `Puppet::Provider::Nimsoft` provider
 
-Let's take the `cdm_disk` as a step by step example. You'll first have to
+Let's take the `nimsoft_disk` as a step by step example. You'll first have to
 create the basic sketch of your provider:
 
     require 'puppet/provider/nimsoft'
@@ -483,25 +483,60 @@ of your custom type. The element title will be the `name` of that instance.
 
 At a class level you can use the classs method `root` to get a
 `Puppet::Util::NimsoftSection` object that represents the root section you
-have defined earlier and `config` to get the representation of your
+have defined earlier and `config` to get the representation the whole
 configuration file.
 
 Each provider instance can use the method `element` to get the subtree that
-is mapped to the provider instance.
+is mapped to the specific provider instance.
 
 You can modify the tree as you like and then run the class method
 `config.sync` to save your changes back to disk.
 
 In case each section within your `root` section represents a provider
 instance and in case your resource properties are simple attributes within
-these sections, you can use the method `map_fields` to save you a lot of
+these sections, you can use the method `map_property` to save you a lot of
 typing and create getter and setter methods.
+
+E.g. for our `nimsoft_disk` type every section within the root section `disk/alarm/fixed` represents
+one disk. The `description` attribute of each subsection can be mapped to a `description` property of
+our custom type, so let's modify our provider:
 
     require 'puppet/provider/nimsoft'
     Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
       register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
-      map_fields :active
-      map_fields :warning, :section => 'warning', :attribute => :threshold
-      map_fields :critical, :section => 'error', :attribute => :threshold
+      map_property :description
     end
 
+If the property name is different from the attribute name, we can define a custom attribute
+name.
+
+    require 'puppet/provider/nimsoft'
+    Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
+      register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
+      map_property :description
+      map_property :device, :attribute => :disk
+    end
+
+We can also define a section within the subtree:
+
+    require 'puppet/provider/nimsoft'
+    Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
+      register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
+      map_property :description
+      map_property :device, :attribute => :disk
+      map_property :warning, :section => 'warning', :attribute => :threshold
+      map_property :critical, :section => 'error', :attribute => :threshold
+    end
+
+and we can also instruct the provider to symbolize the attribute value:
+
+    require 'puppet/provider/nimsoft'
+    Puppet::Type.type(:nimsoft_cdm_disk).provide(:nimsoft, :parent => Puppet::Provider::Nimsoft) do
+      register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
+      map_property :description
+      map_property :device, :attribute => :disk
+      map_property :warning, :section => 'warning', :attribute => :threshold
+      map_property :critical, :section => 'error', :attribute => :threshold
+      map_property :active, :symbolize => true
+      map_property :missing, :attribute => :active, :section => 'missing', :symbolize => :yes
+    end
