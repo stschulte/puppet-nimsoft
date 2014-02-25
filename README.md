@@ -75,8 +75,19 @@ Make sure a certain device is not monitored:
 Set different thresholds on another device:
 
     nimsoft_disk { '/var':
-      warning => 10,
-      error   => 20,
+      ensure   => present
+      warning  => 20,
+      critical => 10,
+    }
+
+deactivate the warning threshold but make sure to raise an alarm when
+the device is absent
+
+    nimsoft_disk { '/var/lib/mysql':
+      ensure   => present,
+      warning  => absent,
+      critical => '10'
+      missing  => 'yes',
     }
 
 Use `puppet resource nimsoft_disk` on a machine with the cdm probe installed
