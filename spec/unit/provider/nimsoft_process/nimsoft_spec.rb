@@ -195,8 +195,8 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   end
 
   describe "when managing count" do
-    it "should return the correct value if type is eq" do
-      element[:process_count_type] = 'eq'
+    it "should return the correct value if type is equal" do
+      element[:process_count_type] = 'equal'
       element[:process_count] = '10'
       provider.count.should == '10'
     end
@@ -237,9 +237,9 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
       provider.count.should == '< 2'
     end
 
-    it "should set type to eq if new value has no prefix" do
+    it "should set type to equal if new value has no prefix" do
       element.expects(:[]=).with(:process_count, '123')
-      element.expects(:[]=).with(:process_count_type, 'eq')
+      element.expects(:[]=).with(:process_count_type, 'equal')
       provider.count = '123'
     end
 

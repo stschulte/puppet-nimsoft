@@ -90,7 +90,7 @@ Puppet::Type.type(:nimsoft_process).provide(:nimsoft, :parent => Puppet::Provide
         when '<'
           element[:process_count_type] = 'lt'
         else
-          element[:process_count_type] = 'eq'
+          element[:process_count_type] = 'equal'
         end
         element[:process_count] = match.captures[1]
       end
