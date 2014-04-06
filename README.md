@@ -379,28 +379,6 @@ The system template should also be a correct merge of your non-system
 templates you have provided as for the `template` property as these will
 be shown in the probe GUI as assigned templates.
 
-#### agentil\_instance
-
-The `agentil_instance` resource can be used to manage the customization of
-job 177 (instance availability) of a specified template. Let's assume you
-have one SAP System (SID=`PRO`) that consists of three application servers
-with two instances each. If you want to monitor the availability of all
-instances you'll first assign a template to the message server that includes
-job 177 (instance availability). You'll then create one `agentil_instance`
-resource for each of your six instances and to make sure they all appear
-in the job 177 customization.
-
-Example:
-
-    agentil_instance { 'PRO_sap01_00':
-      ensure      => present,
-      mandatory   => 'true',
-      criticality => 'major',
-      autoclear   => 'false',
-      template    => 'System template for System sap01'
-    }
-
-
 Complete examples
 -----------------
 
