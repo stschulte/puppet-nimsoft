@@ -2,13 +2,25 @@
 
 # Author: Stefan Schulte
 
-# Restarts a nimsoft probe by name. This script assumes that
-# we just have to kill the specified probe and the controller
-# will automaticall restart it
+# Restarts a nimsoft probe by name.
+#
+# Since we do not want to hardcode any nimsoft account in this
+# script, we cannot use native nimsoft callbacks to tell the controller
+# to restart a specific probe directly. Instead we just kill the
+# probe process and assume that the controller will restart it.
+#
+# It turns out this works pretty reliable and often better than
+# nimsoft's native way to restart a probe :-)
+#
+# As a drawback this does only works for running probes. If the probe does
+# not run already, we'll have no way to tell the controller probe
+# to start it.
 
 myself=$0
 myname=`basename "$0"`
 
+# in this file the controller keeps track of its spawned
+# child processes
 PID_FILE=/opt/nimsoft/pids/nimbus-0.pids
 
 print_usage() {
@@ -27,14 +39,21 @@ get_probe_pid() {
   _probe_status=3
 
   if [ -r "$PID_FILE" ]; then
-    exec 5<&0 <"$PID_FILE"
+    # Sadly we cannot run the loop as
+    # while read _line; do
+    #   .. do stuff ..
+    # done < $PID_FILE
+    # because this spawns a subshell on solaris 10 so we cannot
+    # modify any variables inside the loop. So first redirect
+    # our pidfile to stdin and use plain read.
     _line_no=0
+    exec 5<&0 <"$PID_FILE"
     while read _line; do
       _line_no=`expr $_line_no + 1`
       case "$_line" in
         '</'*'>')
           if [ -z "$_name" ] || [ -z "$_pid" ]; then
-            echo "${myname}: Unexpected end of section in line ${_line_no}. Name or command is missing" 1>&2
+            echo "${myname}: Unexpected end of section in line ${_line_no}. Name or pid is missing" 1>&2
           else
             if [ "$_name" = "$_probe_name" ]; then
               _probe_pid=$_pid
@@ -53,6 +72,8 @@ get_probe_pid() {
           _pid=
           ;;
         *'='*)
+          # Solaris' sed implementation does not support \s* so we use a character
+          # class of [<SPACE><TAB>]
           _key=`echo $_line | /bin/sed -n 's/^[ 	]*\([^ 	]*\)[ 	]*=[ 	]*\([^ 	]*\)[ 	]*$/\1/p'`
           _value=`echo $_line | /bin/sed -n 's/^[ 	]*\([^ 	]*\)[ 	]*=[ 	]*\([^ 	]*\)[ 	]*$/\2/p'`
           case "$_key" in
