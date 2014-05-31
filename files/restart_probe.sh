@@ -23,16 +23,6 @@ myname=`basename "$0"`
 # child processes
 PID_FILE=/opt/nimsoft/pids/nimbus-0.pids
 
-print_usage() {
-  cat << USAGE
-Usage: ${myself} [PROBENAME]
-
-Restart the specified probe. This script will kill the specified probe
-and wait for its termination. It will also wait until the controller
-restarts the probe.
-USAGE
-}
-
 get_probe_pid() {
   _probe_name=$1
   _probe_pid=0
@@ -104,7 +94,13 @@ get_probe_pid() {
 
 
 if [ $# -ne 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-  print_usage
+  cat << USAGE
+Usage: ${myself} [PROBENAME]
+
+Restart the specified probe. This script will kill the specified probe
+and wait for its termination. It will also wait until the controller
+restarts the probe.
+USAGE
   exit 0
 fi
 
