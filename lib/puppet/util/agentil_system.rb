@@ -1,96 +1,45 @@
-require 'puppet/util/nimsoft_config'
-require 'puppet/util/nimsoft_section'
+require 'puppet/util/agentil'
 require 'puppet/util/agentil_landscape'
-require 'puppet/util/agentil_user'
 require 'puppet/util/agentil_template'
+require 'puppet/util/agentil_user'
 
 class Puppet::Util::AgentilSystem
 
-  attr_reader :name, :element
+  attr_reader :id, :element, :user_id, :system_template_id
 
-  def self.filename
-    '/opt/nimsoft/probes/application/sapbasis_agentil/sapbasis_agentil.cfg'
+  def self.registry
+    Puppet::Util::Agentil
   end
 
-  def self.initvars
-    @config = nil
-    @loaded = false
-    @systems = {}
+  def registry
+    Puppet::Util::Agentil
   end
 
-  def self.config
-    unless @config
-      @config = Puppet::Util::NimsoftConfig.add(filename)
-      @config.tabsize = 4
-    end
-    @config
-  end
-
-  def self.root
-    config.path('PROBE/SYSTEMS')
-  end
-
-  def self.parse
-    config.parse unless config.loaded?
-    @systems = {}
-    root.children.each do |element|
-      add(element[:NAME], element)
-    end
-    @loaded = true
-  end
-
-  def self.loaded?
-    @loaded
-  end
-
-  def self.sync
-    config.sync
-  end
-
-  def self.add(name, element = nil)
-    unless @systems.include? name
-      if element.nil?
-        element_name = "SYSTEM#{root.children.size + 1}"
-        element = Puppet::Util::NimsoftSection.new(element_name, root)
-      end
-      @systems[name] = new(name, element)
-    end
-    @systems[name]
-  end
-
-  def self.del(name)
-    if system = @systems.delete(name)
-      root.children.delete system.element
-      root.children.each_with_index do |child, index|
-        child.name = sprintf "SYSTEM%d", index+1
-      end
-    end
-  end
-
-  def self.systems
-    parse unless loaded?
-    @systems
-  end
-
-  def self.genid
-    id = 1
-    taken_ids = systems.values.map(&:id)
-    while taken_ids.include? id
-      id += 1
-    end
-    id
-  end
-
-  def initialize(name, element)
-    @name = name
+  def initialize(id, element)
+    @id = id
     @element = element
-    @element[:NAME] = name
-    @element[:ID] ||= self.class.genid.to_s
-    @element[:ACTIVE] ||= 'true'
+    
+    if template_section = @element.child('TEMPLATES')
+      @template_ids = template_section.values_in_order.map(&:to_i)
+    else
+      @template_ids = []
+    end
+
+    if system_template_attribute = @element[:DEFAULT_TEMPLATE]
+      @system_template_id = system_template_attribute.to_i
+    end
+
+    if user_attribute = @element[:USER_PROFILE]
+      @user_id = user_attribute.to_i
+    end
   end
 
-  def id
-    @element[:ID].to_i
+  def name
+    @element[:NAME]
+  end
+
+  def name=(new_value)
+    @element[:NAME] = new_value
   end
 
   def host
@@ -172,107 +121,126 @@ class Puppet::Util::AgentilSystem
   end
 
   def landscape
-    match = Puppet::Util::AgentilLandscape.landscapes.values.select do |landscape|
-      landscape.assigned_systems.include? id
-    end.first
-    if match
-      match.name
+    if id = @element[:PARENT_ID]
+      if landscape = self.registry.landscapes[id.to_i]
+        landscape
+      else
+        raise Puppet::Error, "Landscape with id=#{id} could not be found"
+      end
+    else
+      raise Puppet::Error, "System does not have a PARENT_ID attribute"
     end
   end
 
   def landscape=(new_value)
-    if old_landscape = landscape
-      Puppet::Util::AgentilLandscape.landscapes[old_landscape].deassign_system id
+    new_landscape = case new_value
+    when Puppet::Util::AgentilLandscape
+      new_value
+    when Fixnum
+      self.registry.landscapes[new_value]
+    when String
+      self.registry.landscapes.values.find { |l| l.name == new_value }
     end
 
-    if new_landscape = Puppet::Util::AgentilLandscape.landscapes[new_value]
-      new_landscape.assign_system id
-      @element[:PARENT_ID] = new_landscape.id.to_s
-    else
-      raise Puppet::Error, "Landscape #{new_value} not found"
+    raise Puppet::Error, "Landscape #{new_value} not found" unless new_landscape
+
+    if landscape_id = @element[:PARENT_ID]
+      self.registry.landscapes[landscape_id.to_i].deassign_system id
     end
+      
+    new_landscape.assign_system id
+    @element[:PARENT_ID] = new_landscape.id.to_s
   end
 
   def templates
-    templates = []
-    if template_element = @element.child('TEMPLATES')
-      template_element.values_in_order.map(&:to_i).each do |assigned_id|
-        match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
-          template.id == assigned_id
-        end.first
-        if match
-          templates << match.name
-        end
+    @template_ids.map do |id|
+      if template = self.registry.templates[id]
+        template
+      else
+        raise Puppet::Error, "Template with id=#{id} could not be found"
       end
     end
-    templates
   end
 
-  def templates=(new_value)
-    if new_value.empty?
+  def templates=(new_values)
+    if new_values.empty?
       if template_element = @element.child('TEMPLATES')
         @element.children.delete(template_element)
+        @template_ids.clear
       end
     else
-      assigned_ids = new_value.map do |template_name|
-        match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
-          template.name == template_name
-        end.first
-        if match
-          match.id
-        else
-          raise Puppet::Error, "Template #{template_name} cannot be found"
+      @template_ids = new_values.map do |new_value|
+        template = case new_value
+        when Puppet::Util::AgentilTemplate
+          new_value
+        when Fixnum
+          self.registry.templates[new_value]
+        when String
+          self.registry.templates.values.find { |t| t.name == new_value }
         end
+
+        raise Puppet::Error, "Template #{new_value} not found" unless template
+        template.id
       end
+
       template_element = @element.path('TEMPLATES')
       template_element.clear_attr
-      assigned_ids.each_with_index do |id, index|
+      @template_ids.each_with_index do |id, index|
         template_element[sprintf("INDEX%03d", index).intern] = id.to_s
       end
     end
   end
 
-  def template
-    if @element[:DEFAULT_TEMPLATE] and assigned_id = @element[:DEFAULT_TEMPLATE].to_i
-      match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
-        template.id == assigned_id
-      end.first
-      if match
-        match.name
+  def system_template
+    if @system_template_id
+      if template = self.registry.templates[@system_template_id]
+        template
+      else
+        raise Puppet::Error, "System template with id=#{@system_template_id} not found"
       end
     end
   end
 
-  def template=(new_value)
-    match = Puppet::Util::AgentilTemplate.templates.values.select do |template|
-      template.name == new_value
-    end.first
-    if match
-      @element[:DEFAULT_TEMPLATE] = match.id.to_s
-    else
-      raise Puppet::Error, "Template #{new_value} not found"
+  def system_template=(new_value)
+    new_system_template = case new_value
+    when Puppet::Util::AgentilTemplate
+      new_value
+    when Fixnum
+      self.registry.templates[new_value]
+    when String
+      self.registry.templates.values.find { |t| t.name == new_value }
     end
+
+    raise Puppet::Error, "Template #{new_value} not found" unless new_system_template
+
+
+    @system_template_id = new_system_template.id
+    @element[:DEFAULT_TEMPLATE] = @system_template_id.to_s
   end
 
   def user
-    if @element[:USER_PROFILE] and assigned_id = @element[:USER_PROFILE].to_i
-      match = Puppet::Util::AgentilUser.users.values.select do |user|
-        user.id == assigned_id
-      end.first
-      if match
-        match.name
+    if @user_id
+      if user = self.registry.users[@user_id]
+        user
+      else
+        raise Puppet::Error, "User with id=#{@user_id} not found"
       end
     end
   end
 
   def user=(new_value)
-    match = Puppet::Util::AgentilUser.users.values.select do |user|
-      user.name == new_value
-    end.first
-    if match
-      @element[:USER_PROFILE] = match.id.to_s
-    else
-      raise Puppet::Error, "User #{new_value} not found"
+    new_user = case new_value
+    when Puppet::Util::AgentilUser
+      new_value
+    when Fixnum
+      self.registry.users[new_value]
+    when String
+      self.registry.users.values.find { |u| u.name == new_value }
     end
+
+    raise Puppet::Error, "Unable to find user #{new_value}" unless new_user
+
+    @user_id = new_user.id
+    @element[:USER_PROFILE] = @user_id.to_s
   end
 end

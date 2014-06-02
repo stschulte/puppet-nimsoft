@@ -1,120 +1,52 @@
-require 'puppet/util/nimsoft_config'
-require 'puppet/util/nimsoft_section'
+require 'puppet/util/agentil'
+require 'puppet/util/agentil_job'
 
 class Puppet::Util::AgentilTemplate
 
-  attr_reader :name, :element, :custom_jobs
-
-  def self.filename
-    '/opt/nimsoft/probes/application/sapbasis_agentil/sapbasis_agentil.cfg'
+  attr_reader :id, :element, :custom_jobs, :assigned_system
+  
+  def self.registry
+    Puppet::Util::Agentil
   end
 
-  def self.initvars
-    @config = nil
-    @loaded = false
-    @templates = {}
+  def registry
+    Puppet::Util::Agentil
   end
 
-  def self.config
-    unless @config
-      @config = Puppet::Util::NimsoftConfig.add(filename)
-      @config.tabsize = 4
-    end
-    @config
-  end
-
-  def self.root
-    config.path('PROBE/TEMPLATES')
-  end
-
-  def self.parse
-    config.parse unless config.loaded?
-    @templates = {}
-    root.children.each do |element|
-      # Only catch custom templates which start with 1000000
-      if /^TEMPLATE1\d{6}$/.match(element.name)
-        add(element[:NAME], element)
-      end
-    end
-    @loaded = true
-  end
-
-  def self.loaded?
-    @loaded
-  end
-
-  def self.sync
-    config.sync
-  end
-
-  def self.add(name, element = nil)
-    unless @templates.include? name
-      if element.nil?
-        element_name = "TEMPLATE#{root.children.select { |c| /^TEMPLATE1\d{6}$/.match(c.name) }.size + 1000000}"
-        element = Puppet::Util::NimsoftSection.new(element_name, root)
-      end
-      @templates[name] = new(name, element)
-    end
-    @templates[name]
-  end
-
-  def self.del(name)
-    if user = @templates.delete(name)
-      root.children.delete user.element
-      root.children.select { |c| /^TEMPLATE1\d{6}$/.match(c.name) }.each_with_index do |child, index|
-        child.name = sprintf "TEMPLATE%d", index + 1000000
-      end
-    end
-  end
-
-  def self.templates
-    parse unless loaded?
-    @templates
-  end
-
-  def self.genid
-    id = 1000000
-    taken_ids = templates.values.map(&:id)
-    while taken_ids.include? id
-      id += 1
-    end
-    id
-  end
-
-  def initialize(name, element)
-    @name = name
+  def initialize(id, element, assigned_system = nil)
+    @id = id
     @element = element
-    @element[:NAME] = name
-    @element[:ID] ||= self.class.genid.to_s
-    @element[:VERSION] ||= '1'
 
-    @custom_jobs = []
+    @assigned_system = assigned_system
+
+    @custom_jobs = {}
     if cust = @element.child('CUSTO')
       cust.children.each do |child|
         if match = /^JOB(\d+)$/.match(child.name)
-          @custom_jobs << match.captures[0].to_i
+          jobid = child[:ID].to_i
+          @custom_jobs[jobid] = Puppet::Util::AgentilJob.new(id, child, self)
         end
       end
     end
   end
 
-  def id
-    @element[:ID].to_i
+  def name
+    @element[:NAME]
   end
 
-  def version
-    @element[:VERSION]
+  def name=(new_value)
+    @element[:NAME] = new_value
   end
 
-  def version=(new_value)
-    @element[:VERSION] = new_value
+  def system_template?
+    @element[:SYSTEM_TEMPLATE] and @element[:SYSTEM_TEMPLATE].downcase.intern == :true
   end
 
-  def system
+  def system_template
     @element[:SYSTEM_TEMPLATE].downcase.intern
   end
 
-  def system=(new_value)
+  def system_template=(new_value)
     @element[:SYSTEM_TEMPLATE] = new_value.to_s
   end
 
@@ -163,15 +95,14 @@ class Puppet::Util::AgentilTemplate
   end
 
   def customized?(jobid)
-    @custom_jobs.include?(jobid)
+    @custom_jobs.include? jobid
   end
 
   def add_custom_job(jobid)
-    @custom_jobs << jobid unless @custom_jobs.include? jobid
-    custom_job = @element.path("CUSTO/JOB#{jobid}")
-    custom_job[:ID] = jobid.to_s
-    custom_job[:CUSTOMIZED] = 'true'
-    custom_job
+    job = @element.path("CUSTO/JOB#{jobid}")
+    job[:ID] = jobid.to_s
+    job[:CUSTOMIZED] = 'true'
+    @custom_jobs[jobid] = Puppet::Util::AgentilJob.new(jobid, job, self)
   end
 
   def del_custom_job(jobid)

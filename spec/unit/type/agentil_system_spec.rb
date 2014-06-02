@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_system) do
       end
     end
 
-    [:sid, :host, :stack, :user, :client, :group, :landscape, :template, :templates, :ensure].each do |property|
+    [:sid, :host, :stack, :user, :client, :group, :landscape, :system_template, :templates, :ensure].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -170,13 +170,13 @@ describe Puppet::Type.type(:agentil_system) do
       end
     end
 
-    describe "template" do
-      it "should allow a simple word as a template" do
-        described_class.new(:name => 'foo', :template => 'MyTemplate')[:template].should == 'MyTemplate'
+    describe "system_template" do
+      it "should allow a simple word as a system_template" do
+        described_class.new(:name => 'foo', :system_template => 'MyTemplate')[:system_template].should == 'MyTemplate'
       end
 
-      it "should allow templates with spaces" do
-        described_class.new(:name => 'foo', :template => 'Custom ABAP Production')[:template].should == 'Custom ABAP Production'
+      it "should allow system_template with spaces" do
+        described_class.new(:name => 'foo', :system_template => 'Custom ABAP Production')[:system_template].should == 'Custom ABAP Production'
       end
     end
 
@@ -264,12 +264,12 @@ describe Puppet::Type.type(:agentil_system) do
 
     let :system do
       described_class.new(
-        :name      => 'sap01p.example.com',
-        :ensure    => :present,
-        :landscape => 'landscape01',
-        :user      => 'SAP_PROBE',
-        :template  => 'Template 1',
-        :templates => [ 'Template 2', 'Template 3']
+        :name             => 'sap01p.example.com',
+        :ensure           => :present,
+        :landscape        => 'landscape01',
+        :user             => 'SAP_PROBE',
+        :system_template  => 'Template 1',
+        :templates        => [ 'Template 2', 'Template 3']
       )
     end
 

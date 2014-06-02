@@ -3,9 +3,15 @@
         <USER1>
             ENCRYPTED_PASSWD = some_encrypted_stuff
             ID = 1
-            TITLE = SAP_PROBE
-            USER = SAP_PROBE
+            TITLE = SAP_PRO
+            USER = SAP_PRO
         </USER1>
+        <USER2>
+            ENCRYPTED_PASSWD = some_encrypted_stuff
+            ID = 2
+            TITLE = SAP_DEV
+            USER = SAP_DEV
+        </USER3>
     </USERS>
     <LANDSCAPES>
         <LANDSCAPE1>
@@ -16,6 +22,10 @@
             DESCRIPTION = managed by puppet
             ID = 1
             ACTIVE = true
+            <SYSTEMS>
+                INDEX000 = 1
+                INDEX001 = 3
+            </SYSTEMS>
         </LANDSCAPE1>
         <LANDSCAPE2>
             COMPANY = Company2
@@ -25,16 +35,17 @@
             DESCRIPTION = managed by puppet
             ID = 2
             ACTIVE = true
-            <SYSTEMS>
-                INDEX000 = 2
-            </SYSTEMS>
         </LANDSCAPE2>
     </LANDSCAPES>
     <TEMPLATES>
-        <TEMPLATE1000000>
+        <TEMPLATE1>
             NAME = Vendor template
+            ID = 1
+            SYSTEM_TEMPLATE = false
+        </TEMPLATE1>
+        <TEMPLATE1000000>
+            NAME = Custom Template
             ID = 1000000
-            VERSION = 1
             SYSTEM_TEMPLATE = false
         </TEMPLATE1000000>
         <TEMPLATE1000001>
@@ -50,20 +61,23 @@
             </JOBS>
             <MONITORS>
                 INDEX000 = 1
-                INDEX010 = 30
+                INDEX001 = 30
             </MONITORS>
             <CUSTO>
                 <JOB177>
                     ID = 177
                     CUSTOMIZED = true
                     <MANDATORY_INSTANCES>
-                        INDEX000 = true
+                        INDEX000 = false
+                        INDEX001 = true
                     </MANDATORY_INSTANCES>
                     <CRITICITIES>
-                        INDEX000 = 5
+                        INDEX000 = 3
+                        INDEX001 = 5
                     </CRITICITIES>
                     <AUTO_CLEARS>
-                        INDEX000 = true
+                        INDEX000 = false
+                        INDEX001 = true
                     </AUTO_CLEARS>
                     <EXPECTED_INSTANCES>
                         INDEX000 = sap01_PRO_00
@@ -80,8 +94,8 @@
             <JOBS>
                 INDEX000 = 79
                 INDEX001 = 78
-                INDEX002 = 600
-                INDEX003 = 601
+                INDEX048 = 600
+                INDEX049 = 601
             </JOBS>
             <MONITORS>
                 INDEX000 = 1
@@ -106,6 +120,36 @@
                 </JOB177>
             </CUSTO>
         </TEMPLATE1000002>
+        <TEMPLATE1000003>
+            NAME = System Template for system id 3
+            VERSION = 1
+            ID = 1000003
+            SYSTEM_TEMPLATE = true
+            <JOBS>
+                INDEX000 = 79
+                INDEX001 = 78
+                INDEX048 = 600
+                INDEX049 = 601
+            </JOBS>
+            <MONITORS>
+                INDEX000 = 1
+                INDEX010 = 30
+            </MONITORS>
+            <CUSTO>
+                <JOB177>
+                    ID = 177
+                    CUSTOMIZED = true
+                </JOB177>
+                <JOB79>
+                    ID = 79
+                    CUSTOMIZED = true
+                </JOB79>
+                <JOB78>
+                    ID = 78
+                    CUSTOMIZED = true
+                </JOB78>
+            </CUSTO>
+        </TEMPLATE1000003>
     </TEMPLATES>
     <SYSTEMS>
         <SYSTEM1>
@@ -117,7 +161,7 @@
             HOST = sap01.example.com
             ABAP_CLIENT_NUMBER = 000
             SECURE_MODE = false
-            DEFAULT_TEMPLATE = 1000002
+            DEFAULT_TEMPLATE = 1000001
             CCMS_STRICT_MODE = false
             ID = 1
             TYPE = 0
@@ -131,14 +175,15 @@
             ACTIVE = true
             PARENT_ID = 1
             <TEMPLATES>
-                INDEX000 = 1000001
+                INDEX000 = 1
+                INDEX001 = 1000000
             </TEMPLATES>
             <INSTANCE_IPS>
                 INDEX000 = 192.168.0.1
             </INSTANCE_IPS>
         </SYSTEM1>
         <SYSTEM2>
-            SYSTEM_ID = PRO
+            SYSTEM_ID = DEV
             MAX_INVALID_TIME = 180000
             MAX_RESPONSE_TIME = 30000
             USER_PROFILE = 1
@@ -160,11 +205,25 @@
             ACTIVE = true
             PARENT_ID = 1
             <TEMPLATES>
-                INDEX000 = 1000001
+                INDEX000 = 1000000
             </TEMPLATES>
             <INSTANCE_IPS>
                 INDEX000 = 192.168.0.2
             </INSTANCE_IPS>
         </SYSTEM2>
+        <SYSTEM3>
+            SYSTEM_ID = XXX
+            USER_PROFILE = 2
+            HOST = dummy.example.com
+            ABAP_CLIENT_NUMBER = 000
+            ID = 3
+            JAVA_ENABLED = false
+            GROUP = SPACE
+            NAME = XXX_dummy
+            LANGUAGE = EN
+            ABAP_ENABLED = true
+            ACTIVE = true
+            PARENT_ID = 1
+        </SYSTEM3>
     </SYSTEMS>
 </PROBE>

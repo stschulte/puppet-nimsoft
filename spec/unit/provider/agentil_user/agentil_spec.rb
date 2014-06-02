@@ -2,23 +2,26 @@
 
 require 'spec_helper'
 
+require 'puppet/util/agentil'
+require 'puppet/util/nimsoft_section'
+
 describe Puppet::Type.type(:agentil_user).provider(:agentil) do
 
   let :provider do
     described_class.new(
-      :name   => 'SAP_PROBE',
-      :ensure => :present,
-      :user   => user
+      :name         => 'SAP_PROBE',
+      :ensure       => :present,
+      :agentil_user => user
     )
   end
 
   let :user do
-    Puppet::Util::AgentilUser.new('SAP_PROBE', user_element)
+    Puppet::Util::AgentilUser.new(815, user_element)
   end
 
   let :user_element do
-    element = Puppet::Util::NimsoftSection.new('USER1')
-    element[:ID] = '1'
+    element = Puppet::Util::NimsoftSection.new('USER815')
+    element[:ID] = '815'
     element[:TITLE] = 'SAP_PROBE'
     element[:USER] = 'SAP_PROBE'
     element[:ENCRYPTED_PASSWD] = 'some_encrypted_stuff'
@@ -51,7 +54,8 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
     describe "create" do
       it "should add a new user" do
         resource
-        Puppet::Util::AgentilUser.expects(:add).with('SAP_PROBE').returns user
+        Puppet::Util::Agentil.expects(:add_user).returns user
+        user.expects(:name=).with 'SAP_PROBE'
         user.expects(:password=).with 'some_encrypted_stuff'
         provider.create
       end
@@ -69,7 +73,7 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
     describe "destroy" do
       it "should delete a user" do
         resource
-        Puppet::Util::AgentilUser.expects(:del).with('SAP_PROBE')
+        Puppet::Util::Agentil.expects(:del_user).with 815
         provider.destroy
       end
 
@@ -79,7 +83,7 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
           :ensure => 'absent'
         )
         resource.provider = provider
-        Puppet::Util::AgentilUser.expects(:del).with('SAP_PROBE')
+        Puppet::Util::Agentil.expects(:del_user).with 815
         provider.destroy
       end
     end
@@ -101,7 +105,7 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
 
   describe "flush" do
     it "should sync the configuration file" do
-      Puppet::Util::AgentilUser.expects(:sync)
+      Puppet::Util::Agentil.expects(:sync)
       provider.flush
     end
   end

@@ -1,98 +1,43 @@
-require 'puppet/util/nimsoft_config'
-require 'puppet/util/nimsoft_section'
+require 'puppet/util/agentil'
 
 class Puppet::Util::AgentilLandscape
 
-  attr_reader :name, :element, :assigned_systems
+  attr_reader :id, :element
 
-  def self.filename
-    '/opt/nimsoft/probes/application/sapbasis_agentil/sapbasis_agentil.cfg'
+  def self.registry
+    Puppet::Util::Agentil
   end
 
-  def self.initvars
-    @config = nil
-    @loaded = false
-    @landscapes = {}
+  def registry
+    Puppet::Util::Agentil
   end
 
-  def self.config
-    unless @config
-      @config = Puppet::Util::NimsoftConfig.add(filename)
-      @config.tabsize = 4
-    end
-    @config
-  end
-
-  def self.root
-    config.path('PROBE/LANDSCAPES')
-  end
-
-  def self.parse
-    config.parse unless config.loaded?
-    @landscapes = {}
-    root.children.each do |element|
-      add(element[:NAME], element)
-    end
-    @loaded = true
-  end
-
-  def self.loaded?
-    @loaded
-  end
-
-  def self.sync
-    config.sync
-  end
-
-  def self.add(name, element = nil)
-    unless @landscapes.include? name
-      if element.nil?
-        element_name = "LANDSCAPE#{root.children.size + 1}"
-        element = Puppet::Util::NimsoftSection.new(element_name, root)
-      end
-      @landscapes[name] = new(name, element)
-    end
-    @landscapes[name]
-  end
-
-  def self.del(name)
-    if landscape = @landscapes.delete(name)
-      root.children.delete landscape.element
-      root.children.each_with_index do |child, index|
-        child.name = sprintf "LANDSCAPE%d", index+1
-      end
-    end
-  end
-
-  def self.landscapes
-    parse unless loaded?
-    @landscapes
-  end
-
-  def self.genid
-    id = 1
-    taken_ids = landscapes.values.map(&:id)
-    while taken_ids.include? id
-      id += 1
-    end
-    id
-  end
-
-  def initialize(name, element)
-    @name = name
+  def initialize(id, element)
+    @id = id
     @element = element
-    @element[:NAME] = name
-    @element[:ID] ||= self.class.genid.to_s
-    @element[:ACTIVE] ||= 'true'
     if system_section = @element.child('SYSTEMS')
-      @assigned_systems = system_section.values_in_order.map(&:to_i)
+      @system_ids = system_section.values_in_order.map(&:to_i)
     else
-      @assigned_systems = []
+      @system_ids = []
     end
   end
 
-  def id
-    @element[:ID].to_i
+  def name
+    @element[:NAME]
+  end
+
+  def name=(new_value)
+    @element[:NAME] = new_value
+  end
+
+  def systems
+    @system_ids.map do |id|
+      if system = self.registry.systems[id]
+        system
+      else
+        raise Puppet::Error, "System with id=#{id} could not be found"
+      end
+    end
   end
 
   def company
@@ -118,29 +63,33 @@ class Puppet::Util::AgentilLandscape
   def description=(new_value)
     @element[:DESCRIPTION] = new_value
   end
+  
+  def assigned_systems
+    @system_ids
+  end
 
-  def assign_system(system_id)
-    unless @assigned_systems.include? system_id
-      @assigned_systems << system_id
+  def assign_system(system)
+    unless @system_ids.include? system
+      @system_ids << system
       rebuild_systems_section
     end
   end
 
-  def deassign_system(system_id)
-    if @assigned_systems.delete(system_id)
+  def deassign_system(system)
+    if @system_ids.delete(system)
       rebuild_systems_section
     end
   end
 
   def rebuild_systems_section
-    if @assigned_systems.empty?
+    if @system_ids.empty?
       if systems_section = @element.child('SYSTEMS')
         @element.children.delete(systems_section)
       end
     else
       systems_section = @element.path('SYSTEMS')
       systems_section.clear_attr
-      @assigned_systems.each_with_index do |id, index|
+      @system_ids.each_with_index do |id, index|
         systems_section[sprintf("INDEX%03d", index).intern] = id.to_s
       end
     end

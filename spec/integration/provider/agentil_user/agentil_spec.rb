@@ -68,10 +68,10 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil), '(integration)' do
 
 
   before :each do
-    Puppet::Util::AgentilUser.initvars
     Puppet::Util::NimsoftConfig.initvars
+    Puppet::Util::Agentil.initvars
+    Puppet::Util::Agentil.stubs(:filename).returns input
     Puppet::Type.type(:agentil_user).stubs(:defaultprovider).returns described_class
-    Puppet::Util::AgentilUser.stubs(:filename).returns input
   end
 
   describe "ensure => absent" do
@@ -84,8 +84,9 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil), '(integration)' do
 
     describe "when resource is currently present" do
       it "should remove the resource" do
-        run_in_catalog(resource_destroy).changed?.should == [ resource_destroy ]
+        state = run_in_catalog(resource_destroy)
         File.read(input).should == File.read(my_fixture('output_remove.cfg'))
+        state.changed?.should == [ resource_destroy ]
       end
     end
   end

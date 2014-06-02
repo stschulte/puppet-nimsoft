@@ -36,6 +36,7 @@ class Puppet::Util::NimsoftConfig
   end
 
   def parse
+    Puppet.debug "parsing nimsoft configuration file #{@name}"
     if File.exists?(@name)
       current_section = self
       File.read(@name).each_line do |line|

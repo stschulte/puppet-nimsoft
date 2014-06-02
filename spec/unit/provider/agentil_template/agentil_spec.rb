@@ -6,14 +6,14 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   let :provider do
     described_class.new(
-      :name     => 'NEW_TEMPLATE',
-      :ensure   => :present,
-      :template => template
+      :name             => 'NEW_TEMPLATE',
+      :ensure           => :present,
+      :agentil_template => template
     )
   end
 
   let :template do
-    Puppet::Util::AgentilTemplate.new('NEW_TEMPLATE', template_element)
+    Puppet::Util::AgentilTemplate.new(1000001, template_element)
   end
 
   let :template_element do
@@ -51,8 +51,9 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "create" do
       it "should add a new template" do
         resource
-        Puppet::Util::AgentilTemplate.expects(:add).with('NEW_TEMPLATE').returns template
-        template.expects(:system=).with(:true)
+        Puppet::Util::Agentil.expects(:add_template).returns template
+        template.expects(:name=).with('NEW_TEMPLATE')
+        template.expects(:system_template=).with(:true)
         template.expects(:jobs=).with([ 122, 55 ])
         template.expects(:monitors=).with([ 22, 33 ])
         provider.create
@@ -71,7 +72,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "destroy" do
       it "should delete a template" do
         resource
-        Puppet::Util::AgentilTemplate.expects(:del).with('NEW_TEMPLATE')
+        Puppet::Util::Agentil.expects(:del_template).with(1000001)
         provider.destroy
       end
 
@@ -81,21 +82,21 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
           :ensure => 'absent'
         )
         resource.provider = provider
-        Puppet::Util::AgentilTemplate.expects(:del).with('NEW_TEMPLATE')
+        Puppet::Util::Agentil.expects(:del_template).with(1000001)
         provider.destroy
       end
     end
   end
 
-  [:system, :jobs, :monitors ].each do |property|
+  {:system => :system_template, :jobs => :jobs, :monitors => :monitors }.each_pair do |property, utilproperty|
     describe "when managing #{property}" do
-      it "should delegate the getter method to the AgentilUser object" do
-        template.expects(property).returns "value_for_#{property}"
+      it "should delegate the getter method to the #{utilproperty} AgentilTemplate object" do
+        template.expects(utilproperty).returns "value_for_#{property}"
         provider.send(property).should == "value_for_#{property}"
       end
 
-      it "should delegate the setter method to the AgentilUser object" do
-        template.expects("#{property}=".intern).with "value_for_#{property}"
+      it "should delegate the setter method to the #{utilproperty} AgentilTemplate object" do
+        template.expects("#{utilproperty}=".intern).with "value_for_#{property}"
         provider.send("#{property}=","value_for_#{property}")
       end
     end
@@ -103,7 +104,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   describe "flush" do
     it "should sync the configuration file" do
-      Puppet::Util::AgentilTemplate.expects(:sync)
+      Puppet::Util::Agentil.expects(:sync)
       provider.flush
     end
   end

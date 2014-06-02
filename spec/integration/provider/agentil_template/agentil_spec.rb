@@ -74,24 +74,26 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
 
 
   before :each do
-    Puppet::Util::AgentilTemplate.initvars
     Puppet::Util::NimsoftConfig.initvars
+    Puppet::Util::Agentil.initvars
+    Puppet::Util::Agentil.stubs(:filename).returns input
     Puppet::Type.type(:agentil_landscape).stubs(:defaultprovider).returns described_class
-    Puppet::Util::AgentilTemplate.stubs(:filename).returns input
   end
 
   describe "ensure => absent" do
     describe "when resource is currently absent" do
       it "should do nothing" do
-        run_in_catalog(resource_absent).changed?.should be_empty
+        state = run_in_catalog(resource_absent)
         File.read(input).should == File.read(my_fixture('sample.cfg'))
+        state.changed?.should be_empty
       end
     end
 
     describe "when resource is currently present" do
       it "should remove the resource" do
-        run_in_catalog(resource_destroy).changed?.should == [ resource_destroy ]
+        state = run_in_catalog(resource_destroy)
         File.read(input).should == File.read(my_fixture('output_remove.cfg'))
+        state.changed?.should == [ resource_destroy ]
       end
     end
   end
@@ -99,20 +101,23 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
   describe "ensure => present" do
     describe "when resource is currently absent" do
       it "should add the resource" do
-        run_in_catalog(resource_create).changed?.should == [ resource_create ]
+        state = run_in_catalog(resource_create)
         File.read(input).should == File.read(my_fixture('output_add.cfg'))
+        state.changed?.should == [ resource_create ]
       end
     end
 
     describe "when resource is currently present" do
       it "should do nothing if in sync" do
-        run_in_catalog(resource_present).changed?.should be_empty
+        state = run_in_catalog(resource_present)
         File.read(input).should == File.read(my_fixture('sample.cfg'))
+        state.changed?.should be_empty
       end
 
       it "should modify attributes if not in sync" do
-        run_in_catalog(resource_modify).changed?.should == [ resource_modify ]
+        state = run_in_catalog(resource_modify)
         File.read(input).should == File.read(my_fixture('output_modify.cfg'))
+        state.changed?.should == [ resource_modify ]
       end
     end
   end

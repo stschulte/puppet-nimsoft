@@ -1,11 +1,12 @@
-require 'puppet/util/agentil_landscape'
+require 'puppet/util/agentil'
 
 Puppet::Type.type(:agentil_landscape).provide(:agentil) do
 
   def self.instances
     instances = []
-    Puppet::Util::AgentilLandscape.landscapes.each do |name, landscape|
-      instances << new(:name => name, :ensure => :present, :landscape => landscape)
+    Puppet::Util::Agentil.parse unless Puppet::Util::Agentil.parsed?
+    Puppet::Util::Agentil.landscapes.each do |index, landscape|
+      instances << new(:name => landscape.name, :ensure => :present, :agentil_landscape => landscape)
     end
     instances
   end
@@ -24,28 +25,29 @@ Puppet::Type.type(:agentil_landscape).provide(:agentil) do
 
   def create
     raise Puppet::Error, "Unable to create a new landscape with no sid beeing specified" unless resource[:sid]
-    new_landscape = Puppet::Util::AgentilLandscape.add name
+    new_landscape = Puppet::Util::Agentil.add_landscape
+    new_landscape.name = resource[:name]
     new_landscape.sid = resource[:sid]
     new_landscape.company = resource[:company] if resource[:company]
     new_landscape.description = resource[:description] if resource[:description]
-    @property_hash[:landscape] = new_landscape
+    @property_hash[:agentil_landscape] = new_landscape
   end
 
   def destroy
-    Puppet::Util::AgentilLandscape.del name
+    Puppet::Util::Agentil.del_landscape @property_hash[:agentil_landscape].id
+    @property_hash.delete :agentil_landscape
   end
 
   [:sid, :description, :company].each do |prop|
     define_method(prop) do
-      @property_hash[:landscape].send(prop)
+      @property_hash[:agentil_landscape].send(prop)
     end
     define_method("#{prop}=") do |new_value|
-      @property_hash[:landscape].send("#{prop}=", new_value)
+      @property_hash[:agentil_landscape].send("#{prop}=", new_value)
     end
   end
 
   def flush
-    Puppet::Util::AgentilLandscape.sync
+    Puppet::Util::Agentil.sync
   end
-
 end
