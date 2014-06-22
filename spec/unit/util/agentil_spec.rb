@@ -61,7 +61,7 @@ describe Puppet::Util::Agentil do
 
     it "should create a hash of landscapes" do
       described_class.parse
-      described_class.should have(2).landscapes
+      expect(described_class.landscapes.size).to eq(2)
 
       landscapes = described_class.landscapes
       landscapes.keys.should =~ [ 1, 2 ]
@@ -72,7 +72,7 @@ describe Puppet::Util::Agentil do
 
     it "should create a hash of users" do
       described_class.parse
-      described_class.should have(3).users
+      expect(described_class.users.size).to eq(3)
 
       users = described_class.users
       users.keys.should =~ [ 1, 2, 3]
@@ -84,7 +84,7 @@ describe Puppet::Util::Agentil do
 
     it "should create a hash of systems" do
       described_class.parse
-      described_class.should have(3).systems
+      expect(described_class.systems.size).to eq(3)
 
       systems = described_class.systems
       systems.keys.should =~ [ 1, 2, 3 ]
@@ -96,7 +96,7 @@ describe Puppet::Util::Agentil do
 
     it "should create a hash of templates" do
       described_class.parse
-      described_class.should have(5).templates
+      expect(described_class.templates.size).to eq(5)
 
       templates = described_class.templates
       templates.keys.should =~ [ 1, 1000000, 1000001, 1000002, 1000003 ]
@@ -139,17 +139,17 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new landscape instance for an existing subtree" do
-      config.path('PROBE/LANDSCAPES').should have(2).children
+      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
       subtree = config.path('PROBE/LANDSCAPES/LANDSCAPE2')
       new_landscape = described_class.add_landscape(subtree)
       new_landscape.element.should == subtree
-      config.path('PROBE/LANDSCAPES').should have(2).children
+      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
     end
       
     it "should create a new subtree if no element is provided" do
-      config.path('PROBE/LANDSCAPES').should have(2).children
+      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
       new_landscape = described_class.add_landscape
-      config.path('PROBE/LANDSCAPES').should have(3).children
+      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(3)
       new_landscape.element.should == config.path('PROBE/LANDSCAPES/LANDSCAPE3')
     end
 
@@ -169,19 +169,19 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new system instance for an existing subtree" do
-      config.path('PROBE/SYSTEMS').should have(3).children
+      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
       subtree = config.path('PROBE/SYSTEMS/SYSTEM3')
 
       new_system = described_class.add_system(subtree)
 
       new_system.element.should == subtree
-      config.path('PROBE/SYSTEMS').should have(3).children
+      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
     end
       
     it "should create a new subtree if no element is provided" do
-      config.path('PROBE/SYSTEMS').should have(3).children
+      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
       new_system = described_class.add_system
-      config.path('PROBE/SYSTEMS').should have(4).children
+      expect(config.path('PROBE/SYSTEMS').children.size).to eq(4)
       new_system.element.should == config.path('PROBE/SYSTEMS/SYSTEM4')
     end
 
@@ -201,19 +201,19 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new user instance for an existing subtree" do
-      config.path('PROBE/USERS').should have(3).children
+      expect(config.path('PROBE/USERS').children.size).to eq(3)
       subtree = config.path('PROBE/SYSTEMS/USERS2')
 
       new_user = described_class.add_user(subtree)
 
       new_user.element.should == subtree
-      config.path('PROBE/USERS').should have(3).children
+      expect(config.path('PROBE/USERS').children.size).to eq(3)
     end
       
     it "should create a new subtree if no element is provided" do
-      config.path('PROBE/USERS').should have(3).children
+      expect(config.path('PROBE/USERS').children.size).to eq(3)
       new_user = described_class.add_user
-      config.path('PROBE/USERS').should have(4).children
+      expect(config.path('PROBE/USERS').children.size).to eq(4)
       new_user.element.should == config.path('PROBE/USERS/USER4')
     end
 
@@ -228,19 +228,19 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new template instance for an existing subtree" do
-      config.path('PROBE/TEMPLATES').should have(5).children
+      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
       subtree = config.path('PROBE/TEMPLATES/TEMPLATE1000003')
 
       new_template = described_class.add_template(subtree)
 
       new_template.element.should == subtree
-      config.path('PROBE/TEMPLATES').should have(5).children
+      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
     end
       
     it "should create a new subtree if no element is provided" do
-      config.path('PROBE/TEMPLATES').should have(5).children
+      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
       new_template = described_class.add_template
-      config.path('PROBE/TEMPLATES').should have(6).children
+      expect(config.path('PROBE/TEMPLATES').children.size).to eq(6)
       new_template.element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000004')
     end
 
