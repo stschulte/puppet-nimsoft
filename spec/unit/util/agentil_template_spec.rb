@@ -77,19 +77,19 @@ describe Puppet::Util::AgentilTemplate do
       custom_job = template.add_custom_job 600
       new_child = template.element.path('CUSTO').child('JOB600')
 
-      custom_job.element.should == new_child
+      custom_job.should == new_child
       new_child[:ID].should == '600'
       new_child[:CUSTOMIZED].should == 'true'
     end
 
-    it "should crate the custo section if it does not already exist" do
+    it "should create the custo section if it does not already exist" do
       new_template.element.child('CUSTO').should be_nil
       new_template.custom_jobs.keys.should be_empty
 
       custom_job = new_template.add_custom_job 177
 
       new_template.element.child('CUSTO').should_not be_nil
-      new_template.element.child('CUSTO').child('JOB177').should == custom_job.element
+      new_template.element.child('CUSTO').child('JOB177').should == custom_job
     end
   end
 

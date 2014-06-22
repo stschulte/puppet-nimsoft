@@ -1,9 +1,8 @@
 require 'puppet/util/agentil'
-require 'puppet/util/agentil_job'
 
 class Puppet::Util::AgentilTemplate
 
-  attr_reader :id, :element, :custom_jobs, :assigned_system
+  attr_reader :id, :element, :assigned_system
   
   def self.registry
     Puppet::Util::Agentil
@@ -18,16 +17,16 @@ class Puppet::Util::AgentilTemplate
     @element = element
 
     @assigned_system = assigned_system
+  end
 
-    @custom_jobs = {}
+  def custom_jobs
+    jobs = {}
     if cust = @element.child('CUSTO')
       cust.children.each do |child|
-        if match = /^JOB(\d+)$/.match(child.name)
-          jobid = child[:ID].to_i
-          @custom_jobs[jobid] = Puppet::Util::AgentilJob.new(id, child, self)
-        end
+        jobs[child[:ID].to_i] = child
       end
     end
+    jobs
   end
 
   def name
@@ -95,25 +94,23 @@ class Puppet::Util::AgentilTemplate
   end
 
   def customized?(jobid)
-    @custom_jobs.include? jobid
+    cust = @element.child('CUSTO') and cust.child("JOB#{jobid}")
   end
 
   def add_custom_job(jobid)
     job = @element.path("CUSTO/JOB#{jobid}")
     job[:ID] = jobid.to_s
     job[:CUSTOMIZED] = 'true'
-    @custom_jobs[jobid] = Puppet::Util::AgentilJob.new(jobid, job, self)
+    job
   end
 
   def del_custom_job(jobid)
-    if @custom_jobs.delete jobid
-      cust = @element.child('CUSTO')
-      if job = cust.child("JOB#{jobid}")
-        cust.children.delete(job)
-      end
-      if cust.children.empty?
-        @element.children.delete cust
-      end
+    cust = @element.child('CUSTO')
+    if job = cust.child("JOB#{jobid}")
+      cust.children.delete(job)
+    end
+    if cust.children.empty?
+      @element.children.delete cust
     end
   end
 end
