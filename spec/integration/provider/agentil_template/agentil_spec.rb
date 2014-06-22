@@ -53,6 +53,18 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
     )
   end
 
+  let :resource_add_tablespace do
+    Puppet::Type.type(:agentil_template).new(
+      :name            => 'System Template for system id 4',
+      :ensure          => 'present',
+      :system          => 'true',
+      :tablespace_used => {
+        "PSAPSR3"  => "98",
+        "PSAPUNDO" => "50"
+      }
+    )
+  end
+
   let :input do
     filename = tmpfilename('sapbasis_agentil.cfg')
     FileUtils.cp(my_fixture('sample.cfg'), filename)
@@ -118,6 +130,12 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
         state = run_in_catalog(resource_modify)
         File.read(input).should == File.read(my_fixture('output_modify.cfg'))
         state.changed?.should == [ resource_modify ]
+      end
+
+      it "should add tablespace customizations if necessary" do
+        state = run_in_catalog(resource_add_tablespace)
+        File.read(input).should == File.read(my_fixture('output_add_tablespace_customizations.cfg'))
+        state.changed?.should == [ resource_add_tablespace ]
       end
     end
   end

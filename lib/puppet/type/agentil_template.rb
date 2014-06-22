@@ -60,4 +60,30 @@ Puppet::Type.newtype(:agentil_template) do
       value.to_i
     end
   end
+
+  # Custom job 166
+  newproperty(:tablespace_used) do
+    desc "A Hashmap of tablespaces that should be monitored differently
+      than the rest. The hash should be of the form
+
+          tablespace_used => {
+            PSAPSR3  => 90,
+            PSAPUNDO => 50,
+          }"
+
+    validate do |value|
+      raise Puppet::Error, "Hash required of the form { tablespace => value_in_percent }" unless value.is_a? Hash
+      value.each_pair do |key,value|
+        raise Puppet::Error, "The tablespace #{key} has an invalid should value of #{value}. Must be an Integer" unless value.to_s =~ /^\d+$/
+      end
+    end
+
+    munge do |value|
+      new_hash = {}
+      value.each_pair do |key,value|
+        new_hash[key.intern] = value.to_i
+      end
+      new_hash
+    end
+  end
 end

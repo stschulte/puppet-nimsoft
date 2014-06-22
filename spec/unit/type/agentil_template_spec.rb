@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_template) do
       end
     end
 
-    [:system, :jobs, :monitors ].each do |property|
+    [:system, :jobs, :monitors, :tablespace_used ].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -78,6 +78,40 @@ describe Puppet::Type.type(:agentil_template) do
         expect { described_class.new(:name => 'foo', :jobs => '12a') }.to raise_error Puppet::Error, /job.*numeric/
         expect { described_class.new(:name => 'foo', :jobs => '1a2') }.to raise_error Puppet::Error, /job.*numeric/
         expect { described_class.new(:name => 'foo', :jobs => [ '12', '1a2' ]) }.to raise_error Puppet::Error, /job.*numeric/
+      end
+    end
+
+    describe "for tablespace_used" do
+      it "should not allow a single value" do
+        expect { described_class.new(:name => 'foo', :tablespace_used => 'PSAPSR3') }.to raise_error Puppet::Error, /Hash required/
+      end
+
+      it "should not allow an array" do
+        expect { described_class.new(:name => 'foo', :tablespace_used => [ 'PSAPSR3', 10 ]) }.to raise_error Puppet::Error, /Hash required/
+      end
+
+
+      it "should allow a hash of the form :tablespace_name => :used_in_percent" do
+        described_class.new(
+          :name            => 'foo',
+          :tablespace_used => {
+            'PSAPSR3'  => '90',
+            'PSAPUNDO' => '50'
+          }
+        )[:tablespace_used].should == {
+            :PSAPSR3  => 90,
+            :PSAPUNDO => 50
+        }
+      end
+
+      it "should should complain about a non numeric percentage value" do
+        expect { described_class.new(
+          :name            => 'foo',
+          :tablespace_used => {
+            'PSAPSR3'  => '90',
+            'PSAPUNDO' => '10%'
+          }
+        )}.to raise_error Puppet::Error, /The tablespace PSAPUNDO has an invalid should value of 10%\. Must be an Integer/
       end
     end
   end

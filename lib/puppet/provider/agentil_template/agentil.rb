@@ -62,6 +62,35 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     @property_hash[:agentil_template].system_template = new_value
   end
 
+  def tablespace_used
+    used = {}
+    if job = @property_hash[:agentil_template].custom_jobs[166] and parameters = job.child('PARAMETER_VALUES')
+      names = PSON.parse(parameters[:INDEX000])
+      values = PSON.parse(parameters[:INDEX001])
+
+      names.each_with_index do |tablespace, index|
+        used[tablespace.intern] = values[index].to_i
+      end
+    end
+    used
+  end
+
+  def tablespace_used=(new_value)
+    if new_value.empty?
+      @property_hash[:agentil_template].del_custom_job 166
+    else
+      job = @property_hash[:agentil_template].add_custom_job 166
+      names = []
+      values = []
+      new_value.each_pair do |tablespace, value|
+        names  << tablespace.to_s
+        values << value
+      end
+      job.path('PARAMETER_VALUES')[:INDEX000] = names.to_pson
+      job.path('PARAMETER_VALUES')[:INDEX001] = values.to_pson
+    end
+  end
+
   def flush
     Puppet::Util::Agentil.sync
   end

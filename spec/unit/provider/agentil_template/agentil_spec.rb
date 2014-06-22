@@ -23,6 +23,16 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     element
   end
 
+  let :tablespace_element do
+    element = Puppet::Util::NimsoftSection.new('JOB166')
+    element[:ID] = '166'
+    element[:CUSTOMIZED] = 'true'
+    element.path('PARAMETER_VALUES')[:INDEX000] = '["TBL1","TBL2","TBL3"]'
+    element.path('PARAMETER_VALUES')[:INDEX001] = '[90,95,92]'
+    element.path('PARAMETER_VALUES')[:INDEX002] = '80'
+    element
+  end
+
   let :resource do
     resource = Puppet::Type.type(:agentil_template).new(
       :name      => 'NEW_TEMPLATE',
@@ -99,6 +109,41 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
         template.expects("#{utilproperty}=".intern).with "value_for_#{property}"
         provider.send("#{property}=","value_for_#{property}")
       end
+    end
+  end
+
+  describe "when managing tablespace_used" do
+    it "should return an empty hash if job 166 is not modified" do
+      provider.tablespace_used.should == {}
+    end
+
+    it "should return a hash of the form { tablespace => value }" do
+      template.expects(:custom_jobs).returns({ 166 => tablespace_element })
+      provider.tablespace_used.should == {
+        :TBL1 => 90,
+        :TBL2 => 95,
+        :TBL3 => 92
+      }
+    end
+
+    it "should create a customization for job 166 if not already present" do
+      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
+      template.custom_jobs.should include 166
+      template.custom_jobs[166][:ID].should == '166'
+      template.custom_jobs[166][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX000].should == '["TBLA","TBLB"]'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX001].should == '[10,20]'
+    end
+
+    it "should update the parameters of job 166 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 166 => tablespace_element })
+      template.stubs(:add_custom_job).with(166).returns(tablespace_element)
+      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
+      template.custom_jobs.should include 166
+      template.custom_jobs[166][:ID].should == '166'
+      template.custom_jobs[166][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX000].should == '["TBLA","TBLB"]'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX001].should == '[10,20]'
     end
   end
 
