@@ -91,6 +91,40 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     end
   end
 
+  def expected_instances
+    if job = @property_hash[:agentil_template].custom_jobs[177] and parameters = job.child('EXPECTED_INSTANCES')
+      parameters.values_in_order
+    else
+      []
+    end
+  end
+
+  def expected_instances=(new_value)
+    if new_value.empty?
+      @property_hash[:agentil_template].del_custom_job 177
+    else
+      job = @property_hash[:agentil_template].add_custom_job 177
+
+      mandatory_instances_info = job.path('MANDATORY_INSTANCES')
+      criticality_info = job.path('CRITICITIES')
+      autoclear_info = job.path('AUTO_CLEARS')
+      expected_instances_info = job.path('EXPECTED_INSTANCES')
+
+      mandatory_instances_info.clear_attr
+      criticality_info.clear_attr
+      autoclear_info.clear_attr
+      expected_instances_info.clear_attr
+
+      new_value.each_with_index do |instance, index|
+        key = sprintf("INDEX%03d", index).intern
+        expected_instances_info[key] = instance
+        mandatory_instances_info[key] = 'true'
+        criticality_info[key] = '5'
+        autoclear_info[key] = 'true'
+      end
+    end
+  end
+
   def flush
     Puppet::Util::Agentil.sync
   end

@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_template) do
       end
     end
 
-    [:system, :jobs, :monitors, :tablespace_used ].each do |property|
+    [:system, :jobs, :monitors, :tablespace_used, :expected_instances ].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -112,6 +112,20 @@ describe Puppet::Type.type(:agentil_template) do
             'PSAPUNDO' => '10%'
           }
         )}.to raise_error Puppet::Error, /The tablespace PSAPUNDO has an invalid should value of 10%\. Must be an Integer/
+      end
+    end
+
+    describe "for expected_instances" do
+      it "should allow a single value" do
+        described_class.new(:name => 'foo', :expected_instances => 'sap01_PRO_00')[:expected_instances].should == ['sap01_PRO_00']
+      end
+
+      it "should allow an array of instances names" do
+        described_class.new(:name => 'foo', :expected_instances => [ 'sap01_PRO_00', 'sap01_PRO_01'])[:expected_instances].should == ['sap01_PRO_00', 'sap01_PRO_01']
+      end
+
+      it "should not allow whitespaces" do
+        expect { described_class.new(:name => 'foo', :expected_instances => 'sap01 PRO')}.to raise_error Puppet::Error, /instance.*must not contain any whitespace/
       end
     end
   end

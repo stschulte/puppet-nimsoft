@@ -86,4 +86,13 @@ Puppet::Type.newtype(:agentil_template) do
       new_hash
     end
   end
+
+  # Custom job 177
+  newproperty(:expected_instances, :array_matching => :all) do
+    desc "An array of expected instances. This customizes the job \"instance availability\""
+
+    validate do |value|
+      raise Puppet::Error, "instance #{value.inspect} must not contain any whitespace" if value =~ /\s/
+    end
+  end
 end

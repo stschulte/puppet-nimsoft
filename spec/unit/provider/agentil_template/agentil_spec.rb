@@ -33,6 +33,21 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     element
   end
 
+  let :instances_element do
+    element = Puppet::Util::NimsoftSection.new('JOB177')
+    element[:ID] = '177'
+    element[:CUSTOMIZED] = 'true'
+    element.path('MANDATORY_INSTANCES')[:INDEX000] = 'true'
+    element.path('MANDATORY_INSTANCES')[:INDEX001] = 'true'
+    element.path('CRITICITIES')[:INDEX000] = '5'
+    element.path('CRITICITIES')[:INDEX001] = '5'
+    element.path('AUTO_CLEARS')[:INDEX000] = 'true'
+    element.path('AUTO_CLEARS')[:INDEX001] = 'true'
+    element.path('EXPECTED_INSTANCES')[:INDEX000] = 'sap01_PRO_00'
+    element.path('EXPECTED_INSTANCES')[:INDEX001] = 'sap01_PRO_01'
+    element
+  end
+
   let :resource do
     resource = Puppet::Type.type(:agentil_template).new(
       :name      => 'NEW_TEMPLATE',
@@ -144,6 +159,39 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       template.custom_jobs[166][:CUSTOMIZED].should == 'true'
       template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX000].should == '["TBLA","TBLB"]'
       template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX001].should == '[10,20]'
+    end
+  end
+
+  describe "when managing expected_instances" do
+    it "should return an empty array if job 177 is not customized" do
+      provider.expected_instances.should == []
+    end
+
+    it "should return an array of expected instances if job 177 is customized" do
+      template.expects(:custom_jobs).returns({ 177 => instances_element })
+      provider.expected_instances.should == [ 'sap01_PRO_00', 'sap01_PRO_01']
+    end
+
+    it "should create a customization for job 177 if not already present" do
+      provider.expected_instances = [ 'i00', 'i01', 'i02']
+      template.custom_jobs[177][:ID].should == '177'
+      template.custom_jobs[177][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[177].child('MANDATORY_INSTANCES').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('CRITICITIES').attributes.should == { :INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
+      template.custom_jobs[177].child('AUTO_CLEARS').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('EXPECTED_INSTANCES').attributes.should == { :INDEX000 => 'i00', :INDEX001 => 'i01', :INDEX002 => 'i02' }
+    end
+
+    it "should update the customization for job 177 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 177 => instances_element })
+      template.stubs(:add_custom_job).with(177).returns(instances_element)
+      provider.expected_instances = [ 'i00', 'i01', 'i02']
+      template.custom_jobs[177][:ID].should == '177'
+      template.custom_jobs[177][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[177].child('MANDATORY_INSTANCES').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('CRITICITIES').attributes.should == { :INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
+      template.custom_jobs[177].child('AUTO_CLEARS').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('EXPECTED_INSTANCES').attributes.should == { :INDEX000 => 'i00', :INDEX001 => 'i01', :INDEX002 => 'i02' }
     end
   end
 
