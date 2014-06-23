@@ -82,9 +82,9 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
       job = @property_hash[:agentil_template].add_custom_job 166
       names = []
       values = []
-      new_value.each_pair do |tablespace, value|
+      new_value.keys.sort.each do |tablespace|
         names  << tablespace.to_s
-        values << value
+        values << new_value[tablespace]
       end
       job.path('PARAMETER_VALUES')[:INDEX000] = names.to_pson
       job.path('PARAMETER_VALUES')[:INDEX001] = values.to_pson

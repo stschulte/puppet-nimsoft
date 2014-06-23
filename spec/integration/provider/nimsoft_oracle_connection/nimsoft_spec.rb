@@ -10,7 +10,7 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
       :name     => 'development',
       :ensure   => 'present',
       :user     => 'devuser',
-      :password => 'foo',
+      :password => 'foo'
     )
   end
 
@@ -39,7 +39,7 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
       :password    => 'my password',
       :description => 'A new fancy connection',
       :retry       => '3',
-      :retry_delay => '4 min',
+      :retry_delay => '4 min'
     )
   end
 

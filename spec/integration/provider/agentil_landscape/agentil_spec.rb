@@ -36,7 +36,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
   let :resource_destroy_with_systems do
     Puppet::Type.type(:agentil_landscape).new(
       :name   => 'sapdev.example.com',
-      :ensure => 'absent',
+      :ensure => 'absent'
     )
   end
 

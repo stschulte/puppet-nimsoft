@@ -242,7 +242,7 @@ describe Puppet::Util::AgentilSystem do
       t2 = mock 'template2'
       Puppet::Util::Agentil.templates.expects(:[]).with(1).returns t1
       Puppet::Util::Agentil.templates.expects(:[]).with(1000000).returns t2
-      system.templates.should =~ [ t1, t2 ]
+      system.templates.should == [ t1, t2 ]
     end
 
     it "should raise an error if template cannot be found" do

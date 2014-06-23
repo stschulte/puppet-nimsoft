@@ -75,7 +75,7 @@ describe Puppet::Util::AgentilLandscape do
       system3 = mock 'system3'
       Puppet::Util::Agentil.systems.expects(:[]).with(1).returns system1
       Puppet::Util::Agentil.systems.expects(:[]).with(3).returns system3
-      landscape.systems.should =~ [ system1, system3 ]
+      landscape.systems.should == [ system1, system3 ]
     end
 
     it "should raise an error if a system cannot be found" do

@@ -8,7 +8,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
     described_class.new(
       :name              => 'sap01.example.com',
       :ensure            => :present,
-      :agentil_landscape => landscape,
+      :agentil_landscape => landscape
     )
   end
 

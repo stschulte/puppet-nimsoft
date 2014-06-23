@@ -89,7 +89,7 @@ class Puppet::Provider::Nimsoft < Puppet::Provider
   def create
     @property_hash[:element] = Puppet::Util::NimsoftSection.new(name, self.class.root)
     if self.class.resource_type
-      self.class.resource_type.validproperties.each do |attr|
+      self.class.resource_type.validproperties.sort.each do |attr|
         next if attr == :ensure
         if respond_to?("#{attr}=") and resource[attr]
           send("#{attr}=", resource[attr])
