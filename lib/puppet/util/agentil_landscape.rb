@@ -4,14 +4,6 @@ class Puppet::Util::AgentilLandscape
 
   attr_reader :id, :element
 
-  def self.registry
-    Puppet::Util::Agentil
-  end
-
-  def registry
-    Puppet::Util::Agentil
-  end
-
   def initialize(id, element)
     @id = id
     @element = element
@@ -32,7 +24,7 @@ class Puppet::Util::AgentilLandscape
 
   def systems
     @system_ids.map do |id|
-      if system = self.registry.systems[id]
+      if system = Puppet::Util::Agentil.systems[id]
         system
       else
         raise Puppet::Error, "System with id=#{id} could not be found"

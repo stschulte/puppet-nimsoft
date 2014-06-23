@@ -4,14 +4,6 @@ class Puppet::Util::AgentilTemplate
 
   attr_reader :id, :element, :assigned_system
   
-  def self.registry
-    Puppet::Util::Agentil
-  end
-
-  def registry
-    Puppet::Util::Agentil
-  end
-
   def initialize(id, element, assigned_system = nil)
     @id = id
     @element = element

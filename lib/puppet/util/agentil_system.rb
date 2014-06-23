@@ -7,14 +7,6 @@ class Puppet::Util::AgentilSystem
 
   attr_reader :id, :element, :user_id, :system_template_id
 
-  def self.registry
-    Puppet::Util::Agentil
-  end
-
-  def registry
-    Puppet::Util::Agentil
-  end
-
   def initialize(id, element)
     @id = id
     @element = element
@@ -122,7 +114,7 @@ class Puppet::Util::AgentilSystem
 
   def landscape
     if id = @element[:PARENT_ID]
-      if landscape = self.registry.landscapes[id.to_i]
+      if landscape = Puppet::Util::Agentil.landscapes[id.to_i]
         landscape
       else
         raise Puppet::Error, "Landscape with id=#{id} could not be found"
@@ -137,15 +129,15 @@ class Puppet::Util::AgentilSystem
     when Puppet::Util::AgentilLandscape
       new_value
     when Fixnum
-      self.registry.landscapes[new_value]
+      Puppet::Util::Agentil.landscapes[new_value]
     when String
-      self.registry.landscapes.values.find { |l| l.name == new_value }
+      Puppet::Util::Agentil.landscapes.values.find { |l| l.name == new_value }
     end
 
     raise Puppet::Error, "Landscape #{new_value} not found" unless new_landscape
 
     if landscape_id = @element[:PARENT_ID]
-      self.registry.landscapes[landscape_id.to_i].deassign_system id
+      Puppet::Util::Agentil.landscapes[landscape_id.to_i].deassign_system id
     end
       
     new_landscape.assign_system id
@@ -154,7 +146,7 @@ class Puppet::Util::AgentilSystem
 
   def templates
     @template_ids.map do |id|
-      if template = self.registry.templates[id]
+      if template = Puppet::Util::Agentil.templates[id]
         template
       else
         raise Puppet::Error, "Template with id=#{id} could not be found"
@@ -174,9 +166,9 @@ class Puppet::Util::AgentilSystem
         when Puppet::Util::AgentilTemplate
           new_value
         when Fixnum
-          self.registry.templates[new_value]
+          Puppet::Util::Agentil.templates[new_value]
         when String
-          self.registry.templates.values.find { |t| t.name == new_value }
+          Puppet::Util::Agentil.templates.values.find { |t| t.name == new_value }
         end
 
         raise Puppet::Error, "Template #{new_value} not found" unless template
@@ -193,7 +185,7 @@ class Puppet::Util::AgentilSystem
 
   def system_template
     if @system_template_id
-      if template = self.registry.templates[@system_template_id]
+      if template = Puppet::Util::Agentil.templates[@system_template_id]
         template
       else
         raise Puppet::Error, "System template with id=#{@system_template_id} not found"
@@ -206,9 +198,9 @@ class Puppet::Util::AgentilSystem
     when Puppet::Util::AgentilTemplate
       new_value
     when Fixnum
-      self.registry.templates[new_value]
+      Puppet::Util::Agentil.templates[new_value]
     when String
-      self.registry.templates.values.find { |t| t.name == new_value }
+      Puppet::Util::Agentil.templates.values.find { |t| t.name == new_value }
     end
 
     raise Puppet::Error, "Template #{new_value} not found" unless new_system_template
@@ -220,7 +212,7 @@ class Puppet::Util::AgentilSystem
 
   def user
     if @user_id
-      if user = self.registry.users[@user_id]
+      if user = Puppet::Util::Agentil.users[@user_id]
         user
       else
         raise Puppet::Error, "User with id=#{@user_id} not found"
@@ -233,9 +225,9 @@ class Puppet::Util::AgentilSystem
     when Puppet::Util::AgentilUser
       new_value
     when Fixnum
-      self.registry.users[new_value]
+      Puppet::Util::Agentil.users[new_value]
     when String
-      self.registry.users.values.find { |u| u.name == new_value }
+      Puppet::Util::Agentil.users.values.find { |u| u.name == new_value }
     end
 
     raise Puppet::Error, "Unable to find user #{new_value}" unless new_user
