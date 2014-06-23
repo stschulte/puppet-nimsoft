@@ -9,38 +9,46 @@ What is Nimsoft?
 
 Nimsoft Monitoring is a monitoring solution from CA Technologies.
 
-The basic pattern to monitor your server is to first install a
-robot (the agent software) on your target machine and once the connection
-to your master server (or nearest hub) is established, you can deploy probes
-onto your server. Each probe is repsonsible for a one or more dedicated
-areas like checking disk utilization (`cdm` probe) or parsing logfiles
-(`logmon` probe). A probe will most likely gather quality of service
-metrics (e.g. current disk utilization every 5 minutes) and send alarms
-when certain thresholds are exceeded (e.g. disk more than 90% full). Each probe
-is independet from another and will run as a seperate executable on the
-target machine.
+If you want to monitor a service with nimsoft, you'll first have to install a
+robot (the agent software) on your target machine or on a proxy machine (in
+case of agentless monitoring). Once the connection between the robot and your
+master server (or nearest nimsoft hub) is established, you can deploy probes
+onto your robot to monitor a specific service.
 
-The configuration of these probes is stored in flat configuration files
-(`<probename>.cfg`) and is always local to the server you want to monitor.
+Each probe that you deploy on a robot is responsible for one or more dedicated
+areas like checking disk and cpu utilization (`cdm` probe) or parsing logfiles
+for errors (`logmon` probe). Most probes will gather quality of server metrics
+(e.g. publish the current disk utilization every 5 minutes) and can also be
+configured to send alarms once a certain threshold is exceeded (e.g. one disk
+is more than 90% full). Each probe is independet from another and will run as a
+seperate process on your target machine.
+
+The configuration of these probes are stored in flat configuration files
+(`<probename>.cfg`) and are always local to the server you want to monitor.
+
+This is important for puppet to be able to change the monitoring policy
+for one server locally.
+
 
 Why managing nimsoft through puppet?
 ------------------------------------
-The aim of this repository is to publish puppet types and providers to
-be able to manage specific parts of your probe configuration files as
-puppet resources.
+The ultimate goal is free the administrator of any repetitive task that
+might occure when a new server is provisioned or decomissioned. The second
+goal is use the available puppet infrastructure (e.g. `hiera`) to give the
+consumers of your monitoring landscape the ability to tweak certain aspects
+of your monitoring configuration.
 
-Imagine you run a webserver with apache and naturally you use puppet
+Imagine you want to run an apache webserver and you already use puppet
 to make sure that the `apache` package is installed and the correct
-apache configuration files or vhosts are in place. Theres a good chance
-that the all the information needed to monitor your webserver through
-nimsoft is already available inside your apache module, e.g. the
-name of your `vhost` or the port your application is listening on,
-so it makes sense to hook your monitoring into your puppet manifests
-(e.g. checking your application with the `netconnect` probe and parsing
-your error logs with the `logmon` probe).
+apache configuration files or vhosts are in place. To setup the
+monitoring for this new website you need information that you
+probably already have in puppet, like the name of the vhost instance
+or the port your vhost is listening on (e.g. to monitor the website
+with the `netconnect` probe and parsing error logs with the `logmon`
+probe).
 
 So instead of seperating the provisioning process and the monitoring
-configuration, you will be able combine both, so the `apache` puppet
+configuration, you will now be able combine both, so the `apache` puppet
 class will automatically configure the necessary probes to setup the
 monitoring.
 
@@ -72,7 +80,7 @@ Make sure a certain device is not monitored:
       ensure => absent,
     }
 
-Set different thresholds on another device:
+Set explicit thresholds on another device:
 
     nimsoft_disk { '/var':
       ensure   => present,
@@ -80,7 +88,7 @@ Set different thresholds on another device:
       critical => 10,
     }
 
-deactivate the warning threshold but make sure to raise an alarm when
+deactivate the warning threshold and make sure to raise an alarm when
 the device is absent
 
     nimsoft_disk { '/var/lib/mysql':
@@ -90,8 +98,10 @@ the device is absent
       missing  => 'yes',
     }
 
-Use `puppet resource nimsoft_disk` on a machine with the cdm probe installed
-to get a list of all parameters.
+The `nimsoft_*` types all implement an `instances` method so
+you can run `puppet resource nimsoft_disk` on a machine with the cdm probe
+installed and see a list of all relevant parameters and how puppet interprets
+the current configuration file.
 
 #### nimsoft\_queue
 
@@ -238,18 +248,21 @@ autorequired and you do not have to define an explicit require.
 
 ### Agentil probe
 
-Agentil has developed the `sapbasis_agentil` probe that is able to monitor all
-your SAP instances. While the `sapbasis_agentil` configuratio file follows the
-same rules as any other nimsoft configuration file, it is special in the way
-how it handles arrays (e.g. one system can be assigned to more than one
-template) and it is able to establish references between landscapes, systems,
-users and templates by assiging numerical IDs to every landscape, system, etc.
-This way it is nearly impossible to use the native nimsoft deployment mechanism
-by overwriting cfg files with cfx files.
+The `sapbasis_agentil` probe can be used to monitor SAP instances. The probe
+is available trough CA but has been developed by Agentil.
 
-The custom types for handling different aspects of your `sapbasis_agentil`
-configuration file however is able to establish relationships, remove systems
-and landscapes, generating new ids for new systems etc.
+While the probe shares the same configuration file format as any other nimsoft
+probe (note: this is about to change and new versions use json as a
+configuration format) the configuration file is very special in how it
+represents arrays (e.g. one system can be assigned to more than one
+template) and references (e.g. system definition can reference a user definition)
+
+This way it is nearly impossible to use the native nimsoft deployment mechanism
+to make configuration changes.
+
+The custom types for handling different aspects of your `sapbasis_agentil` allow
+a very abstract view of the configuration file and are able to add/remove/modify
+systems and landscapes and creating the necessary relationships.
 
 #### agentil\_landscape
 
@@ -257,7 +270,7 @@ The `agentil_landscape` type can be used to describe a landscape (a landscape
 is like a container and describes one system identifier. Each landscape
 can consist of one or more systems). If you are familiar with the
 `sapbasis_agentil` probe interface, a landscape represents the first
-hierarchy level inside the configuratio GUI.
+hierarchy level inside the configuration GUI.
 
     agentil_landscape { 'sapdev.example.com'
       ensure      => present,
@@ -277,11 +290,12 @@ resources with `ensure => absent` for every assigned system, too.
 
 The `agentil_user` type can be used to describe a SAP user. The
 `sapbasis_agentil` probe needs a designated user to connect to your SAP
-systems in order to gether the different metrics. Instead of providing valid
+systems in order to gather the different metrics. Instead of providing valid
 credentials each time you add a SAP system, you can describe one user
 that is valid on every system and then simply reference this user in
-each of your system definitions. You of course also have one user
-for development, quality assurence and production if you like.
+each of your system definitions. You can also create multiple users if
+you want to use different credentials for production and developlment boxes
+for example.
 
 Example:
 
@@ -290,49 +304,54 @@ Example:
       password => 'encrypted_password',
     }
 
-*Note*: In order to get the encrypted password you currently have to set the
-password in the probe GUI once and check the configuration file afterwards.
-When you know the correct encrypted password, you can use puppet to make sure
-it stays the same.
+*Note*: The password encryption algorithm is not public. In order to get the encrypted
+password you currently have to set the password in the probe GUI manually and then check
+the configuration file afterwards. Once you know the encrypted reprensentation of your
+password, you can use puppet to make sure it stays the same.
 
 #### agentil\_template
 
 The `agentil_template` resource describes a template. A template consists of
 a collection of jobs and monitors to easily choose what aspects of your SAP
-system you want to monitor. There are actually three types of templates:
+system you want to monitor. There are three types of templates:
 
-1. Templates created by the probe vendor that are shipped with the probe
-   itself (the id 1 to 999999 are reserved for these ones)
-2. Custom templates starting with id 1000000.
-3. System templates
+1. Templates created by the probe vendor have an id between 1 and
+   999999 and are shipped together with the probe
+2. Custom templates starting with id 1000000. These are normally
+   created with the probe UI
+3. System templates which are implicit and cannot be seen directly in the
+   probe UI. A system templates inherits the monitors and jobs from the
+   assigned vendor and custom templates and also hold system specific
+   customizations. Each system has exactly one system template
 
-Vendor templates are completly ignored by the `agentil_template` type and you
-can only manage custom templates and system template. Here is how they work:
-In the probe GUI you can only see 1) and 2) so you will start by creating a
-custom template and (un)check the monitors that should apply to your systems.
-If you now assign this template to a group of systems, the probe GUI will
-implicitly create a system template for each individual system that is
-derived from the inital template. You can now define system specific
-customizations (e.g. a different threshold for a specific alarm) that
-will only modify the system template.
-
-You can now manage both templates through puppet, but be aware that you have
-to manage both the initial template and the system templates through puppet
-(puppet will not automically create or modify your system templates).
+The puppet type `agentil_template` currently ignores vendor templates completly
+but can be used to create custom templates and system templates. If you specify
+a system template you should not set `jobs` and `monitors` explicitly since these
+are inherited from the assigned templates. But you can use the `agentil_template`
+type to establish customizations like custom tablespace utilization thresholds.
 
 Example:
 
-    agentil_template { 'System template for System sap01':
+    agentil_template { 'Custom Template':
       ensure    => present,
-      system    => 'true',
+      system    => false,
       monitors  => [ 1, 4, 10, 20, 33 ],
       jobs      => [ 4, 5, 12, 177, 3 ],
+
+    agentil_template { 'System template for System sap01':
+      ensure             => present,
+      system             => true,
+      expected_instances => [ 'PRO_sap01_00', 'PRO_sap01_01' ],
+      tablespace_used    => {
+        'PSAPSR3'  => '80',
+        'PSAPUNDO' => '98',
+      },
     }
 
-The best way to define a template is currently to create the template through
-the probe GUI and then run `puppet resource agentil_template` to get the
-correct job ids and monitor ids. If you got these, you'll be able to define
-appropiate puppet resources.
+Again you can use `puppet resource agentil_template` on a system with a
+configured `sapbasis_agentil` probe and see how puppet interprets your
+configuration file.
+
 
 #### agentil\_system
 
@@ -347,22 +366,20 @@ You can also assign different templates that the probe GUI merges into
 a system template (with puppet you have to define both the original template
 and the system template).
 
-This can be expressed through puppet now:
-
 Example:
 
     agentil_system { 'PRO_sap01':
-      ensure    => present,
-      landscape => 'PRO',
-      sid       => 'PRO',
-      host      => 'sap01.example.com',
-      ip        => '192.168.0.1',
-      stack     => 'abap',
-      user      => 'SAP_PROBE',
-      client    => '000',
-      group     => 'LOGON_GROUP_01',
-      default   => 'System template for System sap01',
-      templates => [
+      ensure          => present,
+      landscape       => 'PRO',
+      sid             => 'PRO',
+      host            => 'sap01.example.com',
+      ip              => '192.168.0.1',
+      stack           => 'abap',
+      user            => 'SAP_PROBE',
+      client          => '000',
+      group           => 'LOGON_GROUP_01',
+      system_template => 'System template for System sap01',
+      templates       => [
         'Custom ABAP Production',
         'Custom ABAP Generic',
       ]
@@ -372,12 +389,6 @@ The landscape, the user and all templates have to be present so the puppet
 type is be able translate the names into the corresponding ids to create a
 valid configuration file. Puppet will raise an error if a name connot be
 found.
-
-Please note that you should provide a system template as the `default`
-property and this one is repsponsible to define the actual monitoring tasks.
-The system template should also be a correct merge of your non-system
-templates you have provided as for the `template` property as these will
-be shown in the probe GUI as assigned templates.
 
 Complete examples
 -----------------
