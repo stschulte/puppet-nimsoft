@@ -1,7 +1,8 @@
 #! /usr/bin/env ruby
 
 require 'spec_helper'
-require 'puppet/util/agentil_landscape'
+require 'puppet/util/agentil'
+require 'puppet/util/nimsoft_config'
 
 describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration)' do
   include PuppetlabsSpec::Files
@@ -29,6 +30,13 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
     Puppet::Type.type(:agentil_landscape).new(
       :name   => 'sap01.example.com',
       :ensure => 'absent'
+    )
+  end
+
+  let :resource_destroy_with_systems do
+    Puppet::Type.type(:agentil_landscape).new(
+      :name   => 'sapdev.example.com',
+      :ensure => 'absent',
     )
   end
 
@@ -73,10 +81,10 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
 
 
   before :each do
-    Puppet::Util::AgentilLandscape.initvars
     Puppet::Util::NimsoftConfig.initvars
+    Puppet::Util::Agentil.initvars
+    Puppet::Util::Agentil.stubs(:filename).returns input
     Puppet::Type.type(:agentil_landscape).stubs(:defaultprovider).returns described_class
-    Puppet::Util::AgentilLandscape.stubs(:filename).returns input
   end
 
   describe "ensure => absent" do
@@ -89,8 +97,15 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
 
     describe "when resource is currently present" do
       it "should remove the resource" do
-        run_in_catalog(resource_destroy).changed?.should == [ resource_destroy ]
+        state = run_in_catalog(resource_destroy)
         File.read(input).should == File.read(my_fixture('output_remove.cfg'))
+        state.changed?.should == [ resource_destroy ]
+      end
+
+      it "should remove the landscape and all systems" do
+        state = run_in_catalog(resource_destroy_with_systems)
+        File.read(input).should == File.read(my_fixture('output_remove_with_systems.cfg'))
+        state.changed?.should == [ resource_destroy_with_systems ]
       end
     end
   end
@@ -98,8 +113,9 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
   describe "ensure => present" do
     describe "when resource is currently absent" do
       it "should add the resource" do
-        run_in_catalog(resource_create).changed?.should == [ resource_create ]
+        state = run_in_catalog(resource_create)
         File.read(input).should == File.read(my_fixture('output_add.cfg'))
+        state.changed?.should == [ resource_create ]
       end
     end
 

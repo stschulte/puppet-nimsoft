@@ -99,7 +99,7 @@ Puppet::Type.newtype(:agentil_system) do
       automatically required."
   end
 
-  newproperty(:template) do
+  newproperty(:system_template) do
     desc "The name of the default template. This has to be a system
       template and is the one that actually defines what will be
       monitored"
@@ -125,7 +125,7 @@ Puppet::Type.newtype(:agentil_system) do
 
   autorequire(:agentil_template) do
     req = []
-    req << self[:template] if self[:template]
+    req << self[:system_template] if self[:system_template]
     req += self[:templates] if self[:templates]
     req
   end

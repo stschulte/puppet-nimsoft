@@ -6,19 +6,19 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
 
   let :provider do
     described_class.new(
-      :name      => 'sap01.example.com',
-      :ensure    => :present,
-      :landscape => landscape
+      :name              => 'sap01.example.com',
+      :ensure            => :present,
+      :agentil_landscape => landscape,
     )
   end
 
   let :landscape do
-    Puppet::Util::AgentilLandscape.new('sap01.example.com', landscape_element)
+    Puppet::Util::AgentilLandscape.new(43, landscape_element)
   end
 
   let :landscape_element do
-    element = Puppet::Util::NimsoftSection.new('LANDSCAPE1')
-    element[:ID] = 1
+    element = Puppet::Util::NimsoftSection.new('LANDSCAPE43')
+    element[:ID] = 43
     element[:NAME] = 'sap01.example.com'
     element[:SYSTEM_ID] = 'PRO'
     element[:MONITORTREE_MAXAGE] = '480'
@@ -56,7 +56,8 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
     describe "create" do
       it "should add a new landscape" do
         resource
-        Puppet::Util::AgentilLandscape.expects(:add).with('sap01.example.com').returns landscape
+        Puppet::Util::Agentil.expects(:add_landscape).returns landscape
+        landscape.expects(:name=).with 'sap01.example.com'
         landscape.expects(:sid=).with 'PRO'
         landscape.expects(:company=).with 'examplesoft'
         landscape.expects(:description=).with 'managed by puppet'
@@ -76,7 +77,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
     describe "destroy" do
       it "should delete a landscape" do
         resource
-        Puppet::Util::AgentilLandscape.expects(:del).with('sap01.example.com')
+        Puppet::Util::Agentil.expects(:del_landscape).with(43)
         provider.destroy
       end
 
@@ -86,7 +87,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
           :ensure      => :present
         )
         resource.provider = provider
-        Puppet::Util::AgentilLandscape.expects(:del).with('sap01.example.com')
+        Puppet::Util::Agentil.expects(:del_landscape).with 43
         provider.destroy
       end
     end
@@ -108,7 +109,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
 
   describe "flush" do
     it "should sync the configuration file" do
-      Puppet::Util::AgentilLandscape.expects(:sync)
+      Puppet::Util::Agentil.expects(:sync)
       provider.flush
     end
   end

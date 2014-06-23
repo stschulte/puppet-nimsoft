@@ -6,20 +6,45 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   let :provider do
     described_class.new(
-      :name     => 'NEW_TEMPLATE',
-      :ensure   => :present,
-      :template => template
+      :name             => 'NEW_TEMPLATE',
+      :ensure           => :present,
+      :agentil_template => template
     )
   end
 
   let :template do
-    Puppet::Util::AgentilTemplate.new('NEW_TEMPLATE', template_element)
+    Puppet::Util::AgentilTemplate.new(1000001, template_element)
   end
 
   let :template_element do
     element = Puppet::Util::NimsoftSection.new('TEMPLATE1000000')
     element[:ID] = '1000001'
     element[:NAME] = 'NEW_TEMPLATE'
+    element
+  end
+
+  let :tablespace_element do
+    element = Puppet::Util::NimsoftSection.new('JOB166')
+    element[:ID] = '166'
+    element[:CUSTOMIZED] = 'true'
+    element.path('PARAMETER_VALUES')[:INDEX000] = '["TBL1","TBL2","TBL3"]'
+    element.path('PARAMETER_VALUES')[:INDEX001] = '[90,95,92]'
+    element.path('PARAMETER_VALUES')[:INDEX002] = '80'
+    element
+  end
+
+  let :instances_element do
+    element = Puppet::Util::NimsoftSection.new('JOB177')
+    element[:ID] = '177'
+    element[:CUSTOMIZED] = 'true'
+    element.path('MANDATORY_INSTANCES')[:INDEX000] = 'true'
+    element.path('MANDATORY_INSTANCES')[:INDEX001] = 'true'
+    element.path('CRITICITIES')[:INDEX000] = '5'
+    element.path('CRITICITIES')[:INDEX001] = '5'
+    element.path('AUTO_CLEARS')[:INDEX000] = 'true'
+    element.path('AUTO_CLEARS')[:INDEX001] = 'true'
+    element.path('EXPECTED_INSTANCES')[:INDEX000] = 'sap01_PRO_00'
+    element.path('EXPECTED_INSTANCES')[:INDEX001] = 'sap01_PRO_01'
     element
   end
 
@@ -51,8 +76,9 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "create" do
       it "should add a new template" do
         resource
-        Puppet::Util::AgentilTemplate.expects(:add).with('NEW_TEMPLATE').returns template
-        template.expects(:system=).with(:true)
+        Puppet::Util::Agentil.expects(:add_template).returns template
+        template.expects(:name=).with('NEW_TEMPLATE')
+        template.expects(:system_template=).with(:true)
         template.expects(:jobs=).with([ 122, 55 ])
         template.expects(:monitors=).with([ 22, 33 ])
         provider.create
@@ -71,7 +97,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "destroy" do
       it "should delete a template" do
         resource
-        Puppet::Util::AgentilTemplate.expects(:del).with('NEW_TEMPLATE')
+        Puppet::Util::Agentil.expects(:del_template).with(1000001)
         provider.destroy
       end
 
@@ -81,29 +107,97 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
           :ensure => 'absent'
         )
         resource.provider = provider
-        Puppet::Util::AgentilTemplate.expects(:del).with('NEW_TEMPLATE')
+        Puppet::Util::Agentil.expects(:del_template).with(1000001)
         provider.destroy
       end
     end
   end
 
-  [:system, :jobs, :monitors ].each do |property|
+  {:system => :system_template, :jobs => :jobs, :monitors => :monitors }.each_pair do |property, utilproperty|
     describe "when managing #{property}" do
-      it "should delegate the getter method to the AgentilUser object" do
-        template.expects(property).returns "value_for_#{property}"
+      it "should delegate the getter method to the #{utilproperty} AgentilTemplate object" do
+        template.expects(utilproperty).returns "value_for_#{property}"
         provider.send(property).should == "value_for_#{property}"
       end
 
-      it "should delegate the setter method to the AgentilUser object" do
-        template.expects("#{property}=".intern).with "value_for_#{property}"
+      it "should delegate the setter method to the #{utilproperty} AgentilTemplate object" do
+        template.expects("#{utilproperty}=".intern).with "value_for_#{property}"
         provider.send("#{property}=","value_for_#{property}")
       end
     end
   end
 
+  describe "when managing tablespace_used" do
+    it "should return an empty hash if job 166 is not modified" do
+      provider.tablespace_used.should == {}
+    end
+
+    it "should return a hash of the form { tablespace => value }" do
+      template.expects(:custom_jobs).returns({ 166 => tablespace_element })
+      provider.tablespace_used.should == {
+        :TBL1 => 90,
+        :TBL2 => 95,
+        :TBL3 => 92
+      }
+    end
+
+    it "should create a customization for job 166 if not already present" do
+      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
+      template.custom_jobs.should include 166
+      template.custom_jobs[166][:ID].should == '166'
+      template.custom_jobs[166][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX000].should == '["TBLA","TBLB"]'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX001].should == '[10,20]'
+    end
+
+    it "should update the parameters of job 166 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 166 => tablespace_element })
+      template.stubs(:add_custom_job).with(166).returns(tablespace_element)
+      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
+      template.custom_jobs.should include 166
+      template.custom_jobs[166][:ID].should == '166'
+      template.custom_jobs[166][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX000].should == '["TBLA","TBLB"]'
+      template.custom_jobs[166].child('PARAMETER_VALUES')[:INDEX001].should == '[10,20]'
+    end
+  end
+
+  describe "when managing expected_instances" do
+    it "should return an empty array if job 177 is not customized" do
+      provider.expected_instances.should == []
+    end
+
+    it "should return an array of expected instances if job 177 is customized" do
+      template.expects(:custom_jobs).returns({ 177 => instances_element })
+      provider.expected_instances.should == [ 'sap01_PRO_00', 'sap01_PRO_01']
+    end
+
+    it "should create a customization for job 177 if not already present" do
+      provider.expected_instances = [ 'i00', 'i01', 'i02']
+      template.custom_jobs[177][:ID].should == '177'
+      template.custom_jobs[177][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[177].child('MANDATORY_INSTANCES').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('CRITICITIES').attributes.should == { :INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
+      template.custom_jobs[177].child('AUTO_CLEARS').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('EXPECTED_INSTANCES').attributes.should == { :INDEX000 => 'i00', :INDEX001 => 'i01', :INDEX002 => 'i02' }
+    end
+
+    it "should update the customization for job 177 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 177 => instances_element })
+      template.stubs(:add_custom_job).with(177).returns(instances_element)
+      provider.expected_instances = [ 'i00', 'i01', 'i02']
+      template.custom_jobs[177][:ID].should == '177'
+      template.custom_jobs[177][:CUSTOMIZED].should == 'true'
+      template.custom_jobs[177].child('MANDATORY_INSTANCES').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('CRITICITIES').attributes.should == { :INDEX000 => '5', :INDEX001 => '5', :INDEX002 => '5' }
+      template.custom_jobs[177].child('AUTO_CLEARS').attributes.should == { :INDEX000 => 'true', :INDEX001 => 'true', :INDEX002 => 'true' }
+      template.custom_jobs[177].child('EXPECTED_INSTANCES').attributes.should == { :INDEX000 => 'i00', :INDEX001 => 'i01', :INDEX002 => 'i02' }
+    end
+  end
+
   describe "flush" do
     it "should sync the configuration file" do
-      Puppet::Util::AgentilTemplate.expects(:sync)
+      Puppet::Util::Agentil.expects(:sync)
       provider.flush
     end
   end
