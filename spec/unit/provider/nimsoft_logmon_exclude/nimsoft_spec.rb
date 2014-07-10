@@ -32,7 +32,7 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
       :name          => 'some_profile/new exclude',
       :ensure        => 'present',
       :active        => 'no',
-      :match         => 'INFO*',
+      :match         => 'INFO*'
     )
     resource.provider = provider
     provider
