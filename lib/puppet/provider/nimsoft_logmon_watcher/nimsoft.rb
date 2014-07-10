@@ -33,7 +33,7 @@ Puppet::Type.type(:nimsoft_logmon_watcher).provide(:nimsoft, :parent => Puppet::
       profil_name = match.captures[0]
       watcher_name = match.captures[1]
 
-      if profil = self.root.child(profil_name)
+      if profil = self.class.root.child(profil_name)
         watchers = profil.path('watchers')
         @property_hash[:element] = Puppet::Util::NimsoftSection.new(watcher_name, watchers)
         if self.class.resource_type
