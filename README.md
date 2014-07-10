@@ -182,6 +182,22 @@ Example:
 
 The name of the resource must be of the for `profile_name/watcher_name`.
 
+#### nimsoft\_logmon\_exclude
+
+The `nimsoft_logmon_exclude` type can be used to describe a single exclude rule
+for a specific logmon profile. An exclude rule defines a pattern that will be
+checked against each line or block before any watcher rules are processed
+
+Example:
+
+    nimsoft_logmon_exclude { 'system log/ignore failed su'
+      ensure   => present,
+      active   => yes,
+      match    => '/FAILED su for \S+ by/',
+    }
+
+The name of the resource must be of the for `profile_name/exclude_name`.
+
 #### nimsoft\_process
 
 The `nimsoft_process` type can be used to describe a profile for the proceses
