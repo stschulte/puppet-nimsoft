@@ -8,36 +8,15 @@ describe Puppet::Util::Agentil do
 
   before :each do
     described_class.initvars
-    Puppet::Util::NimsoftConfig.initvars
-    described_class.stubs(:filename).returns filename
-    Puppet::Util::NimsoftConfig.stubs(:add).with(filename).returns config
-  end
-
-  let :filename do
-    my_fixture('sample.cfg')
+    described_class.stubs(:filename).returns config
   end
 
   let :config do
-     Puppet::Util::NimsoftConfig.new(filename)
-  end
-
-  let :empty_config do
-    Puppet::Util::NimsoftConfig.new(my_fixture('empty.cfg'))
-  end
-
-  describe "config" do
-    it "should return the configuration" do
-      described_class.config.should == config
-    end
-
-    it "should use a tabsize of 4" do
-      described_class.config.tabsize.should == 4
-    end
+    my_fixture('sample.cfg')
   end
 
   describe "parsed?" do
     it "should return false if the configuration is not yet parsed" do
-      described_class.expects(:parse).never
       described_class.should_not be_parsed
     end
 
@@ -48,15 +27,9 @@ describe Puppet::Util::Agentil do
   end
 
   describe "parse" do
-    it "should parse the configuration first if necessary" do
-      config.expects(:parse)
-      described_class.parse
-    end
-
-    it "should not parse the configuration if already loaded" do
-      config.expects(:loaded?).returns true
-      config.expects(:parse).never
-      described_class.parse
+    it "should fail if json is not available" do
+      Puppet.features.expects(:json?).returns false
+      expect { described_class.parse }.to raise_error(Puppet::Error, /Please install json first/)
     end
 
     it "should create a hash of landscapes" do
@@ -66,8 +39,8 @@ describe Puppet::Util::Agentil do
       landscapes = described_class.landscapes
       landscapes.keys.should =~ [ 1, 2 ]
       landscapes.values.each { |v| v.should be_a Puppet::Util::AgentilLandscape }
-      landscapes[1].element.should == config.path('PROBE/LANDSCAPES/LANDSCAPE1')
-      landscapes[2].element.should == config.path('PROBE/LANDSCAPES/LANDSCAPE2')
+      landscapes[1].element.should == described_class.config["SYSTEMS"][0]
+      landscapes[2].element.should == described_class.config["SYSTEMS"][1]
     end
 
     it "should create a hash of users" do
@@ -77,9 +50,9 @@ describe Puppet::Util::Agentil do
       users = described_class.users
       users.keys.should =~ [ 1, 2, 3]
       users.values.each { |v| v.should be_a Puppet::Util::AgentilUser }
-      users[1].element.should == config.path('PROBE/USERS/USER1')
-      users[2].element.should == config.path('PROBE/USERS/USER2')
-      users[3].element.should == config.path('PROBE/USERS/USER3')
+      users[1].element.should == described_class.config["USER_PROFILES"][0]
+      users[2].element.should == described_class.config["USER_PROFILES"][1]
+      users[3].element.should == described_class.config["USER_PROFILES"][2]
     end
 
     it "should create a hash of systems" do
@@ -89,9 +62,9 @@ describe Puppet::Util::Agentil do
       systems = described_class.systems
       systems.keys.should =~ [ 1, 2, 3 ]
       systems.values.each { |v| v.should be_a Puppet::Util::AgentilSystem }
-      systems[1].element.should == config.path('PROBE/SYSTEMS/SYSTEM1')
-      systems[2].element.should == config.path('PROBE/SYSTEMS/SYSTEM2')
-      systems[3].element.should == config.path('PROBE/SYSTEMS/SYSTEM3')
+      systems[1].element.should == described_class.config["CONNECTORS"][0]
+      systems[2].element.should == described_class.config["CONNECTORS"][1]
+      systems[3].element.should == described_class.config["CONNECTORS"][2]
     end
 
     it "should create a hash of templates" do
@@ -101,11 +74,11 @@ describe Puppet::Util::Agentil do
       templates = described_class.templates
       templates.keys.should =~ [ 1, 1000000, 1000001, 1000002, 1000003 ]
       templates.values.each { |v| v.should be_a Puppet::Util::AgentilTemplate }
-      templates[1].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1')
-      templates[1000000].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000000')
-      templates[1000001].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000001')
-      templates[1000002].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000002')
-      templates[1000003].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000003')
+      templates[1].element.should ==       described_class.config["TEMPLATES"][0]
+      templates[1000000].element.should == described_class.config["TEMPLATES"][1]
+      templates[1000001].element.should == described_class.config["TEMPLATES"][2]
+      templates[1000002].element.should == described_class.config["TEMPLATES"][3]
+      templates[1000003].element.should == described_class.config["TEMPLATES"][4]
     end
 
     it "should assign systems to system templates" do
@@ -118,7 +91,7 @@ describe Puppet::Util::Agentil do
     end
 
     it "should leave hashes empty if configuration is empty" do
-      Puppet::Util::NimsoftConfig.expects(:add).with(filename).returns empty_config
+      described_class.stubs(:filename).returns my_fixture('empty.cfg')
       described_class.parse
 
       described_class.landscapes.should be_empty
@@ -129,8 +102,13 @@ describe Puppet::Util::Agentil do
   end
 
   describe "sync" do
+    it "should fail if json is not available" do
+      Puppet.features.expects(:json?).returns false
+      expect { described_class.sync }.to raise_error(Puppet::Error, /Please install json first/)
+    end
+
     it "should delegate to the config object" do
-      config.expects(:sync)
+      File.expects(:open).with(config, 'w')
       described_class.sync
     end
   end
@@ -139,29 +117,31 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new landscape instance for an existing subtree" do
-      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
-      subtree = config.path('PROBE/LANDSCAPES/LANDSCAPE2')
-      new_landscape = described_class.add_landscape(subtree)
-      new_landscape.element.should == subtree
-      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
+      old_size = described_class.config["SYSTEMS"].size
+      existing_element = described_class.config["SYSTEMS"][1]
+      new_landscape = described_class.add_landscape(existing_element)
+      new_landscape.element.should == existing_element
+
+      # make sure we have not created a new system
+      expect(described_class.config["SYSTEMS"].size).to eq(old_size)
     end
       
-    it "should create a new subtree if no element is provided" do
-      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(2)
+    it "should append a new subtree if no element is provided" do
+      old_size = described_class.config["SYSTEMS"].size
       new_landscape = described_class.add_landscape
-      expect(config.path('PROBE/LANDSCAPES').children.size).to eq(3)
-      new_landscape.element.should == config.path('PROBE/LANDSCAPES/LANDSCAPE3')
+      expect(described_class.config["SYSTEMS"].size).to eq(old_size+1)
+      new_landscape.element.should == described_class.config["SYSTEMS"][-1]
     end
 
     it "should generate a valid ID for a new landscape" do
       new_landscape = described_class.add_landscape
       new_landscape.id.should == 3
-      new_landscape.element[:ID].should == "3"
+      new_landscape.element["ID"].should == "3"
     end
 
     it "should set ACTIVE to true for a new landscape" do
       new_landscape = described_class.add_landscape
-      new_landscape.element[:ACTIVE].should == "true"
+      new_landscape.element["ACTIVE"].should == "true"
     end
   end
 
@@ -169,31 +149,31 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new system instance for an existing subtree" do
-      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
-      subtree = config.path('PROBE/SYSTEMS/SYSTEM3')
+      old_size = described_class.config["CONNECTORS"].size
+      existing_element = described_class.config["CONNECTORS"][2]
 
-      new_system = described_class.add_system(subtree)
+      new_system = described_class.add_system(existing_element)
+      new_system.element.should == existing_element
 
-      new_system.element.should == subtree
-      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
+      expect(described_class.config["CONNECTORS"].size).to eq(old_size)
     end
       
-    it "should create a new subtree if no element is provided" do
-      expect(config.path('PROBE/SYSTEMS').children.size).to eq(3)
+    it "should append a new subtree if no element is provided" do
+      old_size = described_class.config["CONNECTORS"].size
       new_system = described_class.add_system
-      expect(config.path('PROBE/SYSTEMS').children.size).to eq(4)
-      new_system.element.should == config.path('PROBE/SYSTEMS/SYSTEM4')
+      expect(described_class.config["CONNECTORS"].size).to eq(old_size+1)
+      new_system.element.should == described_class.config["CONNECTORS"][-1]
     end
 
     it "should set ACTIVE to true for a new system" do
       new_system = described_class.add_system
-      new_system.element[:ACTIVE].should == 'true'
+      new_system.element["ACTIVE"].should == 'true'
     end
 
     it "should generate a valid ID for a new system" do
       new_system = described_class.add_system
       new_system.id.should == 4
-      new_system.element[:ID].should == "4"
+      new_system.element["ID"].should == "4"
     end
   end
 
@@ -201,26 +181,26 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new user instance for an existing subtree" do
-      expect(config.path('PROBE/USERS').children.size).to eq(3)
-      subtree = config.path('PROBE/SYSTEMS/USERS2')
+      old_size = described_class.config["USER_PROFILES"].size
+      existing_element = described_class.config["USER_PROFILES"][1]
 
-      new_user = described_class.add_user(subtree)
+      new_user = described_class.add_user(existing_element)
+      new_user.element.should == existing_element
 
-      new_user.element.should == subtree
-      expect(config.path('PROBE/USERS').children.size).to eq(3)
+      expect(described_class.config["USER_PROFILES"].size).to eq(old_size)
     end
       
-    it "should create a new subtree if no element is provided" do
-      expect(config.path('PROBE/USERS').children.size).to eq(3)
+    it "should append a new subtree if no element is provided" do
+      old_size = described_class.config["USER_PROFILES"].size
       new_user = described_class.add_user
-      expect(config.path('PROBE/USERS').children.size).to eq(4)
-      new_user.element.should == config.path('PROBE/USERS/USER4')
+      expect(described_class.config["USER_PROFILES"].size).to eq(old_size+1)
+      new_user.element.should == described_class.config["USER_PROFILES"][-1]
     end
 
     it "should generate a valid ID for a new user" do
       new_user = described_class.add_user
       new_user.id.should == 4
-      new_user.element[:ID].should == "4"
+      new_user.element["ID"].should == "4"
     end
   end
 
@@ -228,31 +208,31 @@ describe Puppet::Util::Agentil do
     before { described_class.parse }
 
     it "should create a new template instance for an existing subtree" do
-      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
-      subtree = config.path('PROBE/TEMPLATES/TEMPLATE1000003')
+      old_size = described_class.config["TEMPLATES"].size
+      existing_element = described_class.config["TEMPLATES"][3]
 
-      new_template = described_class.add_template(subtree)
+      new_template = described_class.add_template(existing_element)
+      new_template.element.should == existing_element
 
-      new_template.element.should == subtree
-      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
+      expect(described_class.config["TEMPLATES"].size).to eq(old_size)
     end
       
-    it "should create a new subtree if no element is provided" do
-      expect(config.path('PROBE/TEMPLATES').children.size).to eq(5)
+    it "should append a new subtree if no element is provided" do
+      old_size = described_class.config["TEMPLATES"].size
       new_template = described_class.add_template
-      expect(config.path('PROBE/TEMPLATES').children.size).to eq(6)
-      new_template.element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000004')
+      expect(described_class.config["TEMPLATES"].size).to eq(old_size+1)
+      new_template.element.should == described_class.config["TEMPLATES"][-1]
     end
 
     it "should generate a valid ID for a new template" do
       new_template = described_class.add_template
       new_template.id.should == 1000004
-      new_template.element[:ID].should == "1000004"
+      new_template.element["ID"].should == "1000004"
     end
 
-    it "should set VERSION to 1 for a new template" do
+    it "should set VERSION to 2.0 for a new template" do
       new_template = described_class.add_template
-      new_template.element[:VERSION].should == "1"
+      new_template.element["VERSION"].should == "2.0"
     end
   end
 
@@ -260,21 +240,12 @@ describe Puppet::Util::Agentil do
     it "should remove the landscape and the corresponding config section" do
       described_class.parse
       described_class.landscapes.keys.should =~ [ 1, 2 ]
-      config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1 LANDSCAPE2}
+      described_class.config["SYSTEMS"].map{|h| h["NAME"]}.should == %w{sap01.example.com sapdev.example.com}
 
-      described_class.del_landscape 2
-
-      described_class.landscapes.keys.should =~ [ 1 ]
-      config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1}
-    end
-
-    it "should rename all remaining landscapes" do
-      described_class.parse
-      described_class.landscapes.keys.should =~ [ 1, 2 ]
-      config.path('PROBE/LANDSCAPES').children.map(&:name).should == %w{LANDSCAPE1 LANDSCAPE2}
       described_class.del_landscape 1
+
       described_class.landscapes.keys.should =~ [ 2 ]
-      described_class.landscapes[2].element.should == config.path('PROBE/LANDSCAPES/LANDSCAPE1')
+      described_class.config["SYSTEMS"].map{|h| h["NAME"]}.should == %w{sapdev.example.com}
     end
 
     it "should remove dependent systems" do
@@ -294,22 +265,12 @@ describe Puppet::Util::Agentil do
     it "should remove the system and the corresponding config section" do
       described_class.parse
       described_class.systems.keys.should =~ [ 1, 2, 3 ]
-      config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3}
+      described_class.config["CONNECTORS"].map{|h| h["NAME"]}.should == %w{PRO_sap01 PRO_sap02 XXX_dummy}
 
-      described_class.del_system 3
+      described_class.del_system 2
 
-      described_class.systems.keys.should =~ [ 1, 2 ]
-      config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2}
-    end
-
-    it "should rename all remaining systems" do
-      described_class.parse
-      described_class.systems.keys.should =~ [ 1, 2, 3 ]
-      config.path('PROBE/SYSTEMS').children.map(&:name).should == %w{SYSTEM1 SYSTEM2 SYSTEM3}
-      described_class.del_system 1
-      described_class.systems.keys.should =~ [ 2, 3 ]
-      described_class.systems[2].element.should == config.path('PROBE/SYSTEMS/SYSTEM1')
-      described_class.systems[3].element.should == config.path('PROBE/SYSTEMS/SYSTEM2')
+      described_class.systems.keys.should =~ [ 1, 3 ]
+      described_class.config["CONNECTORS"].map{|h| h["NAME"]}.should == %w{PRO_sap01 XXX_dummy}
     end
 
     it "should remove dependent templates" do
@@ -328,25 +289,23 @@ describe Puppet::Util::Agentil do
     it "should remove the template and the corresponding config section" do
       described_class.parse
       described_class.templates.keys.should =~ [ 1, 1000000, 1000001, 1000002, 1000003 ]
-      config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002 TEMPLATE1000003}
+      described_class.config["TEMPLATES"].map{|h| h["NAME"]}.should == [
+        "Vendor template",
+        "Custom Template",
+        "System Template for system sap01_PRO",
+        "System Template for system sap02_PRO",
+        "System Template for system id 3"
+      ]
 
-      described_class.del_template 1000003
-
-      described_class.templates.keys.should =~ [ 1, 1000000, 1000001, 1000002 ]
-      config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002}
-    end
-
-    it "should rename all remaining templates" do
-      described_class.parse
-      described_class.templates.keys.should =~ [ 1, 1000000, 1000001, 1000002, 1000003 ]
-
-      config.path('PROBE/TEMPLATES').children.map(&:name).should == %w{TEMPLATE1 TEMPLATE1000000 TEMPLATE1000001 TEMPLATE1000002 TEMPLATE1000003}
       described_class.del_template 1000000
+
       described_class.templates.keys.should =~ [ 1, 1000001, 1000002, 1000003 ]
-      described_class.templates[1].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1')
-      described_class.templates[1000001].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000000')
-      described_class.templates[1000002].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000001')
-      described_class.templates[1000003].element.should == config.path('PROBE/TEMPLATES/TEMPLATE1000002')
+      described_class.config["TEMPLATES"].map{|h| h["NAME"]}.should == [
+        "Vendor template",
+        "System Template for system sap01_PRO",
+        "System Template for system sap02_PRO",
+        "System Template for system id 3"
+      ]
     end
 
     it "should raise an error if template cannot be found" do
@@ -359,23 +318,12 @@ describe Puppet::Util::Agentil do
     it "should remove the user and the corresponding config section" do
       described_class.parse
       described_class.users.keys.should =~ [ 1, 2, 3 ]
-      config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2 USER3}
+      described_class.config["USER_PROFILES"].map{|h| h["USER"]}.should == %w{SAP_PRO SAP_QAS SAP_DEV}
 
       described_class.del_user 3
 
       described_class.users.keys.should =~ [ 1, 2 ]
-      config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2}
-    end
-
-    it "should rename all remaining users" do
-      described_class.parse
-      described_class.users.keys.should =~ [ 1, 2, 3 ]
-
-      config.path('PROBE/USERS').children.map(&:name).should == %w{USER1 USER2 USER3}
-      described_class.del_user 1
-      described_class.users.keys.should =~ [ 2, 3 ]
-      described_class.users[2].element.should == config.path('PROBE/USERS/USER1')
-      described_class.users[3].element.should == config.path('PROBE/USERS/USER2')
+      described_class.config["USER_PROFILES"].map{|h| h["USER"]}.should == %w{SAP_PRO SAP_QAS}
     end
 
     it "should raise an error if user cannot be found" do

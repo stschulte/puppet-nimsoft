@@ -11,41 +11,41 @@ class Puppet::Util::AgentilSystem
     @id = id
     @element = element
     
-    if template_section = @element.child('TEMPLATES')
-      @template_ids = template_section.values_in_order.map(&:to_i)
+    if template_section = @element['TEMPLATES']
+      @template_ids = template_section.map(&:to_i)
     else
       @template_ids = []
     end
 
-    if system_template_attribute = @element[:DEFAULT_TEMPLATE]
+    if system_template_attribute = @element['DEFAULT_TEMPLATE']
       @system_template_id = system_template_attribute.to_i
     end
 
-    if user_attribute = @element[:USER_PROFILE]
+    if user_attribute = @element['USER_PROFILE']
       @user_id = user_attribute.to_i
     end
   end
 
   def name
-    @element[:NAME]
+    @element['NAME']
   end
 
   def name=(new_value)
-    @element[:NAME] = new_value
+    @element['NAME'] = new_value
   end
 
   def host
-    @element[:HOST]
+    @element['HOST']
   end
 
   def host=(new_value)
-    @element[:HOST] = new_value
+    @element['HOST'] = new_value
   end
 
   def stack
-    if @element[:ABAP_ENABLED] == 'true' and @element[:JAVA_ENABLED] == 'true'
+    if @element['ABAP_ENABLED'] == 'true' and @element['JAVA_ENABLED'] == 'true'
       :dual
-    elsif @element[:JAVA_ENABLED] == 'true'
+    elsif @element['JAVA_ENABLED'] == 'true'
       :java
     else
       :abap
@@ -55,44 +55,44 @@ class Puppet::Util::AgentilSystem
   def stack=(new_value)
     case new_value
     when :dual
-      @element[:ABAP_ENABLED] = 'true'
-      @element[:JAVA_ENABLED] = 'true'
+      @element['ABAP_ENABLED'] = 'true'
+      @element['JAVA_ENABLED'] = 'true'
     when :java
-      @element[:ABAP_ENABLED] = 'false'
-      @element[:JAVA_ENABLED] = 'true'
+      @element['ABAP_ENABLED'] = 'false'
+      @element['JAVA_ENABLED'] = 'true'
     else
-      @element[:ABAP_ENABLED] = 'true'
-      @element[:JAVA_ENABLED] = 'false'
+      @element['ABAP_ENABLED'] = 'true'
+      @element['JAVA_ENABLED'] = 'false'
     end
   end
 
   def sid
-    @element[:SYSTEM_ID]
+    @element['SYSTEM_ID']
   end
 
   def sid=(new_value)
-    @element[:SYSTEM_ID] = new_value
+    @element['SYSTEM_ID'] = new_value
   end
 
   def client
-    @element[:ABAP_CLIENT_NUMBER]
+    @element['ABAP_CLIENT_NUMBER']
   end
 
   def client=(new_value)
-    @element[:ABAP_CLIENT_NUMBER] = new_value
+    @element['ABAP_CLIENT_NUMBER'] = new_value
   end
 
   def group
-    @element[:GROUP]
+    @element['GROUP']
   end
 
   def group=(new_value)
-    @element[:GROUP] = new_value
+    @element['GROUP'] = new_value
   end
 
   def ip
-    if ips_element = @element.child('INSTANCE_IPS')
-      ips_element.values_in_order
+    if ips_element = @element['INSTANCE_IPS']
+      ips_element.dup
     else
       []
     end
@@ -100,27 +100,21 @@ class Puppet::Util::AgentilSystem
 
   def ip=(new_value)
     if new_value.empty?
-      if ips_element = @element.child('INSTANCE_IPS')
-        @element.children.delete(ips_element)
-      end
+      @element.delete('INSTANCE_IPS')
     else
-      ips_element = @element.path('INSTANCE_IPS')
-      ips_element.clear_attr
-      new_value.each_with_index do |ip, index|
-        ips_element[sprintf("INDEX%03d", index).intern] = ip
-      end
+      @element['INSTANCE_IPS'] = new_value.dup
     end
   end
 
   def landscape
-    if id = @element[:PARENT_ID]
+    if id = @element['PARENT_ID']
       if landscape = Puppet::Util::Agentil.landscapes[id.to_i]
         landscape
       else
         raise Puppet::Error, "Landscape with id=#{id} could not be found"
       end
     else
-      raise Puppet::Error, "System does not have a PARENT_ID attribute"
+      raise Puppet::Error, 'System does not have a PARENT_ID attribute'
     end
   end
 
@@ -136,12 +130,12 @@ class Puppet::Util::AgentilSystem
 
     raise Puppet::Error, "Landscape #{new_value} not found" unless new_landscape
 
-    if landscape_id = @element[:PARENT_ID]
+    if landscape_id = @element['PARENT_ID']
       Puppet::Util::Agentil.landscapes[landscape_id.to_i].deassign_system id
     end
       
     new_landscape.assign_system id
-    @element[:PARENT_ID] = new_landscape.id.to_s
+    @element['PARENT_ID'] = new_landscape.id.to_s
   end
 
   def templates
@@ -156,10 +150,8 @@ class Puppet::Util::AgentilSystem
 
   def templates=(new_values)
     if new_values.empty?
-      if template_element = @element.child('TEMPLATES')
-        @element.children.delete(template_element)
-        @template_ids.clear
-      end
+      @element.delete('TEMPLATES')
+      @template_ids.clear
     else
       @template_ids = new_values.map do |new_value|
         template = case new_value
@@ -175,11 +167,7 @@ class Puppet::Util::AgentilSystem
         template.id
       end
 
-      template_element = @element.path('TEMPLATES')
-      template_element.clear_attr
-      @template_ids.each_with_index do |id, index|
-        template_element[sprintf("INDEX%03d", index).intern] = id.to_s
-      end
+      @element['TEMPLATES'] = @template_ids.dup
     end
   end
 
@@ -207,7 +195,7 @@ class Puppet::Util::AgentilSystem
 
 
     @system_template_id = new_system_template.id
-    @element[:DEFAULT_TEMPLATE] = @system_template_id.to_s
+    @element['DEFAULT_TEMPLATE'] = @system_template_id.to_s
   end
 
   def user
@@ -233,6 +221,6 @@ class Puppet::Util::AgentilSystem
     raise Puppet::Error, "Unable to find user #{new_value}" unless new_user
 
     @user_id = new_user.id
-    @element[:USER_PROFILE] = @user_id.to_s
+    @element['USER_PROFILE'] = @user_id.to_s
   end
 end

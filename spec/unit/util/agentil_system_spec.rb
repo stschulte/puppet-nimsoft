@@ -19,32 +19,31 @@ describe Puppet::Util::AgentilSystem do
   end
 
   let :system_element do
-    element = Puppet::Util::NimsoftSection.new('SYSTEM13')
-    element[:SYSTEM_ID] = 'PRO'
-    element[:MAX_INVALID_TIME] = '180000'
-    element[:MAX_RESPONSE_TIME] = '30000'
-    element[:USER_PROFILE] = '1'
-    element[:HOST] = 'sap01.example.com'
-    element[:ABAP_CLIENT_NUMBER] = '000'
-    element[:DEFAULT_TEMPLATE] = '1000001'
-    element[:ID] = '13'
-    element[:JAVA_ENABLED] = 'false'
-    element[:ABAP_ENABLED] = 'true'
-    element[:NAME] = 'PRO_sap01'
-    element[:GROUP] = '1'
-    element[:ACTIVE] = 'true'
-    element[:PARENT_ID] = '1'
-    element.path('TEMPLATES')[:INDEX000] = '1'
-    element.path('TEMPLATES')[:INDEX001] = '1000000'
-    element.path('INSTANCE_IPS')[:INDEX000] = '192.168.0.1'
-    element
+    {
+      "ID"                 => "13",
+      "JAVA_ENABLED"       => "false",
+      "ABAP_ENABLED"       => "true",
+      "NAME"               => "PRO_sap01",
+      "GROUP"              => "1",
+      "ACTIVE"             => "true",
+      "USER_PROFILE"       => "1",
+      "SYSTEM_ID"          => 'PRO',
+      "MAX_INVALID_TIME"   => '180000',
+      "MAX_RESPONSE_TIME"  => '30000',
+      "HOST"               => 'sap01.example.com',
+      "ABAP_CLIENT_NUMBER" => '000',
+      "DEFAULT_TEMPLATE"   => '1000001',
+      "PARENT_ID"          => '1',
+      "TEMPLATES"          => [ 1, 1000000 ],
+      "INSTANCE_IPS"       => [ '192.168.0.1' ]
+    }
   end
 
   let :new_system_element do
-    element = Puppet::Util::NimsoftSection.new('SYSTEM42')
-    element[:ID] = '42'
-    element[:ACTIVE] = 'true'
-    element
+    {
+      "ID"     => '42',
+      "ACTIVE" => 'true'
+    }
   end
 
   describe "id" do
@@ -54,10 +53,10 @@ describe Puppet::Util::AgentilSystem do
   end
 
   {
-    :sid         => :SYSTEM_ID,
-    :host        => :HOST,
-    :client      => :ABAP_CLIENT_NUMBER,
-    :group       => :GROUP
+    :sid         => "SYSTEM_ID",
+    :host        => "HOST",
+    :client      => "ABAP_CLIENT_NUMBER",
+    :group       => "GROUP"
   }.each_pair do |property, attribute|
     describe "getting #{property}" do
       it "should return nil if attribute #{attribute} does not exist" do
@@ -80,40 +79,40 @@ describe Puppet::Util::AgentilSystem do
 
   describe "getting stack" do
     it "should return abap if abap is enabled and java is disabled" do
-      system.element[:ABAP_ENABLED] = 'true'
-      system.element[:JAVA_ENABLED] = 'false'
+      system.element["ABAP_ENABLED"] = 'true'
+      system.element["JAVA_ENABLED"] = 'false'
       system.stack.should == :abap
     end
 
     it "should return java if abap is disabled and java is enabled" do
-      system.element[:ABAP_ENABLED] = 'false'
-      system.element[:JAVA_ENABLED] = 'true'
+      system.element["ABAP_ENABLED"] = 'false'
+      system.element["JAVA_ENABLED"] = 'true'
       system.stack.should == :java
     end
 
     it "should return dual if abap und java are enabled" do
-      system.element[:ABAP_ENABLED] = 'true'
-      system.element[:JAVA_ENABLED] = 'true'
+      system.element["ABAP_ENABLED"] = 'true'
+      system.element["JAVA_ENABLED"] = 'true'
       system.stack.should == :dual
     end
   end
 
   describe "setting stack" do
     it "should enable abap and disable java if setting stack to abap" do
-      system.element.expects(:[]=).with(:ABAP_ENABLED, 'true')
-      system.element.expects(:[]=).with(:JAVA_ENABLED, 'false')
+      system.element.expects(:[]=).with("ABAP_ENABLED", 'true')
+      system.element.expects(:[]=).with("JAVA_ENABLED", 'false')
       system.stack = :abap
     end
 
     it "should disable abap and enable java if setting stack to java" do
-      system.element.expects(:[]=).with(:ABAP_ENABLED, 'false')
-      system.element.expects(:[]=).with(:JAVA_ENABLED, 'true')
+      system.element.expects(:[]=).with("ABAP_ENABLED", 'false')
+      system.element.expects(:[]=).with("JAVA_ENABLED", 'true')
       system.stack = :java
     end
 
     it "should enable abap and java if setting stack to dual" do
-      system.element.expects(:[]=).with(:ABAP_ENABLED, 'true')
-      system.element.expects(:[]=).with(:JAVA_ENABLED, 'true')
+      system.element.expects(:[]=).with("ABAP_ENABLED", 'true')
+      system.element.expects(:[]=).with("JAVA_ENABLED", 'true')
       system.stack = :dual
     end
   end
@@ -128,37 +127,35 @@ describe Puppet::Util::AgentilSystem do
     end
 
     it "should return a list of values if more than on INSTANCE_IP" do
-      system.element.path('INSTANCE_IPS')[:INDEX000] = '192.168.0.1'
-      system.element.path('INSTANCE_IPS')[:INDEX001] = '192.168.0.2'
-      system.element.path('INSTANCE_IPS')[:INDEX002] = '192.168.0.3'
+      system.element['INSTANCE_IPS'] = %w{192.168.0.1 192.168.0.2 192.168.0.3}
       system.ip.should == [ '192.168.0.1', '192.168.0.2', '192.168.0.3' ]
     end
   end
 
   describe "setting ip" do
     it "should create an INSTANCE_IPS section if necessary" do
-      new_system.element.child('INSTANCE_IPS').should be_nil
+      expect(new_system.element).to_not have_key('INSTANCE_IPS')
       new_system.ip = [ '192.168.100.100' ]
-      new_system.element.child('INSTANCE_IPS').should_not be_nil
-      new_system.element.child('INSTANCE_IPS').attributes.should == { :INDEX000 => '192.168.100.100' }
+      expect(new_system.element).to have_key('INSTANCE_IPS')
+      expect(new_system.element['INSTANCE_IPS']).to eq(%w{192.168.100.100})
     end
     
     it "should delete an INSTANCE_IPS section if new value is empty" do
-      system.element.child('INSTANCE_IPS').should_not be_nil
+      expect(system.element).to have_key('INSTANCE_IPS')
       system.ip = []
-      system.element.child('INSTANCE_IPS').should be_nil
+      expect(system.element).to_not have_key('INSTANCE_IPS')
     end
 
 
     it "should overwrite any value with the new values" do
       system.ip = ['10.0.0.1', '10.0.0.2']
-      system.element.child('INSTANCE_IPS').attributes.should == { :INDEX000 => '10.0.0.1', :INDEX001 => '10.0.0.2' }
+      expect(system.element['INSTANCE_IPS']).to eq(%w{10.0.0.1 10.0.0.2})
     end
   end
 
   describe "getting landscape" do
     it "should raise an error if PARENT_ID attribut is missing" do
-      system.element.expects(:[]).with(:PARENT_ID).returns nil
+      system.element.expects(:[]).with("PARENT_ID").returns nil
       expect { system.landscape }.to raise_error Puppet::Error, /System does not have a PARENT_ID attribute/
     end
 
@@ -180,13 +177,13 @@ describe Puppet::Util::AgentilSystem do
     end
 
     it "should add the system to the new landscape" do
-      system.element.attributes.delete(:PARENT_ID)
+      system.element.delete("PARENT_ID")
       new_landscape = mock 'new_landscape', :id => 5
       Puppet::Util::Agentil.landscapes.expects(:[]).with(5).returns new_landscape
-      new_landscape.expects(:assign_system).with(13)
 
+      new_landscape.expects(:assign_system).with(13) #id of system
       system.landscape = 5
-      system.element[:PARENT_ID].should == '5'
+      system.element["PARENT_ID"].should == '5'
     end
 
     it "should remove the system from the old landscape" do
@@ -198,7 +195,7 @@ describe Puppet::Util::AgentilSystem do
       new_landscape.expects(:assign_system).with(13)
 
       system.landscape = 5
-      system.element[:PARENT_ID].should == '5'
+      system.element["PARENT_ID"].should == '5'
     end
   end
 
@@ -226,7 +223,7 @@ describe Puppet::Util::AgentilSystem do
 
     it "should update the DEFAULT_TEMPLATE with the appropiate id" do
       Puppet::Util::Agentil.templates.expects(:[]).with(1000003).returns mock 'template', :id => 1000003
-      system.element.expects(:[]=).with(:DEFAULT_TEMPLATE, '1000003')
+      system.element.expects(:[]=).with("DEFAULT_TEMPLATE", '1000003')
       system.system_template = 1000003
     end
 
@@ -264,21 +261,21 @@ describe Puppet::Util::AgentilSystem do
       Puppet::Util::Agentil.templates.expects(:[]).with(1000003).returns mock 'template', :id => 1000003
       Puppet::Util::Agentil.templates.expects(:[]).with(1000004).returns mock 'template', :id => 1000004
       system.templates = [ 1000003, 1000004 ]
-      system.element.child('TEMPLATES').attributes.should == { :INDEX000 => '1000003', :INDEX001 => '1000004' }
+      expect(system.element['TEMPLATES']).to eq([1000003, 1000004])
     end
 
     it "should create the template section first if necessary" do
       Puppet::Util::Agentil.templates.expects(:[]).with(1000005).returns mock 'template', :id => 1000005
       Puppet::Util::Agentil.templates.expects(:[]).with(1000004).returns mock 'template', :id => 1000004
-      new_system.element.child('TEMPLATES').should be_nil
+      expect(new_system.element).to_not have_key('TEMPLATES')
       new_system.templates = [ 1000005, 1000004 ]
-      new_system.element.child('TEMPLATES').attributes.should == { :INDEX000 => '1000005', :INDEX001 => '1000004' }
+      expect(new_system.element['TEMPLATES']).to eq([1000005, 1000004])
     end
 
     it "should remove the template section if new value is an empty array" do
-      system.element.child('TEMPLATES').should_not be_nil
+      expect(system.element).to have_key('TEMPLATES')
       system.templates = []
-      system.element.child('TEMPLATES').should be_nil
+      expect(system.element).to_not have_key('TEMPLATES')
     end
   end
 
@@ -308,7 +305,7 @@ describe Puppet::Util::AgentilSystem do
     it "should update the section with the appropiate user id" do
       Puppet::Util::Agentil.users.expects(:[]).with(10).returns mock 'user', :id => 10
       system.user = 10
-      system.element[:USER_PROFILE].should == "10"
+      system.element["USER_PROFILE"].should == "10"
     end
   end
 end

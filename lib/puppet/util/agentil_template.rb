@@ -13,96 +13,77 @@ class Puppet::Util::AgentilTemplate
 
   def custom_jobs
     jobs = {}
-    if cust = @element.child('CUSTO')
-      cust.children.each do |child|
-        jobs[child[:ID].to_i] = child
+    if cust = @element['CUSTOMIZATION']
+      cust.each_pair do |id, job|
+        jobs[id.to_i] = job
       end
     end
     jobs
   end
 
   def name
-    @element[:NAME]
+    @element['NAME']
   end
 
   def name=(new_value)
-    @element[:NAME] = new_value
+    @element['NAME'] = new_value
   end
 
   def system_template?
-    @element[:SYSTEM_TEMPLATE] and @element[:SYSTEM_TEMPLATE].downcase.intern == :true
+    @element['SYSTEM_TEMPLATE'] and @element['SYSTEM_TEMPLATE'].downcase.intern == :true
   end
 
   def system_template
-    @element[:SYSTEM_TEMPLATE].downcase.intern
+    @element['SYSTEM_TEMPLATE'].downcase.intern
   end
 
   def system_template=(new_value)
-    @element[:SYSTEM_TEMPLATE] = new_value.to_s
+    @element['SYSTEM_TEMPLATE'] = new_value.to_s
   end
 
   def jobs
-    if job_element = @element.child('JOBS')
-      job_element.values_in_order.map(&:to_i)
-    else
-      []
-    end
+    @element['JOBS'] || []
   end
 
   def jobs=(new_value)
     if new_value.empty?
-      if job_element = @element.child('JOBS')
-        @element.children.delete(job_element)
-      end
+      @element.delete('JOBS')
     else
-      job_element = @element.path('JOBS')
-      job_element.clear_attr
-      new_value.each_with_index do |jobid, index|
-        job_element[sprintf("INDEX%03d", index).intern] = jobid.to_s
-      end
+      @element['JOBS'] = new_value.dup
     end
   end
 
+  # Monitors in no valid attribute anymore
   def monitors
-    if monitor_element = @element.child('MONITORS')
-      monitor_element.values_in_order.map(&:to_i)
-    else
-      []
-    end
+    []
   end
 
+  # Monitors in no valid attribute anymore
   def monitors=(new_value)
-    if new_value.empty?
-      if monitor_element = @element.child('MONITORS')
-        @element.children.delete(monitor_element)
-      end
-    else
-      monitor_element = @element.path('MONITORS')
-      monitor_element.clear_attr
-      new_value.each_with_index do |monitorid, index|
-        monitor_element[sprintf("INDEX%03d", index).intern] = monitorid.to_s
-      end
-    end
+    @element.delete('MONITORS')
   end
 
   def customized?(jobid)
-    cust = @element.child('CUSTO') and cust.child("JOB#{jobid}")
+    cust = @element['CUSTOMIZATION'] and cust[jobid.to_s]
   end
 
   def add_custom_job(jobid)
-    job = @element.path("CUSTO/JOB#{jobid}")
-    job[:ID] = jobid.to_s
-    job[:CUSTOMIZED] = 'true'
+    @element['CUSTOMIZATION'] ||= {}
+    @element['CUSTOMIZATION'][jobid.to_s] ||= {}
+
+    job = @element['CUSTOMIZATION'][jobid.to_s]
+    job['ID'] = jobid.to_s
+    job['CUSTOMIZED'] = 'true'
     job
   end
 
   def del_custom_job(jobid)
-    cust = @element.child('CUSTO')
-    if job = cust.child("JOB#{jobid}")
-      cust.children.delete(job)
-    end
-    if cust.children.empty?
-      @element.children.delete cust
+    if cust = @element['CUSTOMIZATION']
+      cust.delete(jobid.to_s)
+      cust.delete(jobid.to_i)
+      if cust.empty?
+        @element.delete('CUSTOMIZATION')
+      end
     end
   end
 end

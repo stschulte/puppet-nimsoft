@@ -20,24 +20,23 @@ describe Puppet::Util::AgentilLandscape do
   end
 
   let :landscape_element do
-    element = Puppet::Util::NimsoftSection.new('LANDSCAPE13')
-    element[:COMPANY] = 'Examplesoft'
-    element[:SYSTEM_ID] = 'PRO'
-    element[:MONITORTREE_MAXAGE] = '480'
-    element[:NAME] = 'sap01.example.com'
-    element[:DESCRIPTION] = 'sap01.example.com'
-    element[:ID] = '13'
-    element[:ACTIVE] = 'true'
-    element.path('SYSTEMS')[:INDEX000] = '1'
-    element.path('SYSTEMS')[:INDEX001] = '3'
-    element
+    {
+      'COMPANY'            => 'Examplesoft',
+      'SYSTEM_ID'          => 'PRO',
+      'MONITORTREE_MAXAGE' => '480',
+      'NAME'               => 'sap01.example.com',
+      'DESCRIPTION'        => 'sap01.example.com',
+      'ID'                 => '13',
+      'ACTIVE'             => 'true',
+      'CONNECTORS'         => [1, 3]
+    }
   end
 
   let :new_landscape_element do
-    element = Puppet::Util::NimsoftSection.new('LANDSCAPE29')
-    element[:ID] = '29'
-    element[:ACTIVE] = 'true'
-    element
+    {
+      "ID"     => "29",
+      "ACTIVE" => "true"
+    }
   end
 
   describe "id" do
@@ -47,9 +46,9 @@ describe Puppet::Util::AgentilLandscape do
   end
 
   {
-    :company     => :COMPANY,
-    :sid         => :SYSTEM_ID,
-    :description => :DESCRIPTION
+    :company     => 'COMPANY',
+    :sid         => 'SYSTEM_ID',
+    :description => 'DESCRIPTION'
   }.each_pair do |property, attribute|
     describe "getting #{property}" do
       it "should return nil if attribute #{attribute} does not exist" do
@@ -99,19 +98,19 @@ describe Puppet::Util::AgentilLandscape do
     end
 
     it "should add the system to the appropiate systems section" do
-      landscape.element.child('SYSTEMS').attributes.should == { :INDEX000 => "1", :INDEX001 => "3" }
+      landscape.element['CONNECTORS'].should == [ 1,3 ]
       landscape.assign_system 10
-      landscape.element.child('SYSTEMS').attributes.should == { :INDEX000 => "1", :INDEX001 => "3", :INDEX002 => "10" }
+      landscape.element['CONNECTORS'].should == [ 1,3,10 ]
     end
 
     it "should create the systems section first if necessary" do
-      new_landscape.element.child('SYSTEMS').should be_nil
+      expect(new_landscape.element).to_not have_key('CONNECTORS')
       new_landscape.assigned_systems.should be_empty
 
       new_landscape.assign_system 33
 
       new_landscape.assigned_systems.should == [ 33 ]
-      new_landscape.element.child('SYSTEMS').attributes.should == { :INDEX000 => "33" }
+      new_landscape.element['CONNECTORS'].should == [33]
     end
   end
 
@@ -129,9 +128,9 @@ describe Puppet::Util::AgentilLandscape do
     end
 
     it "should delete the system from the appropiate systems section" do
-      landscape.element.child('SYSTEMS').attributes.should == { :INDEX000 => "1", :INDEX001 => "3" }
+      landscape.element['CONNECTORS'].should == [1, 3]
       landscape.deassign_system 1
-      landscape.element.child('SYSTEMS').attributes.should == { :INDEX000 => "3" }
+      landscape.element['CONNECTORS'].should == [ 3 ]
     end
 
     it "should completly remove the systems section if last assignment was removed" do
@@ -139,7 +138,7 @@ describe Puppet::Util::AgentilLandscape do
       landscape.deassign_system 3
 
       landscape.assigned_systems.should be_empty
-      landscape.element.child('SYSTEMS').should be_nil
+      expect(new_landscape.element).to_not have_key('CONNECTORS')
     end
   end
 end
