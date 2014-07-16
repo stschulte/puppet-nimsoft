@@ -20,40 +20,40 @@ describe Puppet::Util::AgentilUser do
   end
 
   let :user_element do
-    element = Puppet::Util::NimsoftSection.new('USER13')
-    element[:ID] = '13'
-    element[:ENCRYPTED_PASSWD] = 'some_encrypted_stuff'
-    element[:TITLE] = 'SAP_PRO'
-    element[:USER] = 'SAP_PRO'
-    element
+    {
+      'ID'               => '13',
+      'ENCRYPTED_PASSWD' => 'some_encrypted_stuff',
+      'TITLE'            => 'SAP_PRO',
+      'USER'             => 'SAP_PRO'
+    }
   end
 
   let :new_user_element do
-    element = Puppet::Util::NimsoftSection.new('USER42')
-    element[:ID] = '42'
-    element
+    {
+      'ID' => '42'
+    }
   end
 
 
   describe "id" do
     it "should return the id as integer" do
-      user.id.should == 13
+      expect(user.id).to eq(13)
     end
   end
 
   describe "getting password" do
     it "should return nil if attribute ENCRYPTED_PASSWD does not exist" do
-      new_user.password.should be_nil
+      expect(new_user.password).to be_nil
     end
 
     it "should return the value of attribute ENCRYPTED_PASSWD" do
-      user.password.should == 'some_encrypted_stuff'
+      expect(user.password).to eq('some_encrypted_stuff')
     end
   end
   
   describe "setting password" do
     it "should modify attribute ENCRYPTED_PASSWD" do
-      user.element.expects(:[]=).with(:ENCRYPTED_PASSWD, 'foo')
+      user.element.expects(:[]=).with("ENCRYPTED_PASSWD", 'foo')
       user.password = 'foo'
     end
   end

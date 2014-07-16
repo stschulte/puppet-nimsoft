@@ -82,12 +82,12 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "exists?" do
       it "should return true if the instance is present" do
         instance = described_class.new(:name => 'NEW_TEMPLATE', :ensure => :present)
-        instance.should be_exists
+        expect(instance).to be_exists
       end
 
       it "should return false otherwise" do
         instance = described_class.new(:name => 'NEW_TEMPLATE')
-        instance.should_not be_exists
+        expect(instance).to_not be_exists
       end
     end
 
@@ -134,7 +134,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     describe "when managing #{property}" do
       it "should delegate the getter method to the #{utilproperty} AgentilTemplate object" do
         template.expects(utilproperty).returns "value_for_#{property}"
-        provider.send(property).should == "value_for_#{property}"
+        expect(provider.send(property)).to eq("value_for_#{property}")
       end
 
       it "should delegate the setter method to the #{utilproperty} AgentilTemplate object" do
@@ -146,16 +146,16 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   describe "when managing tablespace_used" do
     it "should return an empty hash if job 166 is not modified" do
-      provider.tablespace_used.should == {}
+      expect(provider.tablespace_used).to be_empty
     end
 
     it "should return a hash of the form { tablespace => value }" do
       template.expects(:custom_jobs).returns({ 166 => tablespace_element })
-      provider.tablespace_used.should == {
+      expect(provider.tablespace_used).to eq({
         :TBL1 => 90,
         :TBL2 => 95,
         :TBL3 => 92
-      }
+      })
     end
 
     it "should create a customization for job 166 if not already present" do
@@ -200,12 +200,12 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   describe "when managing expected_instances" do
     it "should return an empty array if job 177 is not customized" do
-      provider.expected_instances.should == []
+      expect(provider.expected_instances).to be_empty
     end
 
     it "should return an array of expected instances if job 177 is customized" do
       template.expects(:custom_jobs).returns({ 177 => instances_element })
-      provider.expected_instances.should == [ 'sap01_PRO_00', 'sap01_PRO_01']
+      expect(provider.expected_instances).to eq(%w{sap01_PRO_00 sap01_PRO_01})
     end
 
     it "should create a customization for job 177 if not already present" do

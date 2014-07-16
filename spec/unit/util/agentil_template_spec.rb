@@ -51,27 +51,27 @@ describe Puppet::Util::AgentilTemplate do
 
   describe "id" do
     it "should return the id as integer" do
-      template.id.should == 1000002
+      expect(template.id).to eq(1000002)
     end
   end
 
   describe "getting custom jobs" do
     it "should return an empty hash if template has no customizations" do
-      new_template.custom_jobs.should == {}
+      expect(new_template.custom_jobs).to be_empty
     end
 
     it "should return an hash of jobs" do
-      template.custom_jobs.keys.should =~ [ 177, 79, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78)
     end
   end
 
   describe "add_custom_job" do
     it "should add an entry to the custom_jobs list" do
-      template.custom_jobs.keys.should =~ [ 177, 79, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78)
       template.add_custom_job 600
-      template.custom_jobs.keys.should =~ [ 177, 79, 78, 600 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78, 600)
       template.add_custom_job 30
-      template.custom_jobs.keys.should =~ [ 177, 79, 78, 600, 30 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78, 600, 30)
     end
 
     it "should add a subsection to the custo section" do
@@ -81,13 +81,13 @@ describe Puppet::Util::AgentilTemplate do
       new_child = template.element['CUSTOMIZATION']['600']
 
       expect(custom_job).to eq(new_child)
-      new_child['ID'].should == '600'
-      new_child['CUSTOMIZED'].should == 'true'
+      expect(new_child['ID']).to eq('600')
+      expect(new_child['CUSTOMIZED']).to eq('true')
     end
 
     it "should create the custo section if it does not already exist" do
       expect(new_template.element).to_not have_key('CUSTOMIZATION')
-      new_template.custom_jobs.keys.should be_empty
+      expect(new_template.custom_jobs.keys).to be_empty
 
       custom_job = new_template.add_custom_job 177
 
@@ -98,19 +98,19 @@ describe Puppet::Util::AgentilTemplate do
 
   describe "del_custom_job" do
     it "should do nothing if job is not customized" do
-      template.custom_jobs.keys.should =~ [ 177, 79, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78)
       template.del_custom_job 99
-      template.custom_jobs.keys.should =~ [ 177, 79, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78)
     end
 
     it "should remove the entry from the custom_jobs list" do
-      template.custom_jobs.keys.should =~ [ 177, 79, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 79, 78)
       template.del_custom_job 79
-      template.custom_jobs.keys.should =~ [ 177, 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(177, 78)
       template.del_custom_job 177
-      template.custom_jobs.keys.should =~ [ 78 ]
+      expect(template.custom_jobs.keys).to contain_exactly(78)
       template.del_custom_job 78
-      template.custom_jobs.keys.should be_empty
+      expect(template.custom_jobs.keys).to be_empty
     end
 
     it "should remove the subsection from the custo section" do
@@ -139,11 +139,11 @@ describe Puppet::Util::AgentilTemplate do
   describe "getting jobs" do
     it "should return an empty array if no jobs" do
       template.element.delete 'JOBS'
-      template.jobs.should be_empty
+      expect(template.jobs).to be_empty
     end
 
     it "should return an array of numeric job ids" do
-      template.jobs.should == [ 79, 78, 600, 601 ]
+      expect(template.jobs).to eq([ 79, 78, 600, 601 ])
     end
   end
 
@@ -170,12 +170,12 @@ describe Puppet::Util::AgentilTemplate do
   describe "getting system_template" do
     it "should return :true if template is a system template" do
       template.element["SYSTEM_TEMPLATE"] = 'true'
-      template.system_template.should == :true
+      expect(template.system_template).to eq(:true)
     end
 
     it "should return :false if template is not a system template" do
       template.element["SYSTEM_TEMPLATE"] = 'false'
-      template.system_template.should == :false
+      expect(template.system_template).to eq(:false)
     end
   end
 

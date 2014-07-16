@@ -48,7 +48,7 @@ describe Puppet::Util::AgentilSystem do
 
   describe "id" do
     it "should return the id as integer" do
-      system.id.should == 13
+      expect(system.id).to eq(13)
     end
   end
 
@@ -60,12 +60,12 @@ describe Puppet::Util::AgentilSystem do
   }.each_pair do |property, attribute|
     describe "getting #{property}" do
       it "should return nil if attribute #{attribute} does not exist" do
-        new_system.send(property).should be_nil
+        expect(new_system.send(property)).to be_nil
       end
 
       it "should return the value of attribute #{attribute}" do
         system.element.expects(:[]).with(attribute).returns 'foo'
-        system.send(property).should == 'foo'
+        expect(system.send(property)).to eq('foo')
       end
     end
   
@@ -81,19 +81,19 @@ describe Puppet::Util::AgentilSystem do
     it "should return abap if abap is enabled and java is disabled" do
       system.element["ABAP_ENABLED"] = 'true'
       system.element["JAVA_ENABLED"] = 'false'
-      system.stack.should == :abap
+      expect(system.stack).to eq(:abap)
     end
 
     it "should return java if abap is disabled and java is enabled" do
       system.element["ABAP_ENABLED"] = 'false'
       system.element["JAVA_ENABLED"] = 'true'
-      system.stack.should == :java
+      expect(system.stack).to eq(:java)
     end
 
     it "should return dual if abap und java are enabled" do
       system.element["ABAP_ENABLED"] = 'true'
       system.element["JAVA_ENABLED"] = 'true'
-      system.stack.should == :dual
+      expect(system.stack).to eq(:dual)
     end
   end
 
@@ -119,16 +119,16 @@ describe Puppet::Util::AgentilSystem do
 
   describe "getting ip" do
     it "should return an empty array if INSTANCE_IPS is not present" do
-      new_system.ip.should be_empty
+      expect(new_system.ip).to be_empty
     end
 
     it "should return a single value if one INSTANCE_IP" do
-      system.ip.should == [ '192.168.0.1' ]
+      expect(system.ip).to eq([ '192.168.0.1' ])
     end
 
     it "should return a list of values if more than on INSTANCE_IP" do
       system.element['INSTANCE_IPS'] = %w{192.168.0.1 192.168.0.2 192.168.0.3}
-      system.ip.should == [ '192.168.0.1', '192.168.0.2', '192.168.0.3' ]
+      expect(system.ip).to eq([ '192.168.0.1', '192.168.0.2', '192.168.0.3' ])
     end
   end
 
@@ -167,7 +167,7 @@ describe Puppet::Util::AgentilSystem do
     it "should return the landscape" do
       landscape = mock 'landscape'
       Puppet::Util::Agentil.landscapes.expects(:[]).with(1).returns landscape
-      system.landscape.should == landscape
+      expect(system.landscape).to eq(landscape)
     end
   end
 
@@ -183,7 +183,7 @@ describe Puppet::Util::AgentilSystem do
 
       new_landscape.expects(:assign_system).with(13) #id of system
       system.landscape = 5
-      system.element["PARENT_ID"].should == '5'
+      expect(system.element["PARENT_ID"]).to eq('5')
     end
 
     it "should remove the system from the old landscape" do
@@ -195,13 +195,13 @@ describe Puppet::Util::AgentilSystem do
       new_landscape.expects(:assign_system).with(13)
 
       system.landscape = 5
-      system.element["PARENT_ID"].should == '5'
+      expect(system.element["PARENT_ID"]).to eq('5')
     end
   end
 
   describe "getting system_template" do
     it "should return nil if no template" do
-      new_system.system_template.should be_nil
+      expect(new_system.system_template).to be_nil
     end
 
     it "should raise an error if template cannot be found" do
@@ -212,7 +212,7 @@ describe Puppet::Util::AgentilSystem do
     it "should return the template" do
       template = mock 'template'
       Puppet::Util::Agentil.templates.expects(:[]).with(1000001).returns template
-      system.system_template.should == template
+      expect(system.system_template).to eq(template)
     end
   end
 
@@ -231,7 +231,7 @@ describe Puppet::Util::AgentilSystem do
 
   describe "getting template" do
     it "should return an empty arrary if template section is absent" do
-      new_system.templates.should == []
+      expect(new_system.templates).to be_empty
     end
 
     it "should return the resolved templates" do
@@ -239,7 +239,7 @@ describe Puppet::Util::AgentilSystem do
       t2 = mock 'template2'
       Puppet::Util::Agentil.templates.expects(:[]).with(1).returns t1
       Puppet::Util::Agentil.templates.expects(:[]).with(1000000).returns t2
-      system.templates.should == [ t1, t2 ]
+      expect(system.templates).to eq([ t1, t2 ])
     end
 
     it "should raise an error if template cannot be found" do
@@ -281,7 +281,7 @@ describe Puppet::Util::AgentilSystem do
 
   describe "getting user" do
     it "should return nil if user attribute is absent" do
-      new_system.user.should be_nil
+      expect(new_system.user).to be_nil
     end
 
     it "should raise an error if user cannot be found" do
@@ -292,7 +292,7 @@ describe Puppet::Util::AgentilSystem do
     it "should return the user" do
       user = mock 'user'
       Puppet::Util::Agentil.users.expects(:[]).with(1).returns user
-      system.user.should == user
+      expect(system.user).to eq(user)
     end
   end
 
@@ -305,7 +305,7 @@ describe Puppet::Util::AgentilSystem do
     it "should update the section with the appropiate user id" do
       Puppet::Util::Agentil.users.expects(:[]).with(10).returns mock 'user', :id => 10
       system.user = 10
-      system.element["USER_PROFILE"].should == "10"
+      expect(system.element["USER_PROFILE"]).to eq("10")
     end
   end
 end

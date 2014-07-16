@@ -41,7 +41,7 @@ describe Puppet::Util::AgentilLandscape do
 
   describe "id" do
     it "should return the id as integer" do
-      landscape.id.should == 13
+      expect(landscape.id).to eq(13)
     end
   end
 
@@ -52,11 +52,11 @@ describe Puppet::Util::AgentilLandscape do
   }.each_pair do |property, attribute|
     describe "getting #{property}" do
       it "should return nil if attribute #{attribute} does not exist" do
-        new_landscape.send(property).should be_nil
+        expect(new_landscape.send(property)).to be_nil
       end
       it "should return the value of attribute #{attribute}" do
         landscape.element.expects(:[]).with(attribute).returns 'foo'
-        landscape.send(property).should == 'foo'
+        expect(landscape.send(property)).to eq('foo')
       end
     end
 
@@ -74,7 +74,7 @@ describe Puppet::Util::AgentilLandscape do
       system3 = mock 'system3'
       Puppet::Util::Agentil.systems.expects(:[]).with(1).returns system1
       Puppet::Util::Agentil.systems.expects(:[]).with(3).returns system3
-      landscape.systems.should == [ system1, system3 ]
+      expect(landscape.systems).to eq([ system1, system3 ])
     end
 
     it "should raise an error if a system cannot be found" do
@@ -86,58 +86,58 @@ describe Puppet::Util::AgentilLandscape do
 
   describe "assign_system" do
     it "should add new system to the internal array" do
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
       landscape.assign_system 10
-      landscape.assigned_systems.should == [1, 3, 10]
+      expect(landscape.assigned_systems).to eq([1, 3, 10])
     end
 
     it "should not assign a system twice" do
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
       landscape.assign_system 3
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
     end
 
     it "should add the system to the appropiate systems section" do
-      landscape.element['CONNECTORS'].should == [ 1,3 ]
+      expect(landscape.element['CONNECTORS']).to eq([ 1,3 ])
       landscape.assign_system 10
-      landscape.element['CONNECTORS'].should == [ 1,3,10 ]
+      expect(landscape.element['CONNECTORS']).to eq([ 1,3,10 ])
     end
 
     it "should create the systems section first if necessary" do
       expect(new_landscape.element).to_not have_key('CONNECTORS')
-      new_landscape.assigned_systems.should be_empty
+      expect(new_landscape.assigned_systems).to be_empty
 
       new_landscape.assign_system 33
 
-      new_landscape.assigned_systems.should == [ 33 ]
-      new_landscape.element['CONNECTORS'].should == [33]
+      expect(new_landscape.assigned_systems).to eq([ 33 ])
+      expect(new_landscape.element['CONNECTORS']).to eq([33])
     end
   end
 
   describe "deassign_system" do
     it "should delete the system from the internal array" do
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
       landscape.deassign_system 1
-      landscape.assigned_systems.should == [3]
+      expect(landscape.assigned_systems).to eq([3])
     end
 
     it "should do nothing if system is not assigned" do
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
       landscape.deassign_system 10
-      landscape.assigned_systems.should == [1, 3]
+      expect(landscape.assigned_systems).to eq([1, 3])
     end
 
     it "should delete the system from the appropiate systems section" do
-      landscape.element['CONNECTORS'].should == [1, 3]
+      expect(landscape.element['CONNECTORS']).to eq([1, 3])
       landscape.deassign_system 1
-      landscape.element['CONNECTORS'].should == [ 3 ]
+      expect(landscape.element['CONNECTORS']).to eq([ 3 ])
     end
 
     it "should completly remove the systems section if last assignment was removed" do
       landscape.deassign_system 1
       landscape.deassign_system 3
 
-      landscape.assigned_systems.should be_empty
+      expect(landscape.assigned_systems).to be_empty
       expect(new_landscape.element).to_not have_key('CONNECTORS')
     end
   end

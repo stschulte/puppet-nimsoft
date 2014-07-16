@@ -96,7 +96,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
       it "should do nothing" do
         status = run_in_catalog(resource_absent)
         config_should_match_fixture('sample.cfg')
-        status.changed?.should be_empty
+        expect(status.changed?).to be_empty
       end
     end
 
@@ -104,13 +104,13 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
       it "should remove the resource" do
         state = run_in_catalog(resource_destroy)
         config_should_match_fixture('output_remove.cfg')
-        state.changed?.should == [ resource_destroy ]
+        expect(state.changed?).to eq([ resource_destroy ])
       end
 
       it "should remove the landscape and all systems" do
         state = run_in_catalog(resource_destroy_with_systems)
         config_should_match_fixture('output_remove_with_systems.cfg')
-        state.changed?.should == [ resource_destroy_with_systems ]
+        expect(state.changed?).to eq([ resource_destroy_with_systems ])
       end
     end
   end
@@ -120,7 +120,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
       it "should add the resource" do
         state = run_in_catalog(resource_create)
         config_should_match_fixture('output_add.cfg')
-        state.changed?.should == [ resource_create ]
+        expect(state.changed?).to eq([ resource_create ])
       end
     end
 
@@ -128,13 +128,13 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil), '(integration
       it "should do nothing if in sync" do
         status = run_in_catalog(resource_present)
         config_should_match_fixture('sample.cfg')
-        status.changed?.should be_empty
+        expect(status.changed?).to  be_empty
       end
 
       it "should modify attributes if not in sync" do
         status = run_in_catalog(resource_modify)
         config_should_match_fixture('output_modify.cfg')
-        status.changed?.should == [ resource_modify ]
+        expect(status.changed?).to eq([ resource_modify ])
       end
     end
   end
