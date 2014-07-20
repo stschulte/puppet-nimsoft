@@ -29,7 +29,6 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     new_template.name = resource[:name]
     new_template.system_template = resource[:system]
     new_template.jobs = resource[:jobs] if resource[:jobs]
-    new_template.monitors = resource[:monitors] if resource[:monitors]
     @property_hash[:agentil_template] = new_template
   end
 
@@ -44,19 +43,6 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
 
   def jobs=(new_value)
     @property_hash[:agentil_template].jobs = new_value
-  end
-
-  # monitors is no valid attribute anymore. Always pretend insync
-  def monitors
-    if resource and resource[:monitors]
-      resource[:monitors]
-    else
-      @property_hash[:agentil_template].monitors
-    end
-  end
-
-  def monitors=(new_value)
-    @property_hash[:agentil_template].monitors = new_value
   end
 
   def system

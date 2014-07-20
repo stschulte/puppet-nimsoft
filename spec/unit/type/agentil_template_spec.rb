@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_template) do
       end
     end
 
-    [:system, :jobs, :monitors, :tablespace_used, :expected_instances ].each do |property|
+    [:system, :jobs, :tablespace_used, :expected_instances ].each do |property|
       it "should have a #{property} property" do
         expect(described_class.attrtype(property)).to eq(:property)
       end

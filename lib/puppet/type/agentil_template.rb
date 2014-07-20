@@ -47,20 +47,6 @@ Puppet::Type.newtype(:agentil_template) do
     end
   end
 
-  newproperty(:monitors, :array_matching => :all) do
-    desc "An array of monitor ids that should be assigned to the template"
-
-    validate do |value|
-      unless /^\d+$/.match(value)
-        raise Puppet::Error, "Monitor ID has to be numeric, not #{value}"
-      end
-    end
-
-    munge do |value|
-      value.to_i
-    end
-  end
-
   # Custom job 166
   newproperty(:tablespace_used) do
     desc "A Hashmap of tablespaces that should be monitored differently

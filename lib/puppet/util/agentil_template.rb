@@ -53,16 +53,6 @@ class Puppet::Util::AgentilTemplate
     end
   end
 
-  # Monitors in no valid attribute anymore
-  def monitors
-    []
-  end
-
-  # Monitors in no valid attribute anymore
-  def monitors=(new_value)
-    @element.delete('MONITORS')
-  end
-
   def customized?(jobid)
     cust = @element['CUSTOMIZATION'] and cust[jobid.to_s]
   end

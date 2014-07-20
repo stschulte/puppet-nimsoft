@@ -11,7 +11,6 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
       :name        => 'System Template for system id 1',
       :ensure      => 'present',
       :system      => 'true',
-      :monitors    => [ '1', '30' ],
       :jobs        => [ '79', '78', '600', '601' ]
     )
   end
@@ -38,7 +37,6 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
       :name        => 'System Template for system id 5',
       :ensure      => 'present',
       :system      => 'true',
-      :monitors    => [ '1', '40', '30' ],
       :jobs        => [ '10', '16', '14', '3' ]
     )
   end
@@ -48,7 +46,6 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
       :name                => 'System Template for system id 2',
       :ensure              => 'present',
       :system              => 'true',
-      :monitors            => [ '79', '600', '601' ],
       :jobs                => [ '1', '20', '24', '49' ],
       :expected_instances  => [ 'sap01_FOO_01', 'sap01_FOO_02']
     )
