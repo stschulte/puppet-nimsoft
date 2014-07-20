@@ -267,14 +267,10 @@ autorequired and you do not have to define an explicit require.
 The `sapbasis_agentil` probe can be used to monitor SAP instances. The probe
 is available trough CA but has been developed by Agentil.
 
-While the probe shares the same configuration file format as any other nimsoft
-probe (note: this is about to change and new versions use json as a
-configuration format) the configuration file is very special in how it
-represents arrays (e.g. one system can be assigned to more than one
-template) and references (e.g. system definition can reference a user definition)
-
-This way it is nearly impossible to use the native nimsoft deployment mechanism
-to make configuration changes.
+**NOTE**: The agentil probe uses a new json based configuration file format
+since version `4.00`. The puppet types can only handle this new format, so
+if you are using an older version of the `sapbasis_agentil` probe, you'll most
+likely destroy your configuration file!
 
 The custom types for handling different aspects of your `sapbasis_agentil` allow
 a very abstract view of the configuration file and are able to add/remove/modify
@@ -342,7 +338,7 @@ system you want to monitor. There are three types of templates:
 
 The puppet type `agentil_template` currently ignores vendor templates completly
 but can be used to create custom templates and system templates. If you specify
-a system template you should not set `jobs` and `monitors` explicitly since these
+a system template you should not set `jobs` explicitly since these
 are inherited from the assigned templates. But you can use the `agentil_template`
 type to establish customizations like custom tablespace utilization thresholds.
 
@@ -351,7 +347,6 @@ Example:
     agentil_template { 'Custom Template':
       ensure    => present,
       system    => false,
-      monitors  => [ 1, 4, 10, 20, 33 ],
       jobs      => [ 4, 5, 12, 177, 3 ],
 
     agentil_template { 'System template for System sap01':
