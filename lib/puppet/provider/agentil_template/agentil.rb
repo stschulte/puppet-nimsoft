@@ -46,8 +46,13 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     @property_hash[:agentil_template].jobs = new_value
   end
 
+  # monitors is no valid attribute anymore. Always pretend insync
   def monitors
-    @property_hash[:agentil_template].monitors
+    if resource and resource[:monitors]
+      resource[:monitors]
+    else
+      @property_hash[:agentil_template].monitors
+    end
   end
 
   def monitors=(new_value)
@@ -64,9 +69,9 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
 
   def tablespace_used
     used = {}
-    if job = @property_hash[:agentil_template].custom_jobs[166] and parameters = job.child('PARAMETER_VALUES')
-      names = PSON.parse(parameters[:INDEX000])
-      values = PSON.parse(parameters[:INDEX001])
+    if job = @property_hash[:agentil_template].custom_jobs[166] and parameters = job['PARAMETERS']
+      names = PSON.parse(parameters[0]["PARAMETER_VALUE"])
+      values = PSON.parse(parameters[1]["PARAMETER_VALUE"])
 
       names.each_with_index do |tablespace, index|
         used[tablespace.intern] = values[index].to_i
@@ -86,14 +91,22 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
         names  << tablespace.to_s
         values << new_value[tablespace]
       end
-      job.path('PARAMETER_VALUES')[:INDEX000] = names.to_pson
-      job.path('PARAMETER_VALUES')[:INDEX001] = values.to_pson
+      job['PARAMETERS'] = [
+        {
+          'IDX'             => '0',
+          'PARAMETER_VALUE' => names.to_pson
+        },
+        {
+          'IDX'             => '1',
+          'PARAMETER_VALUE' => values.to_pson
+        }
+      ]
     end
   end
 
   def expected_instances
-    if job = @property_hash[:agentil_template].custom_jobs[177] and parameters = job.child('EXPECTED_INSTANCES')
-      parameters.values_in_order
+    if job = @property_hash[:agentil_template].custom_jobs[177] and instances = job['Default']
+      instances.map { |i| i['EXPECTED_INSTANCES'] }
     else
       []
     end
@@ -105,22 +118,15 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     else
       job = @property_hash[:agentil_template].add_custom_job 177
 
-      mandatory_instances_info = job.path('MANDATORY_INSTANCES')
-      criticality_info = job.path('CRITICITIES')
-      autoclear_info = job.path('AUTO_CLEARS')
-      expected_instances_info = job.path('EXPECTED_INSTANCES')
-
-      mandatory_instances_info.clear_attr
-      criticality_info.clear_attr
-      autoclear_info.clear_attr
-      expected_instances_info.clear_attr
-
+      job['Default'] = []
       new_value.each_with_index do |instance, index|
-        key = sprintf("INDEX%03d", index).intern
-        expected_instances_info[key] = instance
-        mandatory_instances_info[key] = 'true'
-        criticality_info[key] = '5'
-        autoclear_info[key] = 'true'
+        job['Default'] << {
+          'IDX'                => index.to_s,
+          'MANDATORY'          => 'true',
+          'SEVERITY'           => '5',
+          'AUTOCLEAR'          => 'true',
+          'EXPECTED_INSTANCES' => instance
+        }
       end
     end
   end

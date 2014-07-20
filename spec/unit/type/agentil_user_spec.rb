@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:agentil_user) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [:password].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:agentil_user) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'SAP_PROBE', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'SAP_PROBE', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'SAP_PROBE', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'SAP_PROBE', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -40,7 +40,7 @@ describe Puppet::Type.type(:agentil_user) do
     describe "for name" do
       [ 'FOOBAR', 'SAP_PROBE', 'PROBE001' ].each do |name|
         it "should accept a valid name like #{name}" do
-          described_class.new(:name => name, :ensure => 'present')[:name].should == name
+          expect(described_class.new(:name => name, :ensure => 'present')[:name]).to eq(name)
         end
       end
 

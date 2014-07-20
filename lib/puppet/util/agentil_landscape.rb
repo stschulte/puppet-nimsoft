@@ -7,19 +7,19 @@ class Puppet::Util::AgentilLandscape
   def initialize(id, element)
     @id = id
     @element = element
-    if system_section = @element.child('SYSTEMS')
-      @system_ids = system_section.values_in_order.map(&:to_i)
+    if system_section = @element['CONNECTORS']
+      @system_ids = system_section
     else
       @system_ids = []
     end
   end
 
   def name
-    @element[:NAME]
+    @element["NAME"]
   end
 
   def name=(new_value)
-    @element[:NAME] = new_value
+    @element["NAME"] = new_value
   end
 
   def systems
@@ -33,27 +33,27 @@ class Puppet::Util::AgentilLandscape
   end
 
   def company
-    @element[:COMPANY]
+    @element["COMPANY"]
   end
 
   def company=(new_value)
-    @element[:COMPANY] = new_value
+    @element["COMPANY"] = new_value
   end
 
   def sid
-    @element[:SYSTEM_ID]
+    @element["SYSTEM_ID"]
   end
 
   def sid=(new_value)
-    @element[:SYSTEM_ID] = new_value
+    @element["SYSTEM_ID"] = new_value
   end
 
   def description
-    @element[:DESCRIPTION]
+    @element["DESCRIPTION"]
   end
 
   def description=(new_value)
-    @element[:DESCRIPTION] = new_value
+    @element["DESCRIPTION"] = new_value
   end
   
   def assigned_systems
@@ -75,15 +75,9 @@ class Puppet::Util::AgentilLandscape
 
   def rebuild_systems_section
     if @system_ids.empty?
-      if systems_section = @element.child('SYSTEMS')
-        @element.children.delete(systems_section)
-      end
+      @element.delete("CONNECTORS")
     else
-      systems_section = @element.path('SYSTEMS')
-      systems_section.clear_attr
-      @system_ids.each_with_index do |id, index|
-        systems_section[sprintf("INDEX%03d", index).intern] = id.to_s
-      end
+      @element["CONNECTORS"] = @system_ids.dup
     end
   end
 end

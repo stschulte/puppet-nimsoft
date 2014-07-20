@@ -20,12 +20,12 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
   end
 
   let :user_element do
-    element = Puppet::Util::NimsoftSection.new('USER815')
-    element[:ID] = '815'
-    element[:TITLE] = 'SAP_PROBE'
-    element[:USER] = 'SAP_PROBE'
-    element[:ENCRYPTED_PASSWD] = 'some_encrypted_stuff'
-    element
+    {
+      "ID"               => "815",
+      "TITLE"            => "SAP_PROBE",
+      "ENCRYPTED_PASSWD" => 'some_encrypted_stuff',
+      "USER"             => "SAP_PROBE"
+    }
   end
 
   let :resource do
@@ -42,12 +42,12 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
     describe "exists?" do
       it "should return true if the instance is present" do
         instance = described_class.new(:name => 'SAP_PROBE', :ensure => :present)
-        instance.should be_exists
+        expect(instance).to be_exists
       end
 
       it "should return false otherwise" do
         instance = described_class.new(:name => 'SAP_PROBE')
-        instance.should_not be_exists
+        expect(instance).to_not be_exists
       end
     end
 
@@ -93,7 +93,7 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
     describe "when managing #{property}" do
       it "should delegate the getter method to the AgentilUser object" do
         user.expects(property).returns "value_for_#{property}"
-        provider.send(property).should == "value_for_#{property}"
+        expect(provider.send(property)).to eq("value_for_#{property}")
       end
 
       it "should delegate the setter method to the AgentilUser object" do

@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:agentil_template) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [:system, :jobs, :monitors, :tablespace_used, :expected_instances ].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:agentil_template) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'foo', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'foo', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'foo', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'foo', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -39,38 +39,21 @@ describe Puppet::Type.type(:agentil_template) do
 
     describe "for system" do
       it "should accept true" do
-        described_class.new(:name => 'foo', :system => 'true')[:system].should == :true
+        expect(described_class.new(:name => 'foo', :system => 'true')[:system]).to eq(:true)
       end
 
       it "should accept false" do
-        described_class.new(:name => 'foo', :system => 'false')[:system].should == :false
-      end
-    end
-
-    describe "for monitors" do
-      it "should allow a single numeric monitor id" do
-        described_class.new(:name => 'foo', :monitors => '20')[:monitors].should == [ 20 ]
-      end
-
-      it "should allow multiple numeric monitor ids as an array" do
-        described_class.new(:name => 'foo', :monitors => [ '20', '4', '12' ])[:monitors].should == [ 20, 4, 12 ]
-      end
-
-      it "should not allow non numeric ids" do
-        expect { described_class.new(:name => 'foo', :monitors => 'a12') }.to raise_error Puppet::Error, /monitor.*numeric/
-        expect { described_class.new(:name => 'foo', :monitors => '12a') }.to raise_error Puppet::Error, /monitor.*numeric/
-        expect { described_class.new(:name => 'foo', :monitors => '1a2') }.to raise_error Puppet::Error, /monitor.*numeric/
-        expect { described_class.new(:name => 'foo', :monitors => [ '12', '1a2' ]) }.to raise_error Puppet::Error, /monitor.*numeric/
+        expect(described_class.new(:name => 'foo', :system => 'false')[:system]).to eq(:false)
       end
     end
 
     describe "for jobs" do
       it "should allow a single numeric job id" do
-        described_class.new(:name => 'foo', :jobs => '20')[:jobs].should == [ 20 ]
+        expect(described_class.new(:name => 'foo', :jobs => '20')[:jobs]).to eq([ 20 ])
       end
 
       it "should allow multiple numeric job ids as an array" do
-        described_class.new(:name => 'foo', :jobs => [ '20', '4', '12' ])[:jobs].should == [ 20, 4, 12 ]
+        expect(described_class.new(:name => 'foo', :jobs => [ '20', '4', '12' ])[:jobs]).to eq([ 20, 4, 12 ])
       end
 
       it "should not allow non numeric ids" do
@@ -92,16 +75,16 @@ describe Puppet::Type.type(:agentil_template) do
 
 
       it "should allow a hash of the form :tablespace_name => :used_in_percent" do
-        described_class.new(
+        expect(described_class.new(
           :name            => 'foo',
           :tablespace_used => {
             'PSAPSR3'  => '90',
             'PSAPUNDO' => '50'
           }
-        )[:tablespace_used].should == {
+        )[:tablespace_used]).to eq({
             :PSAPSR3  => 90,
             :PSAPUNDO => 50
-        }
+        })
       end
 
       it "should should complain about a non numeric percentage value" do
@@ -117,11 +100,11 @@ describe Puppet::Type.type(:agentil_template) do
 
     describe "for expected_instances" do
       it "should allow a single value" do
-        described_class.new(:name => 'foo', :expected_instances => 'sap01_PRO_00')[:expected_instances].should == ['sap01_PRO_00']
+        expect(described_class.new(:name => 'foo', :expected_instances => 'sap01_PRO_00')[:expected_instances]).to eq(['sap01_PRO_00'])
       end
 
       it "should allow an array of instances names" do
-        described_class.new(:name => 'foo', :expected_instances => [ 'sap01_PRO_00', 'sap01_PRO_01'])[:expected_instances].should == ['sap01_PRO_00', 'sap01_PRO_01']
+        expect(described_class.new(:name => 'foo', :expected_instances => [ 'sap01_PRO_00', 'sap01_PRO_01'])[:expected_instances]).to eq(['sap01_PRO_00', 'sap01_PRO_01'])
       end
 
       it "should not allow whitespaces" do

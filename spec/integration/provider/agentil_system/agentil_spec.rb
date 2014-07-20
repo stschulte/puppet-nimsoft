@@ -87,9 +87,12 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil), '(integration)' 
     catalog.apply
   end
 
+  def config_should_match_fixture(filename)
+    expect(JSON.parse(File.read(input))).to eq(JSON.parse(File.read(my_fixture(filename))))
+  end
+
 
   before :each do
-    Puppet::Util::NimsoftConfig.initvars
     Puppet::Util::Agentil.initvars
     Puppet::Util::Agentil.stubs(:filename).returns input
     Puppet::Type.type(:agentil_system).stubs(:defaultprovider).returns described_class
@@ -99,22 +102,22 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil), '(integration)' 
     describe "when resource is currently absent" do
       it "should do nothing" do
         state = run_in_catalog(resource_absent)
-        File.read(input).should == File.read(my_fixture('sample.cfg'))
-        state.changed?.should be_empty
+        config_should_match_fixture('sample.cfg')
+        expect(state.changed?).to be_empty
       end
     end
 
     describe "when resource is currently present" do
       it "should remove the resource" do
         state = run_in_catalog(resource_destroy)
-        File.read(input).should == File.read(my_fixture('output_remove.cfg'))
-        state.changed?.should == [ resource_destroy ]
+        config_should_match_fixture('output_remove.cfg')
+        expect(state.changed?).to eq([ resource_destroy ])
       end
 
       it "should remove the system template along with the system" do
         state = run_in_catalog(resource_destroy_with_template)
-        File.read(input).should == File.read(my_fixture('output_remove_with_template.cfg'))
-        state.changed?.should == [ resource_destroy_with_template ]
+        config_should_match_fixture('output_remove_with_template.cfg')
+        expect(state.changed?).to eq([ resource_destroy_with_template ])
       end
     end
   end
@@ -123,20 +126,22 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil), '(integration)' 
     describe "when resource is currently absent" do
       it "should add the resource" do
         state = run_in_catalog(resource_create)
-        File.read(input).should == File.read(my_fixture('output_add.cfg'))
-        state.changed?.should == [ resource_create ]
+        config_should_match_fixture('output_add.cfg')
+        expect(state.changed?).to eq([ resource_create ])
       end
     end
 
     describe "when resource is currently present" do
       it "should do nothing if in sync" do
-        run_in_catalog(resource_present).changed?.should be_empty
-        File.read(input).should == File.read(my_fixture('sample.cfg'))
+        state = run_in_catalog(resource_present)
+        config_should_match_fixture('sample.cfg')
+        expect(state.changed?).to be_empty
       end
 
       it "should modify attributes if not in sync" do
-        run_in_catalog(resource_modify).changed?.should == [ resource_modify ]
-        File.read(input).should == File.read(my_fixture('output_modify.cfg'))
+        state = run_in_catalog(resource_modify)
+        config_should_match_fixture('output_modify.cfg')
+        expect(state.changed?).to eq([ resource_modify ])
       end
     end
   end
