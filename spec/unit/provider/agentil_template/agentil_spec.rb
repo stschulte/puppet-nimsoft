@@ -72,7 +72,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       :name      => 'NEW_TEMPLATE',
       :ensure    => 'present',
       :system    => 'true',
-      :jobs      => [ '122', '55' ],
+      :jobs      => [ '122', '55' ]
     )
     resource.provider = provider
     resource
