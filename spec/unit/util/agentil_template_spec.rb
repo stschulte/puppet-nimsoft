@@ -120,13 +120,13 @@ describe Puppet::Util::AgentilTemplate do
     end
 
     it "should not touch other customizations" do
-      expect(template.element['CUSTOMIZATION'].keys).to eq([ 177, '79', '78' ])
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '79', '78' )
       template.del_custom_job 79
-      expect(template.element['CUSTOMIZATION'].keys).to eq([ 177, '78' ])
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '78')
     end
 
     it "should remove the CUSTOMIZATION section if this was the last customization" do
-      expect(template.element['CUSTOMIZATION'].keys).to eq([ 177, '79', '78' ])
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '79', '78')
 
       template.del_custom_job 177
       template.del_custom_job 79
