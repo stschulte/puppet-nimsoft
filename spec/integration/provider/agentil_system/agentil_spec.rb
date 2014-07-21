@@ -51,6 +51,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil), '(integration)' 
       :client    => '000',
       :group     => 'LOGON_GROUP_01',
       :landscape => 'sapdev.example.com',
+      :ccms_mode => 'strict',
       :templates => [ 'Custom Template' ]
     )
   end
