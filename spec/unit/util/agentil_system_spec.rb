@@ -117,6 +117,30 @@ describe Puppet::Util::AgentilSystem do
     end
   end
 
+  describe "getting ccms_mode" do
+    it "should return strict if CCMS_STRICT_MODE is true" do
+      system.element["CCMS_STRICT_MODE"] = 'true'
+      expect(system.ccms_mode).to eq(:strict)
+    end
+
+    it "should return aggregated if CCMS_STRICT_MODE is false" do
+      system.element["CCMS_STRICT_MODE"] = 'false'
+      expect(system.ccms_mode).to eq(:aggregated)
+    end
+  end
+
+  describe "setting ccms_mode" do
+    it "should set CCMS_STRICT_MODE to true on strict" do
+      system.element.expects(:[]=).with("CCMS_STRICT_MODE", 'true')
+      system.ccms_mode = :strict
+    end
+
+    it "should set CCMS_STRICT_MODE to false on aggregated" do
+      system.element.expects(:[]=).with("CCMS_STRICT_MODE", 'false')
+      system.ccms_mode = :aggregated
+    end
+  end
+
   describe "getting ip" do
     it "should return an empty array if INSTANCE_IPS is not present" do
       expect(new_system.ip).to be_empty

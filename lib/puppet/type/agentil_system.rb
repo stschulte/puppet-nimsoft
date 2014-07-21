@@ -115,6 +115,17 @@ Puppet::Type.newtype(:agentil_system) do
     end
   end
 
+  newproperty(:ccms_mode) do
+    desc "Describes the mode in which to represent failures. The default
+      value is `aggregated` and you'll get one message for each system
+      with outstanding CCMS errors. The message will only tell you how
+      many errors exist but not which one exactly. If you specify `strict`,
+      you'll get one message for each CCMS error, telling you which error
+      exactly occured."
+
+    newvalues :strict, :aggregated
+  end
+
   autorequire(:agentil_landscape) do
     self[:landscape]
   end

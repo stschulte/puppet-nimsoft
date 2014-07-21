@@ -20,14 +20,14 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   end
 
   let :system_element do
-    element = Puppet::Util::NimsoftSection.new('SYSTEM5')
-    element[:ID] = '5'
-    element[:NAME] = 'ABC_sap01'
-    element[:SYSTEM_ID] = 'ABC'
-    element[:HOST] = 'sap01.example.com'
-    element[:JAVA_ENABLED] = 'false'
-    element[:ABAP_ENABLED] = 'true'
-    element
+    {
+      'ID'           => '5',
+      'NAME'         => 'ABC_sap01',
+      'SYSTEM_ID'    => 'ABC',
+      'HOST'         => 'sap01.example.com',
+      'JAVA_ENABLED' => 'false',
+      'ABAP_ENABLED' => 'true'
+    }
   end
 
   let :users do
@@ -77,6 +77,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
       :ip               => [ '192.168.0.1', '192.168.0.2' ],
       :stack            => 'abap',
       :client           => '000',
+      :ccms_mode        => 'aggregated',
       :user             => 'SAP_PRO',
       :group            => 'LOGON_GROUP_01',
       :system_template  => 'Systemtemplate for PRO',
@@ -110,6 +111,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
         system.expects(:ip=).with ['192.168.0.1', '192.168.0.2']
         system.expects(:stack=).with :abap
         system.expects(:user=).with users[3]
+        system.expects(:ccms_mode=).with :aggregated
         system.expects(:client=).with '000'
         system.expects(:group=).with 'LOGON_GROUP_01'
         system.expects(:landscape=).with 'ABC'

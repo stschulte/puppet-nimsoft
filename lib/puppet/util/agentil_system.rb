@@ -66,6 +66,23 @@ class Puppet::Util::AgentilSystem
     end
   end
 
+  def ccms_mode
+    if mode = @element['CCMS_STRICT_MODE'] and mode == 'true'
+      :strict
+    else
+      :aggregated
+    end
+  end
+
+  def ccms_mode=(new_value)
+    case new_value
+    when :strict
+      @element['CCMS_STRICT_MODE'] = 'true'
+    when :aggregated
+      @element['CCMS_STRICT_MODE'] = 'false'
+    end
+  end
+
   def sid
     @element['SYSTEM_ID']
   end

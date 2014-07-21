@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_system) do
       end
     end
 
-    [:sid, :host, :stack, :user, :client, :group, :landscape, :system_template, :templates, :ensure].each do |property|
+    [:sid, :host, :stack, :user, :client, :group, :landscape, :system_template, :templates, :ccms_mode, :ensure].each do |property|
       it "should have a #{property} property" do
         described_class.attrtype(property).should == :property
       end
@@ -191,6 +191,20 @@ describe Puppet::Type.type(:agentil_system) do
 
       it "should allow multiple templates as an array" do
         described_class.new(:name => 'foo', :templates => [ 'Template 1', 'Template 2'])[:templates].should == [ 'Template 1', 'Template 2' ]
+      end
+    end
+
+    describe "ccms_mode" do
+      it "should allow strict" do
+        expect(described_class.new(:name => 'foo', :ccms_mode => 'strict')[:ccms_mode]).to eq(:strict)
+      end
+
+      it "should allow aggregated" do
+        expect(described_class.new(:name => 'foo', :ccms_mode => 'aggregated')[:ccms_mode]).to eq(:aggregated)
+      end
+
+      it "should not allow other values" do
+        expect { described_class.new(:name => 'foo', :ccms_mode => 'foo') }.to raise_error Puppet::Error, /Invalid value/
       end
     end
   end

@@ -65,6 +65,7 @@ Puppet::Type.type(:agentil_system).provide(:agentil) do
     new_system.host = resource[:host]
     new_system.ip = resource[:ip] if resource[:ip]
     new_system.stack = resource[:stack]
+    new_system.ccms_mode = resource[:ccms_mode] unless resource[:ccms_mode].nil?
     new_system.user = user unless user.nil?
     new_system.client = resource[:client] if resource[:client]
     new_system.group = resource[:group] if resource[:group]
@@ -79,7 +80,7 @@ Puppet::Type.type(:agentil_system).provide(:agentil) do
     @property_hash.delete :agentil_system
   end
 
-  [:sid, :host, :ip, :stack, :client, :group ].each do |prop|
+  [:sid, :host, :ip, :stack, :client, :group, :ccms_mode ].each do |prop|
     define_method(prop) do
       @property_hash[:agentil_system].send(prop)
     end
