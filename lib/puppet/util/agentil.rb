@@ -28,6 +28,8 @@ class Puppet::Util::Agentil
   end
 
   def self.parse
+    self.initvars
+
     unless Puppet.features.json?
       raise Puppet::Error, "Unable to parse #{filename} without the json gem. Please install json first"
     end
