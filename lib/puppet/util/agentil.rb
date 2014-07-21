@@ -108,8 +108,18 @@ class Puppet::Util::Agentil
       id = 1
       id += 1 while @systems.include? id
       element = {
-        'ID'     => id.to_s,
-        'ACTIVE' => 'true'
+        'ID'                     => id.to_s,
+        'ACTIVE'                 => 'true',
+        'MAX_INVALID_TIME'       => '180000',
+        'MAX_RESPONSE_TIME'      => '30000',
+        'TYPE'                   => '0',
+        'NB_WORKERS'             => '1',
+        'SECURE_MODE'            => 'false',
+        'SAPCONTROL_PORT'        => '0',
+        'CCMS_STRICT_MODE'       => 'false',
+        'CRYPTO_CONVERTED'       => 'true',
+        'SNC_MODE'               => 'false',
+        'SNC_QUALITY_PROTECTION' => '3'
       }
       @config["CONNECTORS"] ||= []
       @config["CONNECTORS"] << element
