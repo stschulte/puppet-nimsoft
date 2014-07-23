@@ -39,20 +39,22 @@ class Puppet::Util::NimsoftConfig
     Puppet.debug "parsing nimsoft configuration file #{@name}"
     if File.exists?(@name)
       current_section = self
-      File.read(@name).each_line do |line|
-        case line.chomp!
-        when /^\s*<([^\/]+)>.*$/
-          name = $1.gsub('#','/')
-          current_section = Puppet::Util::NimsoftSection.new(name, current_section)
-        when /^\s*(.*?)\s*=\s*(.*)$/
-          key = $1
-          value =$2
-          current_section[key.intern] = value
-        when /^\s*<\/(.*)>\s*$/
-          current_section = current_section.parent
+      File.open(@name, 'r') do |f|
+        f.each_line do |line|
+          case line.chomp!
+          when /^\s*<([^\/]+)>.*$/
+            name = $1.gsub('#','/')
+            current_section = Puppet::Util::NimsoftSection.new(name, current_section)
+          when /^\s*(.*?)\s*=\s*(.*)$/
+            key = $1
+            value =$2
+            current_section[key.intern] = value
+          when /^\s*<\/(.*)>\s*$/
+            current_section = current_section.parent
+          end
         end
+        @loaded = true
       end
-      @loaded = true
     end
   end
 
@@ -77,6 +79,6 @@ class Puppet::Util::NimsoftConfig
   end
 
   def to_cfg
-    @children.inject("") { |content, section| content += section.to_cfg(tabsize) }
+    @children.inject("") { |content, section| content << section.to_cfg(tabsize) }
   end
 end
