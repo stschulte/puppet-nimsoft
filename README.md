@@ -17,14 +17,16 @@ onto your robot to monitor a specific service.
 
 Each probe that you deploy on a robot is responsible for one or more dedicated
 areas like checking disk and cpu utilization (`cdm` probe) or parsing logfiles
-for errors (`logmon` probe). Most probes will gather quality of server metrics
+for errors (`logmon` probe). Most probes will gather quality of service metrics
 (e.g. publish the current disk utilization every 5 minutes) and can also be
 configured to send alarms once a certain threshold is exceeded (e.g. one disk
 is more than 90% full). Each probe is independet from another and will run as a
 seperate process on your target machine.
 
 The configuration of these probes are stored in flat configuration files
-(`<probename>.cfg`) and are always local to the server you want to monitor.
+(`<probename>.cfg`) on the same host that is running the probe. So while
+nimsoft comes with tools to distribute those monitoring configurations,
+the agent ultimately is completly independent from the server component.
 
 This is important for puppet to be able to change the monitoring policy
 for one server locally.
@@ -32,28 +34,38 @@ for one server locally.
 
 Why managing nimsoft through puppet?
 ------------------------------------
-The ultimate goal is free the administrator of any repetitive task that
-might occure when a new server is provisioned or decomissioned. The second
-goal is use the available puppet infrastructure (e.g. `hiera`) to give the
-consumers of your monitoring landscape the ability to tweak certain aspects
-of your monitoring configuration.
+The ultimate goal of this project is to free the administrator (specifically
+myself) of any repetitive task that might occure when a new server is
+provisioned or decomissioned. The second goal is use the available puppet
+infrastructure (e.g. `hiera`) to give the consumers of your monitoring
+landscape greater insights and the ability to tweak certain aspects of
+your monitoring configuration.
 
 Imagine you want to run an apache webserver and you already use puppet
 to make sure that the `apache` package is installed and the correct
-apache configuration files or vhosts are in place. To setup the
-monitoring for this new website you need information that you
-probably already have in puppet, like the name of the vhost instance
-or the port your vhost is listening on (e.g. to monitor the website
-with the `netconnect` probe and parsing error logs with the `logmon`
-probe).
+apache configuration files (e.g vhost configurations) are in place.
+If you now think about monitoring your new website, you'll notice that you
+need a lot of information to accuratly monitor your service that you
+alreay have in puppet, like the name of the vhost instance or the port your
+vhost is listening on (e.g. to monitor the website with the `netconnect` probe
+and to parse error logs with the `logmon` probe).
 
 So instead of seperating the provisioning process and the monitoring
 configuration, you will now be able combine both, so the `apache` puppet
 class will automatically configure the necessary probes to setup the
-monitoring.
+monitoring and whenever you add a vhost you know that it will be monitored.
+This also increases trust into the infrastructure you can stop asking yourself
+if you really monitor everything.
 
-This goal can be archived by expressing monitoring rules as puppet
-resources and this repository tries to deliver these resources.
+The accomplish these goals of automatic monitoring this projects let you treat
+your monitoring rules as puppet resources.
+
+Despite the described goals, experience showed that having your monitoring rules
+in the same place as your configuration definitions also allows to evaluate that
+all parts of a service are monitored and which changes in the monitoring infrastructure
+are necessary when you make changes to the service you want to monitor, because when
+you make changes to a class that references a monitor class with nimsoft resources
+it is harder to forget to adapt your monitoring.
 
 New facts
 ---------
@@ -89,7 +101,7 @@ Set explicit thresholds on another device:
     }
 
 deactivate the warning threshold and make sure to raise an alarm when
-the device is absent
+the device is absent:
 
     nimsoft_disk { '/var/lib/mysql':
       ensure   => present,
@@ -113,6 +125,13 @@ The `nimsoft_queue` type can be used to describe a queue on your hub.
       type    => attach,
       subject => 'alarm',
     }
+
+With exported resources you are now able to automatically add new hubs
+into the infrastructure and create the necessary get and attach queues
+on both sides.
+
+Run `puppet resource nimsoft_queue` so see how puppet currently interprets
+your hub configuration.
 
 #### nimsoft\_dirscan
 
@@ -265,11 +284,11 @@ autorequired and you do not have to define an explicit require.
 ### Agentil probe
 
 The `sapbasis_agentil` probe can be used to monitor SAP instances. The probe
-is available trough CA but has been developed by Agentil.
+is available through CA but has been developed by Agentil.
 
 **NOTE**: The agentil probe uses a new json based configuration file format
-since version `4.00`. The puppet types can only handle this new format, so
-if you are using an older version of the `sapbasis_agentil` probe, you'll most
+since version 4.00. The puppet types can only handle this new format, so
+if you are using an **older** version of the `sapbasis_agentil` probe, you'll most
 likely destroy your configuration file!
 
 The custom types for handling different aspects of your `sapbasis_agentil` allow
