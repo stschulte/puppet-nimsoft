@@ -51,7 +51,7 @@ class Puppet::Util::NimsoftSection
         s <<  " "*tabsize*(indent+1) << "#{key} = #{@attributes[key]}\n"
       end
     end
-    @children.each { |c| s += c.to_cfg(tabsize, indent+1) }
+    @children.each { |c| s << c.to_cfg(tabsize, indent+1) }
     s <<  " "*tabsize*indent << "</#{name.gsub('/','#')}>\n"
     s
   end
