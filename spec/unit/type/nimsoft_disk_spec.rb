@@ -51,6 +51,20 @@ describe Puppet::Type.type(:nimsoft_disk) do
       end
     end
 
+    describe "for nfs" do
+      it "should allow yes" do
+        expect(described_class.new(:name => '/foo', :nfs => 'yes')[:nfs]).to eq(:yes)
+      end
+
+      it "should allow no" do
+        expect(described_class.new(:name => '/foo', :nfs => 'no')[:nfs]).to eq(:no)
+      end
+
+      it "should not allow anything else" do
+        expect { described_class.new(:name => '/foo', :nfs => 'foo') }.to raise_error Puppet::Error, /Invalid value/
+      end
+    end
+
     describe "for description" do
       it "should allow a single word" do
         described_class.new(:name => '/foo', :description => 'FOO')[:description].should == 'FOO'

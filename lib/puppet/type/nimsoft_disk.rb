@@ -35,6 +35,14 @@ Puppet::Type.newtype(:nimsoft_disk) do
     newvalues :yes, :no
   end
 
+  newproperty(:nfs) do
+    desc "In general a network device will not be monitored,
+      even when marked as `active`. Set this property to `yes`
+      to enable monitoring on network attached storage"
+
+    newvalues :yes, :no
+  end
+
   newproperty(:warning) do
     desc "The warning threshold in free space percentage. Set this to absent if you want to remove the warning threshold"
     newvalues :absent, /^\d+$/

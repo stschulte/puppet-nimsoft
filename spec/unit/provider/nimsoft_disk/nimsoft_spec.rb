@@ -47,7 +47,8 @@ describe Puppet::Type.type(:nimsoft_disk).provider(:nimsoft) do
       :name        => '/opt',
       :ensure      => 'present',
       :active      => 'yes',
-      :device      => '/dev/sda1',
+      :nfs         => 'yes',
+      :device      => '//some_server/some_share',
       :description => 'a short test',
       :warning     => 'absent',
       :critical    => '40'
@@ -88,7 +89,8 @@ describe Puppet::Type.type(:nimsoft_disk).provider(:nimsoft) do
 
         child[:active].should == 'yes'
         child[:description].should == 'a short test'
-        child[:disk].should == '/dev/sda1'
+        child[:disk].should == '//some_server/some_share'
+        child[:nfs_space_check].should == 'yes'
         error_element = child.child('error')
         error_element.should_not be_nil
         error_element[:active].should == 'yes'
@@ -128,6 +130,28 @@ describe Puppet::Type.type(:nimsoft_disk).provider(:nimsoft) do
     it "should set active to \"no\" when new value is :no" do
       element.expects(:[]=).with(:active, 'no')
       provider.active = :no
+    end
+  end
+
+  describe "when managing nfs" do
+    it "should return :yes when active" do
+      element[:nfs_space_check] = 'yes'
+      provider.nfs.should == :yes
+    end
+
+    it "should return :no when not active" do
+      element[:nfs_space_check] = 'no'
+      provider.nfs.should == :no
+    end
+
+    it "should set active to \"yes\" when new value is :yes" do
+      element.expects(:[]=).with(:nfs_space_check, 'yes')
+      provider.nfs = :yes
+    end
+
+    it "should set active to \"no\" when new value is :no" do
+      element.expects(:[]=).with(:nfs_space_check, 'no')
+      provider.nfs = :no
     end
   end
 
