@@ -5,6 +5,7 @@ Puppet::Type.type(:nimsoft_disk).provide(:nimsoft, :parent => Puppet::Provider::
   register_config '/opt/nimsoft/probes/system/cdm/cdm.cfg', 'disk/alarm/fixed'
 
   map_property :active, :symbolize => true
+  map_property :nfs, :attribute => :nfs_space_check, :symbolize => true
   map_property :description
   map_property :device, :attribute => :disk
   map_property :missing, :attribute => :active, :section => 'missing', :symbolize => true
