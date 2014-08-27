@@ -67,6 +67,41 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     }
   end
 
+  let :rfc_element do
+    {
+      'ID'         => '602',
+      'CUSTOMIZED' => 'true',
+      'Default'    => [
+        {
+          'IDX'               => '0',
+          'ACTIVE'            => true,
+          'DESTINATION'       => 'FOO',
+          'EXCLUDED_INSTANCE' => " ",
+          'STRICT'            => true,
+          'CHECK_MODE'        => 2,
+          'SEVERITY'          => 4,
+          'AUTO_CLEAR'        => true,
+          'PREFIX'            => "",
+          'ALARM_ENABLED'     => true,
+          'METRIC_ENABLED'    => true
+        },
+        {
+          'IDX'               => '1',
+          'ACTIVE'            => true,
+          'DESTINATION'       => 'BAR',
+          'EXCLUDED_INSTANCE' => " ",
+          'STRICT'            => true,
+          'CHECK_MODE'        => 2,
+          'SEVERITY'          => 4,
+          'AUTO_CLEAR'        => true,
+          'PREFIX'            => "",
+          'ALARM_ENABLED'     => true,
+          'METRIC_ENABLED'    => true
+        }
+      ]
+    }
+  end
+
   let :resource do
     resource = Puppet::Type.type(:agentil_template).new(
       :name      => 'NEW_TEMPLATE',
@@ -268,6 +303,92 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
             'EXPECTED_INSTANCES' => "i02",
             'AUTOCLEAR'          => "true",
             'MANDATORY'          => "true"
+          }
+        ]
+      })
+    end
+  end
+
+  describe "when managing rfc_destinations" do
+    it "should return an empty array if job 602 is not customized" do
+      expect(provider.rfc_destinations).to be_empty
+    end
+
+    it "should return an array of expected instances if job 602 is customized" do
+      template.expects(:custom_jobs).returns({ 602 => rfc_element })
+      expect(provider.rfc_destinations).to eq(%w{FOO BAR})
+    end
+
+    it "should create a customization for job 602 if not already present" do
+      provider.rfc_destinations = [ 'B2B', 'SOLUTION_MANAGER' ]
+      expect(template.custom_jobs[602]).to eq({
+        'ID'         => '602',
+        'CUSTOMIZED' => 'true',
+        'Default'    => [
+          {
+            'IDX'               => "0",
+            'ACTIVE'            => true,
+            'DESTINATION'       => 'B2B',
+            'EXCLUDED_INSTANCE' => ' ',
+            'STRICT'            => true,
+            'CHECK_MODE'        => 2,
+            'SEVERITY'          => 4,
+            'AUTO_CLEAR'        => true,
+            'PREFIX'            => '',
+            'ALARM_ENABLED'     => true,
+            'METRIC_ENABLED'    => true
+          },
+          {
+            'IDX'               => "1",
+            'ACTIVE'            => true,
+            'DESTINATION'       => 'SOLUTION_MANAGER',
+            'EXCLUDED_INSTANCE' => ' ',
+            'STRICT'            => true,
+            'CHECK_MODE'        => 2,
+            'SEVERITY'          => 4,
+            'AUTO_CLEAR'        => true,
+            'PREFIX'            => '',
+            'ALARM_ENABLED'     => true,
+            'METRIC_ENABLED'    => true
+          }
+        ]
+      })
+    end
+
+    it "should update the customization for job 177 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 602 => rfc_element })
+      template.stubs(:add_custom_job).with(602).returns(rfc_element)
+      provider.rfc_destinations = [ 'B2B', 'SOLUTION_MANAGER' ]
+
+      expect(template.custom_jobs[602]).to eq({
+        'ID'         => '602',
+        'CUSTOMIZED' => 'true',
+        'Default'    => [
+          {
+            'IDX'               => "0",
+            'ACTIVE'            => true,
+            'DESTINATION'       => 'B2B',
+            'EXCLUDED_INSTANCE' => ' ',
+            'STRICT'            => true,
+            'CHECK_MODE'        => 2,
+            'SEVERITY'          => 4,
+            'AUTO_CLEAR'        => true,
+            'PREFIX'            => '',
+            'ALARM_ENABLED'     => true,
+            'METRIC_ENABLED'    => true
+          },
+          {
+            'IDX'               => "1",
+            'ACTIVE'            => true,
+            'DESTINATION'       => 'SOLUTION_MANAGER',
+            'EXCLUDED_INSTANCE' => ' ',
+            'STRICT'            => true,
+            'CHECK_MODE'        => 2,
+            'SEVERITY'          => 4,
+            'AUTO_CLEAR'        => true,
+            'PREFIX'            => '',
+            'ALARM_ENABLED'     => true,
+            'METRIC_ENABLED'    => true
           }
         ]
       })

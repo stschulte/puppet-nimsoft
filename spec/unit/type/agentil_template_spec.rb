@@ -15,7 +15,7 @@ describe Puppet::Type.type(:agentil_template) do
       end
     end
 
-    [:system, :jobs, :tablespace_used, :expected_instances ].each do |property|
+    [:system, :jobs, :tablespace_used, :expected_instances, :rfc_destinations ].each do |property|
       it "should have a #{property} property" do
         expect(described_class.attrtype(property)).to eq(:property)
       end
@@ -109,6 +109,16 @@ describe Puppet::Type.type(:agentil_template) do
 
       it "should not allow whitespaces" do
         expect { described_class.new(:name => 'foo', :expected_instances => 'sap01 PRO')}.to raise_error Puppet::Error, /instance.*must not contain any whitespace/
+      end
+    end
+
+    describe "for rfc_destinations" do
+      it "should allow a single value" do
+        expect(described_class.new(:name => 'foo', :rfc_destinations => 'B2B')[:rfc_destinations]).to eq(['B2B'])
+      end
+
+      it "should allow an array of destinations" do
+        expect(described_class.new(:name => 'foo', :rfc_destinations => ['FOO', 'BAR'])[:rfc_destinations]).to eq(['FOO', 'BAR'])
       end
     end
   end

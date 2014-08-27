@@ -81,4 +81,8 @@ Puppet::Type.newtype(:agentil_template) do
       raise Puppet::Error, "instance #{value.inspect} must not contain any whitespace" if value =~ /\s/
     end
   end
+
+  newproperty(:rfc_destinations, :array_matching => :all) do
+    desc "An array of rfc connections (sm59) that should be monitored for availability"
+  end
 end
