@@ -117,6 +117,38 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
     end
   end
 
+  def rfc_destinations
+    if job = @property_hash[:agentil_template].custom_jobs[602] and destinations = job['Default']
+      destinations.map { |d| d["DESTINATION"] }
+    else
+      []
+    end
+  end
+
+  def rfc_destinations=(new_value)
+    if new_value.empty?
+      @property_hash[:agentil_template].del_custom_job 602
+    else
+      job = @property_hash[:agentil_template].add_custom_job 602
+      job['Default'] = []
+      new_value.each_with_index do |destination, index|
+        job['Default'] << {
+          'IDX'               => index.to_s,
+          'ACTIVE'            => true,
+          'DESTINATION'       => destination,
+          'EXCLUDED_INSTANCE' => ' ',
+          'STRICT'            => true,
+          'CHECK_MODE'        => 2,
+          'SEVERITY'          => 4,
+          'AUTO_CLEAR'        => true,
+          'PREFIX'            => '',
+          'ALARM_ENABLED'     => true,
+          'METRIC_ENABLED'    => true
+        }
+      end
+    end
+  end
+
   def flush
     Puppet::Util::Agentil.sync
   end

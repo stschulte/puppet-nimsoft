@@ -47,7 +47,8 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil), '(integration)
       :ensure              => 'present',
       :system              => 'true',
       :jobs                => [ '1', '20', '24', '49' ],
-      :expected_instances  => [ 'sap01_FOO_01', 'sap01_FOO_02']
+      :expected_instances  => [ 'sap01_FOO_01', 'sap01_FOO_02'],
+      :rfc_destinations    => [ 'SOLUTION_MANAGER', 'B2B' ]
     )
   end
 
