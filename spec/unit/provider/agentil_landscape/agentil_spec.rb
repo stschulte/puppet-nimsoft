@@ -44,12 +44,12 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
     describe "exists?" do
       it "should return true if the instance is present" do
         instance = described_class.new(:name => 'foo', :ensure => :present)
-        instance.should be_exists
+        expect(instance).to be_exists
       end
 
       it "should return false otherwise" do
         instance = described_class.new(:name => 'foo')
-        instance.should_not be_exists
+        expect(instance).to_not be_exists
       end
     end
 
@@ -97,7 +97,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
     describe "when managing #{property}" do
       it "should delegate the getter method to the AgentilLandscape class" do
         landscape.expects(property).returns "value_for_#{property}"
-        provider.send(property).should == "value_for_#{property}"
+        expect(provider.send(property)).to eq("value_for_#{property}")
       end
 
       it "should delegate the setter method to the AgentilLandscape class" do

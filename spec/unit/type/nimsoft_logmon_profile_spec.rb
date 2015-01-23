@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [ :ensure, :active, :file, :mode, :interval, :qos, :alarm, :alarm_maxserv ].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'foo', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'foo', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'foo', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'foo', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -39,11 +39,11 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
     describe "for active" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :active => 'yes')[:active].should == :yes
+        expect(described_class.new(:name => 'foo', :active => 'yes')[:active]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :active => 'no')[:active].should == :no
+        expect(described_class.new(:name => 'foo', :active => 'no')[:active]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -53,29 +53,29 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
     describe "for file" do
       it "should allow an absolute path" do
-        described_class.new(:name => 'foo', :ensure => :present, :file => '/var/log/messages')[:file].should == '/var/log/messages'
+        expect(described_class.new(:name => 'foo', :ensure => :present, :file => '/var/log/messages')[:file]).to eq('/var/log/messages')
       end
       
       it "should allow time formatting primitives" do
-        described_class.new(:name => 'foo', :ensure => :present, :file => '/var/log/messages-%Y-%m-%d')[:file].should == '/var/log/messages-%Y-%m-%d'
+        expect(described_class.new(:name => 'foo', :ensure => :present, :file => '/var/log/messages-%Y-%m-%d')[:file]).to eq('/var/log/messages-%Y-%m-%d')
       end
     end
 
     describe "for mode" do
       it "should allow cat" do
-        described_class.new(:name => 'foo', :mode => 'cat')[:mode].should == :cat
+        expect(described_class.new(:name => 'foo', :mode => 'cat')[:mode]).to eq(:cat)
       end
 
       it "should allow full" do
-        described_class.new(:name => 'foo', :mode => 'full')[:mode].should == :full
+        expect(described_class.new(:name => 'foo', :mode => 'full')[:mode]).to eq(:full)
       end
 
       it "should allow full_time" do
-        described_class.new(:name => 'foo', :mode => 'full_time')[:mode].should == :full_time
+        expect(described_class.new(:name => 'foo', :mode => 'full_time')[:mode]).to eq(:full_time)
       end
 
       it "should allow updates" do
-        described_class.new(:name => 'foo', :mode => 'updates')[:mode].should == :updates
+        expect(described_class.new(:name => 'foo', :mode => 'updates')[:mode]).to eq(:updates)
       end
 
       # TODO: implement command, queue and URL which require additional
@@ -87,11 +87,11 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
     describe "for interval" do
       it "should allow a timespan defined in seconds" do
-        described_class.new(:name => 'foo', :interval => '10 sec')[:interval].should == '10 sec'
+        expect(described_class.new(:name => 'foo', :interval => '10 sec')[:interval]).to eq('10 sec')
       end
 
       it "should allow a timespan defined in minutes" do
-        described_class.new(:name => 'foo', :interval => '5 min')[:interval].should == '5 min'
+        expect(described_class.new(:name => 'foo', :interval => '5 min')[:interval]).to eq('5 min')
       end
 
       it "should not allow a negative number" do
@@ -105,11 +105,11 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
     describe "for qos" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :qos => 'yes')[:qos].should == :yes
+        expect(described_class.new(:name => 'foo', :qos => 'yes')[:qos]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :qos => 'no')[:qos].should == :no
+        expect(described_class.new(:name => 'foo', :qos => 'no')[:qos]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -119,11 +119,11 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
 
     describe "for alarm" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :alarm => 'yes')[:alarm].should == :yes
+        expect(described_class.new(:name => 'foo', :alarm => 'yes')[:alarm]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :alarm => 'no')[:alarm].should == :no
+        expect(described_class.new(:name => 'foo', :alarm => 'no')[:alarm]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -134,7 +134,7 @@ describe Puppet::Type.type(:nimsoft_logmon_profile) do
     describe "for alarm_maxserv" do
       [ :info, :warning, :minor, :major, :critical ].each do |criticality|
         it "should support #{criticality}" do
-          described_class.new(:name => 'foo', :alarm_maxserv => criticality.to_s)[:alarm_maxserv].should == criticality
+          expect(described_class.new(:name => 'foo', :alarm_maxserv => criticality.to_s)[:alarm_maxserv]).to eq(criticality)
         end
       end
 

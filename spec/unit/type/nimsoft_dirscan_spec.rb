@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:nimsoft_dirscan) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [:active, :description, :directory, :pattern, :recurse, :direxists, :direxists_action, :nofiles, :nofiles_action, :size, :size_type, :size_action].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'foo', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'foo', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'foo', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'foo', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -39,21 +39,21 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
 
     describe "for description" do
       it "should allow a single word" do
-        described_class.new(:name => 'foo', :description => 'FOO')[:description].should == 'FOO'
+        expect(described_class.new(:name => 'foo', :description => 'FOO')[:description]).to eq('FOO')
       end
 
       it "should allow spaces" do
-        described_class.new(:name => 'foo', :description => 'Check alertlog size')[:description].should == 'Check alertlog size'
+        expect(described_class.new(:name => 'foo', :description => 'Check alertlog size')[:description]).to eq('Check alertlog size')
       end
     end
 
     describe "for active" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :active => 'yes')[:active].should == :yes
+        expect(described_class.new(:name => 'foo', :active => 'yes')[:active]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :active => 'no')[:active].should == :no
+        expect(described_class.new(:name => 'foo', :active => 'no')[:active]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -63,27 +63,27 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
 
     describe "for directory" do
       it "should allow an absolute path" do
-        described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log')[:directory].should == '/var/log'
+        expect(described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log')[:directory]).to eq('/var/log')
       end
     end
 
     describe "for pattern" do
       it "should allow a single filename" do
-        described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log', :pattern => 'messages')[:pattern].should == 'messages'
+        expect(described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log', :pattern => 'messages')[:pattern]).to eq('messages')
       end
 
       it "should allow a glob" do
-        described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log', :pattern => '*.log')[:pattern].should == '*.log'
+        expect(described_class.new(:name => 'foo', :ensure => :present, :directory => '/var/log', :pattern => '*.log')[:pattern]).to eq('*.log')
       end
     end
 
     describe "for recurse" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :recurse => 'yes')[:recurse].should == :yes
+        expect(described_class.new(:name => 'foo', :recurse => 'yes')[:recurse]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :recurse => 'no')[:recurse].should == :no
+        expect(described_class.new(:name => 'foo', :recurse => 'no')[:recurse]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -93,11 +93,11 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
 
     describe "for direxists" do
       it "should allow yes" do
-        described_class.new(:name => 'foo', :direxists => 'yes')[:direxists].should == :yes
+        expect(described_class.new(:name => 'foo', :direxists => 'yes')[:direxists]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'foo', :direxists => 'no')[:direxists].should == :no
+        expect(described_class.new(:name => 'foo', :direxists => 'no')[:direxists]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -108,11 +108,11 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
     [:direxists_action, :nofiles_action, :size_action].each do |property|
       describe "for #{property}" do
         it "should allow a single command" do
-          described_class.new(:name => 'foo', property => '/sbin/boot-update')[property].should == '/sbin/boot-update'
+          expect(described_class.new(:name => 'foo', property => '/sbin/boot-update')[property]).to eq('/sbin/boot-update')
         end
 
         it "should allow a command with arguments" do
-          described_class.new(:name => 'foo', property => '/bin/rm -f $file')[property].should == '/bin/rm -f $file'
+          expect(described_class.new(:name => 'foo', property => '/bin/rm -f $file')[property]).to eq('/bin/rm -f $file')
         end
       end
     end
@@ -120,7 +120,7 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
     describe "nofiles" do
       [ '100', '> 20', '< 40', '<= 23', '>= 9' ].each do |nofiles|
         it "should allow a value of #{nofiles}" do
-          described_class.new(:name => 'foo', :nofiles => nofiles)[:nofiles].should == nofiles
+          expect(described_class.new(:name => 'foo', :nofiles => nofiles)[:nofiles]).to eq(nofiles)
         end
       end
 
@@ -137,7 +137,7 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
         [ '10G', '3M', '4K' ].each do |number|
           size = "#{prefix}#{number}"
           it "should allow a fixed number like \"#{size}\"" do
-            described_class.new(:name => 'foo', :size => size)[:size].should == size
+            expect(described_class.new(:name => 'foo', :size => size)[:size]).to eq(size)
           end
         end
       end
@@ -157,15 +157,15 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
 
     describe "for size_type" do
       it "should allow individual" do
-        described_class.new(:name => 'foo', :size => '<10M', :size_type => 'individual')[:size_type].should == :individual
+        expect(described_class.new(:name => 'foo', :size => '<10M', :size_type => 'individual')[:size_type]).to eq(:individual)
       end
 
       it "should allow smallest" do
-        described_class.new(:name => 'foo', :size => '<10M', :size_type => 'smallest')[:size_type].should == :smallest
+        expect(described_class.new(:name => 'foo', :size => '<10M', :size_type => 'smallest')[:size_type]).to eq(:smallest)
       end
 
       it "should allow largest" do
-        described_class.new(:name => 'foo', :size => '<10M', :size_type => 'largest')[:size_type].should == :largest
+        expect(described_class.new(:name => 'foo', :size => '<10M', :size_type => 'largest')[:size_type]).to eq(:largest)
       end
 
       it "should not allow other values" do
@@ -173,11 +173,11 @@ describe Puppet::Type.type(:nimsoft_dirscan) do
       end
 
       it "should default to individual if size is set" do
-        described_class.new(:name => 'foo', :size => '<10M')[:size_type].should == :individual
+        expect(described_class.new(:name => 'foo', :size => '<10M')[:size_type]).to eq(:individual)
       end
 
       it "should not have a default if size is not set" do
-        described_class.new(:name => 'foo')[:size_type].should be_nil
+        expect(described_class.new(:name => 'foo')[:size_type]).to be_nil
       end
     end
   end

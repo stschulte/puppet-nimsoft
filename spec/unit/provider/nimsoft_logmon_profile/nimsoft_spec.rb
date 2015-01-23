@@ -59,33 +59,33 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing ensure" do
     describe "exists?" do
       it "should return true if the instance is present" do
-        provider.should be_exist
+        expect(provider).to be_exist
       end
 
       it "should return false if the instance is absent" do
-        provider_new.should_not be_exist
+        expect(provider_new).to_not be_exist
       end
     end
 
     describe "create" do
       it "should add a new section" do
-        described_class.root.children.map(&:name).should == [ 'some_profile' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'some_profile' ])
         provider_new.create
-        described_class.root.children.map(&:name).should == [ 'some_profile', 'new profile' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'some_profile', 'new profile' ])
       end
 
       it "should add set the correct attributes after adding the section" do
         provider_new.create
 
         child = described_class.root.child('new profile')
-        child.should_not be_nil
-        child[:active].should == 'yes'
-        child[:scanfile].should == '/var/log/secure'
-        child[:scanmode].should == 'updates'
-        child[:interval].should == '30 min'
-        child[:qos].should == 'no'
-        child[:alarm].should == 'yes'
-        child[:max_alarm_sev].should == '2'
+        expect(child).to_not be_nil
+        expect(child[:active]).to eq('yes')
+        expect(child[:scanfile]).to eq('/var/log/secure')
+        expect(child[:scanmode]).to eq('updates')
+        expect(child[:interval]).to eq('30 min')
+        expect(child[:qos]).to eq('no')
+        expect(child[:alarm]).to eq('yes')
+        expect(child[:max_alarm_sev]).to eq('2')
       end
     end
 
@@ -93,9 +93,9 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
       it "should destroy the specific section" do
         provider = described_class.new(:name => element.name, :ensure => :present, :element => element)
 
-        described_class.root.children.map(&:name).should == [ 'some_profile', 'foo' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'some_profile', 'foo' ])
         provider.destroy
-        described_class.root.children.map(&:name).should == [ 'some_profile' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'some_profile' ])
       end
     end
   end
@@ -103,12 +103,12 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing active" do
     it "should return :yes when active" do
       element[:active] = 'yes'
-      provider.active.should == :yes
+      expect(provider.active).to eq(:yes)
     end
 
     it "should return :no when not active" do
       element[:active] = 'no'
-      provider.active.should == :no
+      expect(provider.active).to eq(:no)
     end
 
     it "should set active to \"yes\" when new value is :yes" do
@@ -125,7 +125,7 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing file" do
     it "should get the scanfile attribute" do
       element[:scanfile] = '/var/log/boot.log'
-      provider.file.should == '/var/log/boot.log'
+      expect(provider.file).to eq('/var/log/boot.log')
     end
 
     it "should set the scanfile attribute" do
@@ -137,7 +137,7 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing mode" do
     it "should get the symbolized scanmode attribute" do
       element[:scanmode] = 'cat'
-      provider.mode.should == :cat
+      expect(provider.mode).to eq(:cat)
     end
 
     it "should set the scanmode attribute" do
@@ -149,7 +149,7 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing interval" do
     it "should get the interval attribute" do
       element[:interval] = '1 min'
-      provider.interval.should == '1 min'
+      expect(provider.interval).to eq('1 min')
     end
 
     it "should set the interval attribute" do
@@ -161,12 +161,12 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing qos" do
     it "should return :yes when qos is enabled" do
       element[:qos] = 'yes'
-      provider.qos.should == :yes
+      expect(provider.qos).to eq(:yes)
     end
 
     it "should return :no when qos is disabled" do
       element[:qos] = 'no'
-      provider.qos.should == :no
+      expect(provider.qos).to eq(:no)
     end
 
     it "should set qos to \"yes\" when new value is :yes" do
@@ -183,12 +183,12 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing alarm" do
     it "should return :yes when alarm is enabled" do
       element[:alarm] = 'yes'
-      provider.alarm.should == :yes
+      expect(provider.alarm).to eq(:yes)
     end
 
     it "should return :no when alarm is disabled" do
       element[:alarm] = 'no'
-      provider.alarm.should == :no
+      expect(provider.alarm).to eq(:no)
     end
 
     it "should set alarm to \"yes\" when new value is :yes" do
@@ -205,27 +205,27 @@ describe Puppet::Type.type(:nimsoft_logmon_profile).provider(:nimsoft) do
   describe "when managing alarm_maxserv" do
     it "should return :info when max_alarm_sev is 1" do
       element[:max_alarm_sev] = '1'
-      provider.alarm_maxserv.should == :info
+      expect(provider.alarm_maxserv).to eq(:info)
     end
 
     it "should return :warning when max_alarm_sev is 2" do
       element[:max_alarm_sev] = '2'
-      provider.alarm_maxserv.should == :warning
+      expect(provider.alarm_maxserv).to eq(:warning)
     end
 
     it "should return :minor when max_alarm_sev is 3" do
       element[:max_alarm_sev] = '3'
-      provider.alarm_maxserv.should == :minor
+      expect(provider.alarm_maxserv).to eq(:minor)
     end
 
     it "should return :major when max_alarm_sev is 4" do
       element[:max_alarm_sev] = '4'
-      provider.alarm_maxserv.should == :major
+      expect(provider.alarm_maxserv).to eq(:major)
     end
 
     it "should return :critical when max_alarm_sev is 5" do
       element[:max_alarm_sev] = '5'
-      provider.alarm_maxserv.should == :critical
+      expect(provider.alarm_maxserv).to eq(:critical)
     end
 
     it "should set max_alarm_sev to 1 if new severity is :info" do

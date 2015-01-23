@@ -87,15 +87,15 @@ describe Puppet::Type.type(:nimsoft_queue).provider(:nimsoft), '(integration)' d
   describe "ensure => absent" do
     describe "when resource is currently absent" do
       it "should do nothing" do
-        run_in_catalog(resource_absent).changed?.should be_empty
-        File.read(input).should == File.read(my_fixture('hub.cfg'))
+        expect(run_in_catalog(resource_absent).changed?).to be_empty
+        expect(File.read(input)).to eq(File.read(my_fixture('hub.cfg')))
       end
     end
 
     describe "when resource is currently present" do
       it "should remove the resource" do
         state = run_in_catalog(resource_destroy)
-        File.read(input).should == File.read(my_fixture('output_remove.cfg'))
+        expect(File.read(input)).to eq(File.read(my_fixture('output_remove.cfg')))
         expect(state.changed?).to eq([ resource_destroy ])
       end
     end
@@ -105,7 +105,7 @@ describe Puppet::Type.type(:nimsoft_queue).provider(:nimsoft), '(integration)' d
     describe "when resource is currently absent" do
       it "should add the resource" do
         state = run_in_catalog(resource_create)
-        File.read(input).should == File.read(my_fixture('output_add.cfg'))
+        expect(File.read(input)).to eq(File.read(my_fixture('output_add.cfg')))
         expect(state.changed?).to eq([ resource_create ])
       end
     end
@@ -113,13 +113,13 @@ describe Puppet::Type.type(:nimsoft_queue).provider(:nimsoft), '(integration)' d
     describe "when resource is currently present" do
       it "should do nothing if in sync" do
         state = run_in_catalog(resource_present)
-        File.read(input).should == File.read(my_fixture('hub.cfg'))
+        expect(File.read(input)).to eq(File.read(my_fixture('hub.cfg')))
         expect(state.changed?).to be_empty
       end
 
       it "should modify attributes if not in sync" do
         state = run_in_catalog(resource_modify)
-        File.read(input).should == File.read(my_fixture('output_modify.cfg'))
+        expect(File.read(input)).to eq(File.read(my_fixture('output_modify.cfg')))
         expect(state.changed?).to eq([ resource_modify ])
       end
     end
@@ -128,7 +128,7 @@ describe Puppet::Type.type(:nimsoft_queue).provider(:nimsoft), '(integration)' d
   describe "adding multiple resources to the catalog" do
     it "should do the right thing" do
       run_in_catalog(resource_modify, resource_present, resource_create, resource_absent, resource_destroy)
-      File.read(input).should == File.read(my_fixture('output_multiple_resources.cfg'))
+      expect(File.read(input)).to eq(File.read(my_fixture('output_multiple_resources.cfg')))
     end
   end
 end

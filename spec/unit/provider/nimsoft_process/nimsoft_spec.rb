@@ -65,35 +65,35 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "when managing ensure" do
     describe "exists?" do
       it "should return true if the instance is present" do
-        provider.should be_exist
+        expect(provider).to be_exist
       end
 
       it "should return false if the instance is absent" do
-        provider_new.should_not be_exist
+        expect(provider_new).to_not be_exist
       end
     end
 
     describe "create" do
       it "should add a new section" do
-        described_class.root.children.map(&:name).should == [ 'bar' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar' ])
         provider_new.create
-        described_class.root.children.map(&:name).should == [ 'bar', 'consolekit' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar', 'consolekit' ])
       end
 
       it "should set the correct attributes after adding the section" do
         provider_new.create
 
         child = described_class.root.child('consolekit')
-        child.should_not be_nil
+        expect(child).to_not be_nil
 
-        child[:active].should == 'yes'
-        child[:description].should == 'a short test'
-        child[:process_count_type].should == 'gte'
-        child[:process_count].should == '1'
-        child[:report].should == 'down, restart'
-        child[:track_by_pid].should == 'yes'
-        child[:proc_cmd_line].should == '/usr/sbin/console-kit-daemon --no-daemon'
-        child[:scan_proc_cmd_line].should == 'yes'
+        expect(child[:active]).to eq('yes')
+        expect(child[:description]).to eq('a short test')
+        expect(child[:process_count_type]).to eq('gte')
+        expect(child[:process_count]).to eq('1')
+        expect(child[:report]).to eq('down, restart')
+        expect(child[:track_by_pid]).to eq('yes')
+        expect(child[:proc_cmd_line]).to eq('/usr/sbin/console-kit-daemon --no-daemon')
+        expect(child[:scan_proc_cmd_line]).to eq('yes')
       end
     end
 
@@ -101,9 +101,9 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
       it "should destroy the specific section" do
         provider = described_class.new(:name => element.name, :ensure => :present, :element => element)
 
-        described_class.root.children.map(&:name).should == [ 'bar', 'cron' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar', 'cron' ])
         provider.destroy
-        described_class.root.children.map(&:name).should == [ 'bar' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar' ])
       end
     end
   end
@@ -111,12 +111,12 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "when managing active" do
     it "should return :yes when active" do
       element[:active] = 'yes'
-      provider.active.should == :yes
+      expect(provider.active).to eq(:yes)
     end
 
     it "should return :no when not active" do
       element[:active] = 'no'
-      provider.active.should == :no
+      expect(provider.active).to eq(:no)
     end
 
     it "should set active to \"yes\" when new value is :yes" do
@@ -133,7 +133,7 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "when managing description" do
     it "should return the description field" do
       element[:description] = 'old_description'
-      provider.description.should == 'old_description'
+      expect(provider.description).to eq('old_description')
     end
 
     it "should update the description field with the new value" do
@@ -147,14 +147,14 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
       provider.resource[:match] = 'nameonly'
       element[:process] = 'cron'
       element[:proc_cmd_line] = '/usr/sbin/cron'
-      provider.pattern.should == 'cron'
+      expect(provider.pattern).to eq('cron')
     end
 
     it "should return the proc_cmd_line field when match is cmdline" do
       provider.resource[:match] = 'cmdline'
       element[:process] = 'cron'
       element[:proc_cmd_line] = '/usr/sbin/cron'
-      provider.pattern.should == '/usr/sbin/cron'
+      expect(provider.pattern).to eq('/usr/sbin/cron')
     end
 
     it "should update the process field when match is nameonly" do
@@ -175,12 +175,12 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "when managing trackpid" do
     it "should return :yes when track_by_pid is true" do
       element[:track_by_pid] = 'yes'
-      provider.trackpid.should == :yes
+      expect(provider.trackpid).to eq(:yes)
     end
 
     it "should return :no when track_by_pid is false" do
       element[:track_by_pid] = 'no'
-      provider.trackpid.should == :no
+      expect(provider.trackpid).to eq(:no)
     end
 
     it "should set track_by_pid to \"yes\" when new value is :yes" do
@@ -198,43 +198,43 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
     it "should return the correct value if type is equal" do
       element[:process_count_type] = 'equal'
       element[:process_count] = '10'
-      provider.count.should == '10'
+      expect(provider.count).to eq('10')
     end
 
     it "should return the correct value if type is gte" do
       element[:process_count_type] = 'gte'
       element[:process_count] = '1'
-      provider.count.should == '>= 1'
+      expect(provider.count).to eq('>= 1')
     end
 
     it "should return the correct value if type is ge" do
       element[:process_count_type] = 'ge'
       element[:process_count] = '5'
-      provider.count.should == '>= 5'
+      expect(provider.count).to eq('>= 5')
     end
 
     it "should return the correct value if type is gt" do
       element[:process_count_type] = 'gt'
       element[:process_count] = '21'
-      provider.count.should == '> 21'
+      expect(provider.count).to eq('> 21')
     end
 
     it "should return the correct value if type is lte" do
       element[:process_count_type] = 'lte'
       element[:process_count] = '9'
-      provider.count.should == '<= 9'
+      expect(provider.count).to eq('<= 9')
     end
 
     it "should return the correct value if type is le" do
       element[:process_count_type] = 'le'
       element[:process_count] = '99'
-      provider.count.should == '<= 99'
+      expect(provider.count).to eq('<= 99')
     end
 
     it "should return the correct value if type is lt" do
       element[:process_count_type] = 'lt'
       element[:process_count] = '2'
-      provider.count.should == '< 2'
+      expect(provider.count).to eq('< 2')
     end
 
     it "should set type to equal if new value has no prefix" do
@@ -271,24 +271,24 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "alarm_on" do
     it "should return :up when report is \"up\"" do
       element[:report] = 'up'
-      provider.alarm_on.should == [ :up ]
+      expect(provider.alarm_on).to eq([ :up ])
     end
 
     it "should return :down when report is \"down\"" do
       element[:report] = 'down'
-      provider.alarm_on.should == [ :down ]
+      expect(provider.alarm_on).to eq([ :down ])
     end
 
     it "should return :restart when report is \"restart\"" do
       element[:report] = 'restart'
-      provider.alarm_on.should == [ :restart ]
+      expect(provider.alarm_on).to eq([ :restart ])
     end
 
     it "should split report and return an array" do
       element[:report] = 'up, down'
-      provider.alarm_on.should == [ :up, :down ]
+      expect(provider.alarm_on).to eq([ :up, :down ])
       element[:report] = 'up, restart, down'
-      provider.alarm_on.should == [ :up, :restart, :down ]
+      expect(provider.alarm_on).to eq([ :up, :restart, :down ])
     end
 
     it "should update report when setting to a single value" do
@@ -305,17 +305,17 @@ describe Puppet::Type.type(:nimsoft_process).provider(:nimsoft) do
   describe "match" do
     it "should return nameonly when scan_proc_cmd_line is \"no\"" do
       element[:scan_proc_cmd_line] = 'no'
-      provider.match.should == :nameonly
+      expect(provider.match).to eq(:nameonly)
     end
 
     it "should return cmdline when scan_proc_cmd_line is \"yes\"" do
       element[:scan_proc_cmd_line] = 'yes'
-      provider.match.should == :cmdline
+      expect(provider.match).to eq(:cmdline)
     end
 
     it "should return absent when scan_proc_cmd_line is absent" do
       element.del_attr(:scan_proc_cmd_line)
-      provider.match.should == :absent
+      expect(provider.match).to eq(:absent)
     end
 
     it "should update scan_proc_cmd_line to \"no\" when setting to nameonly" do

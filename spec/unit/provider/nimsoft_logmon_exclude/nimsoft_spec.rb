@@ -47,19 +47,19 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
   describe "when managing ensure" do
     describe "exists?" do
       it "should return true if the instance is present" do
-        provider.should be_exist
+        expect(provider).to be_exist
       end
 
       it "should return false if the instance is absent" do
-        provider_new.should_not be_exist
+        expect(provider_new).to_not be_exist
       end
     end
 
     describe "create" do
       it "should add a new section" do
-        excludes.children.map(&:name).should == [ 'some_exclude' ]
+        expect(excludes.children.map(&:name)).to eq([ 'some_exclude' ])
         provider_new.create
-        excludes.children.map(&:name).should == [ 'some_exclude', 'new exclude' ]
+        expect(excludes.children.map(&:name)).to eq([ 'some_exclude', 'new exclude' ])
       end
 
       it "should complain about a missing profile" do
@@ -73,9 +73,9 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
         provider_new.create
 
         child = excludes.child('new exclude')
-        child.should_not be_nil
-        child[:active].should == 'no'
-        child[:match].should == 'INFO*'
+        expect(child).to_not be_nil
+        expect(child[:active]).to eq('no')
+        expect(child[:match]).to eq('INFO*')
       end
     end
 
@@ -83,9 +83,9 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
       it "should destroy the specific section" do
         provider = described_class.new(:name => element.name, :ensure => :present, :element => element)
 
-        excludes.children.map(&:name).should == [ 'some_exclude', 'foo' ]
+        expect(excludes.children.map(&:name)).to eq([ 'some_exclude', 'foo' ])
         provider.destroy
-        excludes.children.map(&:name).should == [ 'some_exclude' ]
+        expect(excludes.children.map(&:name)).to eq([ 'some_exclude' ])
       end
     end
   end
@@ -93,12 +93,12 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
   describe "when managing active" do
     it "should return :yes when active" do
       element[:active] = 'yes'
-      provider.active.should == :yes
+      expect(provider.active).to eq(:yes)
     end
 
     it "should return :no when not active" do
       element[:active] = 'no'
-      provider.active.should == :no
+      expect(provider.active).to eq(:no)
     end
 
     it "should set active to \"yes\" when new value is :yes" do
@@ -115,7 +115,7 @@ describe Puppet::Type.type(:nimsoft_logmon_exclude).provider(:nimsoft) do
   describe "when managing pattern" do
     it "should get the match attribute" do
       element[:match] = '^DEBUG: .*$'
-      provider.match.should == '^DEBUG: .*$'
+      expect(provider.match).to eq('^DEBUG: .*$')
     end
 
     it "should set the match attribute" do

@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:agentil_system) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [:sid, :host, :stack, :user, :client, :group, :landscape, :system_template, :templates, :ccms_mode, :ensure].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:agentil_system) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'foo', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'foo', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'foo', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'foo', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -40,7 +40,7 @@ describe Puppet::Type.type(:agentil_system) do
     describe "for sid" do
       ['PRO', 'S2E', 'X22', 'AK9'].each do |sid|
         it "should allow a valid sid like #{sid}" do
-            described_class.new(:name => 'foo', :sid => sid)[:sid].should == sid
+          expect(described_class.new(:name => 'foo', :sid => sid)[:sid]).to eq(sid)
         end
       end
 
@@ -55,39 +55,39 @@ describe Puppet::Type.type(:agentil_system) do
 
     describe "for host" do
       it "should accept a shortname" do
-        described_class.new(:name => 'foo', :host => 'sap01')[:host].should == 'sap01'
+        expect(described_class.new(:name => 'foo', :host => 'sap01')[:host]).to eq('sap01')
       end
 
       it "should support an fqdn" do
-        described_class.new(:name => 'foo', :host => 'sap01.example.com')[:host].should == 'sap01.example.com'
+        expect(described_class.new(:name => 'foo', :host => 'sap01.example.com')[:host]).to eq('sap01.example.com')
       end
     end
 
     describe "for ip" do
       it "should support an empty array" do
-        described_class.new(:name => 'foo', :ip => [])[:ip].should be_empty
+        expect(described_class.new(:name => 'foo', :ip => [])[:ip]).to be_empty
       end
 
       it "should support a single value" do
-        described_class.new(:name => 'foo', :ip => '192.168.0.1')[:ip].should == ['192.168.0.1']
+        expect(described_class.new(:name => 'foo', :ip => '192.168.0.1')[:ip]).to eq(['192.168.0.1'])
       end
 
       it "should support multiple values" do
-        described_class.new(:name => 'foo', :ip => [ '192.168.0.1', '192.168.0.2'])[:ip].should == ['192.168.0.1', '192.168.0.2']
+        expect(described_class.new(:name => 'foo', :ip => [ '192.168.0.1', '192.168.0.2'])[:ip]).to eq(['192.168.0.1', '192.168.0.2'])
       end
     end
 
     describe "stack" do
       it "should support abap" do
-        described_class.new(:name => 'foo', :stack => 'abap')[:stack].should == :abap
+        expect(described_class.new(:name => 'foo', :stack => 'abap')[:stack]).to eq(:abap)
       end
 
       it "should support java" do
-        described_class.new(:name => 'foo', :stack => 'java')[:stack].should == :java
+        expect(described_class.new(:name => 'foo', :stack => 'java')[:stack]).to eq(:java)
       end
 
       it "should support dual" do
-        described_class.new(:name => 'foo', :stack => 'dual')[:stack].should == :dual
+        expect(described_class.new(:name => 'foo', :stack => 'dual')[:stack]).to eq(:dual)
       end
 
       it "should not support anything else" do
@@ -98,7 +98,7 @@ describe Puppet::Type.type(:agentil_system) do
     describe "user" do
       [ 'FOOBAR', 'SAP_PROBE', 'PROBE001' ].each do |user|
         it "should accept a valid name like #{name}" do
-          described_class.new(:name => 'foo', :user => user, :ensure => 'present')[:user].should == user
+          expect(described_class.new(:name => 'foo', :user => user, :ensure => 'present')[:user]).to eq(user)
         end
       end
 
@@ -122,7 +122,7 @@ describe Puppet::Type.type(:agentil_system) do
     describe "client" do
       [ '000', '100', '021'].each do |client|
         it "should support a valid client like #{client}" do
-          described_class.new(:name => 'foo', :client => client)[:client].should == client
+          expect(described_class.new(:name => 'foo', :client => client)[:client]).to eq(client)
         end
       end
 
@@ -148,49 +148,49 @@ describe Puppet::Type.type(:agentil_system) do
 
     describe "group" do
       it "should support a simple name" do
-        described_class.new(:name => 'foo', :group => 'SPACE')[:group].should == 'SPACE'
+        expect(described_class.new(:name => 'foo', :group => 'SPACE')[:group]).to eq('SPACE')
       end
 
       it "should support underscores" do
-        described_class.new(:name => 'foo', :group => 'LOGON_GROUP')[:group].should == 'LOGON_GROUP'
+        expect(described_class.new(:name => 'foo', :group => 'LOGON_GROUP')[:group]).to eq('LOGON_GROUP')
       end
     end
 
     describe "landscape" do
       it "should support a simple name" do
-        described_class.new(:name => 'foo', :landscape => 'ERP')[:landscape].should == 'ERP'
+        expect(described_class.new(:name => 'foo', :landscape => 'ERP')[:landscape]).to eq('ERP')
       end
 
       it "should accept a shortname" do
-        described_class.new(:name => 'foo', :landscape => 'sap01')[:landscape].should == 'sap01'
+        expect(described_class.new(:name => 'foo', :landscape => 'sap01')[:landscape]).to eq('sap01')
       end
 
       it "should support an fqdn" do
-        described_class.new(:name => 'foo', :landscape => 'sap01.example.com')[:landscape].should == 'sap01.example.com'
+        expect(described_class.new(:name => 'foo', :landscape => 'sap01.example.com')[:landscape]).to eq('sap01.example.com')
       end
     end
 
     describe "system_template" do
       it "should allow a simple word as a system_template" do
-        described_class.new(:name => 'foo', :system_template => 'MyTemplate')[:system_template].should == 'MyTemplate'
+        expect(described_class.new(:name => 'foo', :system_template => 'MyTemplate')[:system_template]).to eq('MyTemplate')
       end
 
       it "should allow system_template with spaces" do
-        described_class.new(:name => 'foo', :system_template => 'Custom ABAP Production')[:system_template].should == 'Custom ABAP Production'
+        expect(described_class.new(:name => 'foo', :system_template => 'Custom ABAP Production')[:system_template]).to eq('Custom ABAP Production')
       end
     end
 
     describe "templates" do
       it "should allow an empty array" do
-        described_class.new(:name => 'foo', :templates => [])[:templates].should be_empty
+        expect(described_class.new(:name => 'foo', :templates => [])[:templates]).to be_empty
       end
       
       it "should allow a single template" do
-        described_class.new(:name => 'foo', :templates => 'Custom ABAP Production')[:templates].should == [ 'Custom ABAP Production' ]
+        expect(described_class.new(:name => 'foo', :templates => 'Custom ABAP Production')[:templates]).to eq([ 'Custom ABAP Production' ])
       end
 
       it "should allow multiple templates as an array" do
-        described_class.new(:name => 'foo', :templates => [ 'Template 1', 'Template 2'])[:templates].should == [ 'Template 1', 'Template 2' ]
+        expect(described_class.new(:name => 'foo', :templates => [ 'Template 1', 'Template 2'])[:templates]).to eq([ 'Template 1', 'Template 2' ])
       end
     end
 
@@ -212,45 +212,45 @@ describe Puppet::Type.type(:agentil_system) do
   describe "when checking insync" do
     describe "for ip" do
       it "should consider two emty arrays as insync" do
-        described_class.new(:name => 'foo', :ip => []).parameter(:ip).must be_insync []
+        expect(described_class.new(:name => 'foo', :ip => []).parameter(:ip)).to be_insync []
       end
 
       it "should consider insync if the order of ipaddresses is identical" do
-        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
+        expect(described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip)).to be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
       end
 
       it "should consider insync if the order of ipaddresses is different" do
-        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must be_insync %w{192.168.0.13 192.168.0.20 192.168.0.12}
+        expect(described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip)).to be_insync %w{192.168.0.13 192.168.0.20 192.168.0.12}
       end
 
       it "should not be in sync if there is one ipaddresses too many" do
-        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20}).parameter(:ip).must_not be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
+        expect(described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20}).parameter(:ip)).to_not be_insync %w{192.168.0.12 192.168.0.20 192.168.0.13}
       end
 
       it "should not be in sync if there is one ipaddresses too less" do
-        described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip).must_not be_insync %w{192.168.0.20 192.168.0.13}
+        expect(described_class.new(:name => 'foo', :ip => %w{192.168.0.12 192.168.0.20 192.168.0.13}).parameter(:ip)).to_not be_insync %w{192.168.0.20 192.168.0.13}
       end
     end
 
     describe "for templates" do
       it "should consider two emty arrays as insync" do
-        described_class.new(:name => 'foo', :templates => []).parameter(:templates).must be_insync []
+        expect(described_class.new(:name => 'foo', :templates => []).parameter(:templates)).to be_insync []
       end
 
       it "should consider insync if the order of templates is identical" do
-        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must be_insync %w{t1 t2 t3}
+        expect(described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates)).to be_insync %w{t1 t2 t3}
       end
 
       it "should consider insync if the order of templates is different" do
-        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must be_insync %w{t3 t1 t2}
+        expect(described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates)).to be_insync %w{t3 t1 t2}
       end
 
       it "should not be in sync if there is one template too many" do
-        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2 t3 t4}
+        expect(described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates)).to_not be_insync %w{t1 t2 t3 t4}
       end
 
       it "should not be in sync if there is one template too less" do
-        described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates).must_not be_insync %w{t1 t2}
+        expect(described_class.new(:name => 'foo', :templates => [ 't1', 't2', 't3']).parameter(:templates)).to_not be_insync %w{t1 t2}
       end
     end
   end
@@ -317,57 +317,57 @@ describe Puppet::Type.type(:agentil_system) do
     describe "landscape" do
       it "should not autorequire a landscape when no matching landscape can be found" do
         catalog.add_resource system
-        system.autorequire.should be_empty
+        expect(system.autorequire).to be_empty
       end
 
       it "should autorequire a matching landscape" do
         catalog.add_resource system
         catalog.add_resource landscape
         reqs = system.autorequire
-        reqs.size.should == 1
-        reqs[0].source.ref.should == landscape.ref
-        reqs[0].target.ref.should == system.ref
+        expect(reqs.size).to eq(1)
+        expect(reqs[0].source.ref).to eq(landscape.ref)
+        expect(reqs[0].target.ref).to eq(system.ref)
       end
     end
 
     describe "user" do
       it "should not autorequire a user when no matching user can be found" do
         catalog.add_resource system
-        system.autorequire.should be_empty
+        expect(system.autorequire).to be_empty
       end
 
       it "should autorequire a matching user" do
         catalog.add_resource system
         catalog.add_resource user
         reqs = system.autorequire
-        reqs.size.should == 1
-        reqs[0].source.ref.should == user.ref
-        reqs[0].target.ref.should == system.ref
+        expect(reqs.size).to eq(1)
+        expect(reqs[0].source.ref).to eq(user.ref)
+        expect(reqs[0].target.ref).to eq(system.ref)
       end
     end
 
     describe "template" do
       it "should not autorequire a template when no matching tempate can be found" do
         catalog.add_resource system
-        system.autorequire.should be_empty
+        expect(system.autorequire).to be_empty
       end
 
       it "should autorequire the default template" do
         catalog.add_resource system
         catalog.add_resource template1
         reqs = system.autorequire
-        reqs.size.should == 1
-        reqs[0].source.ref.should == template1.ref
-        reqs[0].target.ref.should == system.ref
+        expect(reqs.size).to eq(1)
+        expect(reqs[0].source.ref).to eq(template1.ref)
+        expect(reqs[0].target.ref).to eq(system.ref)
       end
 
       it "should autorequire the templates" do
         catalog.add_resource system
         catalog.add_resource template2
         reqs = system.autorequire
-        reqs.size.should == 1
-        reqs[0].source.ref.should == template2.ref
-        reqs[0].target.ref.should == system.ref
+        expect(reqs.size).to eq(1)
+        expect(reqs[0].source.ref).to eq(template2.ref)
+        expect(reqs[0].target.ref).to eq(system.ref)
       end
 
       it "should autorequire both the default template and templates" do
@@ -376,13 +376,13 @@ describe Puppet::Type.type(:agentil_system) do
         catalog.add_resource template2
         catalog.add_resource template3
         reqs = system.autorequire
-        reqs.size.should == 3
-        reqs[0].source.ref.should == template1.ref
-        reqs[0].target.ref.should == system.ref
-        reqs[1].source.ref.should == template2.ref
-        reqs[1].target.ref.should == system.ref
-        reqs[2].source.ref.should == template3.ref
-        reqs[2].target.ref.should == system.ref
+        expect(reqs.size).to eq(3)
+        expect(reqs[0].source.ref).to eq(template1.ref)
+        expect(reqs[0].target.ref).to eq(system.ref)
+        expect(reqs[1].source.ref).to eq(template2.ref)
+        expect(reqs[1].target.ref).to eq(system.ref)
+        expect(reqs[2].source.ref).to eq(template3.ref)
+        expect(reqs[2].target.ref).to eq(system.ref)
       end
     end
   end

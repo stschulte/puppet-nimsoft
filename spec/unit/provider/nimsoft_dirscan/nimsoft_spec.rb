@@ -69,48 +69,48 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing ensure" do
     describe "exists?" do
       it "should return true if the instance is present" do
-        provider.should be_exist
+        expect(provider).to be_exist
       end
 
       it "should return false if the instance is absent" do
-        provider_new.should_not be_exist
+        expect(provider_new).to_not be_exist
       end
     end
 
     describe "create" do
       it "should add a new section" do
-        described_class.root.children.map(&:name).should == [ 'bar' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar' ])
         provider_new.create
-        described_class.root.children.map(&:name).should == [ 'bar', 'baz' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar', 'baz' ])
       end
 
       it "should add set the correct attributes after adding the section" do
         provider_new.create
 
         child = described_class.root.child('baz')
-        child.should_not be_nil
-        child[:active].should == 'yes'
-        child[:name].should == 'baz'
-        child[:description].should == 'a short test'
-        child[:pattern].should == '*.log'
-        child[:directory].should == '/var/log'
-        child[:check_dir].should == 'yes'
-        child[:recurse_dirs].should == 'no'
-        child[:number_command].should be_nil
-        child[:file_size_type].should == 'individual'
-        child[:file_size_command].should == '/bin/rm $file'
-        child[:directory_check_command].should == '/bin/mkdir /var/log'
+        expect(child).to_not be_nil
+        expect(child[:active]).to eq('yes')
+        expect(child[:name]).to eq('baz')
+        expect(child[:description]).to eq('a short test')
+        expect(child[:pattern]).to eq('*.log')
+        expect(child[:directory]).to eq('/var/log')
+        expect(child[:check_dir]).to eq('yes')
+        expect(child[:recurse_dirs]).to eq('no')
+        expect(child[:number_command]).to be_nil
+        expect(child[:file_size_type]).to eq('individual')
+        expect(child[:file_size_command]).to eq('/bin/rm $file')
+        expect(child[:directory_check_command]).to eq('/bin/mkdir /var/log')
 
         number_condition = child.child('number_condition')
-        number_condition.should_not be_nil
-        number_condition[:limit].should == '3'
-        number_condition[:type].should == 'gt'
+        expect(number_condition).to_not be_nil
+        expect(number_condition[:limit]).to eq('3')
+        expect(number_condition[:type]).to eq('gt')
 
         size_condition = child.child('file_size_condition')
-        size_condition.should_not be_nil
-        size_condition[:limit].should == '5'
-        size_condition[:unit].should == 'Mb'
-        size_condition[:type].should == 'le'
+        expect(size_condition).to_not be_nil
+        expect(size_condition[:limit]).to eq('5')
+        expect(size_condition[:unit]).to eq('Mb')
+        expect(size_condition[:type]).to eq('le')
       end
     end
 
@@ -118,9 +118,9 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
       it "should destroy the specific section" do
         provider = described_class.new(:name => element.name, :ensure => :present, :element => element)
 
-        described_class.root.children.map(&:name).should == [ 'bar', 'foo' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar', 'foo' ])
         provider.destroy
-        described_class.root.children.map(&:name).should == [ 'bar' ]
+        expect(described_class.root.children.map(&:name)).to eq([ 'bar' ])
       end
     end
   end
@@ -128,12 +128,12 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing active" do
     it "should return :yes when active" do
       element[:active] = 'yes'
-      provider.active.should == :yes
+      expect(provider.active).to eq(:yes)
     end
 
     it "should return :no when not active" do
       element[:active] = 'no'
-      provider.active.should == :no
+      expect(provider.active).to eq(:no)
     end
 
     it "should set active to \"yes\" when new value is :yes" do
@@ -150,7 +150,7 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing description" do
     it "should return the description field" do
       element[:description] = 'old_description'
-      provider.description.should == 'old_description'
+      expect(provider.description).to eq('old_description')
     end
 
     it "should update the description field with the new value" do
@@ -162,7 +162,7 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing pattern" do
     it "should return the pattern field" do
       element[:patter] = '*.log'
-      provider.pattern.should == '*.log'
+      expect(provider.pattern).to eq('*.log')
     end
 
     it "should update the description field with the new value" do
@@ -174,12 +174,12 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing recurse" do
     it "should return :yes when recurse_dirs is set to \"yes\"" do
       element[:recurse_dirs] = 'yes'
-      provider.recurse.should == :yes
+      expect(provider.recurse).to eq(:yes)
     end
 
     it "should return :no when recurse_dirs is set to \"no\"" do
       element[:recurse_dirs] = 'no'
-      provider.recurse.should == :no
+      expect(provider.recurse).to eq(:no)
     end
 
     it "should set recurse_dirs to \"yes\" when new value is :yes" do
@@ -196,12 +196,12 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing direxists" do
     it "should return :yes when check_dir is set to \"yes\"" do
       element[:check_dir] = 'yes'
-      provider.direxists.should == :yes
+      expect(provider.direxists).to eq(:yes)
     end
 
     it "should return :no when check_dir is set to \"no\"" do
       element[:check_dir] = 'no'
-      provider.direxists.should == :no
+      expect(provider.direxists).to eq(:no)
     end
 
     it "should set check_dir to \"yes\" when new value is :yes" do
@@ -218,7 +218,7 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing direxists_action" do
     it "should return the directory_check_command field" do
       element[:directory_check_command] = '/bin/mkdir "$directory"'
-      provider.direxists_action.should == '/bin/mkdir "$directory"'
+      expect(provider.direxists_action).to eq('/bin/mkdir "$directory"')
     end
 
     it "should update the directory_check_command field with the new value" do
@@ -231,31 +231,31 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
     it "should return the correct value if type is eq" do
       element.path('number_condition')[:limit] = '6'
       element.path('number_condition')[:type] = 'eq'
-      provider.nofiles.should == '6'
+      expect(provider.nofiles).to eq('6')
     end
 
     it "should return the correct value if type is lt" do
       element.path('number_condition')[:limit] = '23'
       element.path('number_condition')[:type] = 'lt'
-      provider.nofiles.should == '< 23'
+      expect(provider.nofiles).to eq('< 23')
     end
 
     it "should return the correct value if type is le" do
       element.path('number_condition')[:limit] = '199'
       element.path('number_condition')[:type] = 'le'
-      provider.nofiles.should == '<= 199'
+      expect(provider.nofiles).to eq('<= 199')
     end
 
     it "should return the correct value if type is gt" do
       element.path('number_condition')[:limit] = '0'
       element.path('number_condition')[:type] = 'gt'
-      provider.nofiles.should == '> 0'
+      expect(provider.nofiles).to eq('> 0')
     end
 
     it "should return the correct value if type is ge" do
       element.path('number_condition')[:limit] = '9'
       element.path('number_condition')[:type] = 'ge'
-      provider.nofiles.should == '>= 9'
+      expect(provider.nofiles).to eq('>= 9')
     end
 
     it "should set type to eq if new value has no prefix" do
@@ -316,7 +316,7 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing nofiles_action" do
     it "should return the number_command field" do
       element[:number_command] = '/bin/gzip -r "$directory"'
-      provider.nofiles_action.should == '/bin/gzip -r "$directory"'
+      expect(provider.nofiles_action).to eq('/bin/gzip -r "$directory"')
     end
 
     it "should update the number_command field with the new value" do
@@ -330,56 +330,56 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
       element.path('file_size_condition')[:limit] = '6'
       element.path('file_size_condition')[:type] = 'eq'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '6K'
+      expect(provider.size).to eq('6K')
     end
 
     it "should return the correct value if type is lt" do
       element.path('file_size_condition')[:limit] = '22'
       element.path('file_size_condition')[:type] = 'lt'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '< 22K'
+      expect(provider.size).to eq('< 22K')
     end
 
     it "should return the correct value if type is le" do
       element.path('file_size_condition')[:limit] = '9'
       element.path('file_size_condition')[:type] = 'le'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '<= 9K'
+      expect(provider.size).to eq('<= 9K')
     end
 
     it "should return the correct value if type is gt" do
       element.path('file_size_condition')[:limit] = '23'
       element.path('file_size_condition')[:type] = 'gt'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '> 23K'
+      expect(provider.size).to eq('> 23K')
     end
 
     it "should return the correct value if type is ge" do
       element.path('file_size_condition')[:limit] = '86'
       element.path('file_size_condition')[:type] = 'ge'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '>= 86K'
+      expect(provider.size).to eq('>= 86K')
     end
 
     it "should return the correct value if unit is Kb" do
       element.path('file_size_condition')[:limit] = '86'
       element.path('file_size_condition')[:type] = 'ge'
       element.path('file_size_condition')[:unit] = 'Kb'
-      provider.size.should == '>= 86K'
+      expect(provider.size).to eq('>= 86K')
     end
 
     it "should return the correct value if unit is Mb" do
       element.path('file_size_condition')[:limit] = '86'
       element.path('file_size_condition')[:type] = 'ge'
       element.path('file_size_condition')[:unit] = 'Mb'
-      provider.size.should == '>= 86M'
+      expect(provider.size).to eq('>= 86M')
     end
 
     it "should return the correct value if unit is Gb" do
       element.path('file_size_condition')[:limit] = '86'
       element.path('file_size_condition')[:type] = 'ge'
       element.path('file_size_condition')[:unit] = 'Gb'
-      provider.size.should == '>= 86G'
+      expect(provider.size).to eq('>= 86G')
     end
 
     it "should set type to eq if new value has no prefix" do
@@ -434,17 +434,17 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing size_type" do
     it "should return :individual when file_size_type is set to \"individual\"" do
       element[:file_size_type] = 'individual'
-      provider.size_type.should == :individual
+      expect(provider.size_type).to eq(:individual)
     end
 
     it "should return :smallest when file_size_type is set to \"smallest\"" do
       element[:file_size_type] = 'smallest'
-      provider.size_type.should == :smallest
+      expect(provider.size_type).to eq(:smallest)
     end
 
     it "should return :largest when file_size_type is set to \"largest\"" do
       element[:file_size_type] = 'largest'
-      provider.size_type.should == :largest
+      expect(provider.size_type).to eq(:largest)
     end
 
     it "should set file_size_type to \"individual\" when new value is :individual" do
@@ -466,7 +466,7 @@ describe Puppet::Type.type(:nimsoft_dirscan).provider(:nimsoft) do
   describe "when managing size_action" do
     it "should return the file_size_command field" do
       element[:file_size_command] = '/bin/gzip "$file"'
-      provider.size_action.should == '/bin/gzip "$file"'
+      expect(provider.size_action).to eq('/bin/gzip "$file"')
     end
 
     it "should update the file_size_command field with the new value" do

@@ -8,8 +8,8 @@ describe Puppet::Util::NimsoftSection do
   describe "when creating a new section" do
     it "should be possible to create a section without a parent" do
       section = described_class.new('root')
-      section.parent.should be_nil
-      section.children.should be_empty
+      expect(section.parent).to be_nil
+      expect(section.children).to be_empty
     end
 
     it "should add the update the children list of the parent section" do
@@ -17,13 +17,13 @@ describe Puppet::Util::NimsoftSection do
       subsection1 = described_class.new('s1', rootsection)
       subsection2 = described_class.new('s2', rootsection)
 
-      rootsection.children.should == [ subsection1, subsection2 ]
+      expect(rootsection.children).to eq([ subsection1, subsection2 ])
 
-      subsection1.parent.should == rootsection
-      subsection1.children.should be_empty
+      expect(subsection1.parent).to eq(rootsection)
+      expect(subsection1.children).to be_empty
 
-      subsection2.parent.should == rootsection
-      subsection2.children.should be_empty
+      expect(subsection2.parent).to eq(rootsection)
+      expect(subsection2.children).to be_empty
     end
   end
 
@@ -33,7 +33,7 @@ describe Puppet::Util::NimsoftSection do
       section[:a] = 'value1'
       section[:z] = 'value2'
       section[:b] = 'value3'
-      section.to_cfg.should == <<'EOS'
+      expect(section.to_cfg).to eq(<<'EOS')
 <root>
    a = value1
    z = value2
@@ -45,7 +45,7 @@ EOS
     it "should use the specified tabsize for indention" do
       section = described_class.new('root')
       section[:a] = 'value1'
-      section.to_cfg(2, 0).should == <<'EOS'
+      expect(section.to_cfg(2, 0)).to eq(<<'EOS')
 <root>
   a = value1
 </root>
@@ -55,12 +55,12 @@ EOS
     it "should indent the section when specified" do
       section = described_class.new('root')
       section[:a] = 'value1'
-      section.to_cfg(3, 1).should == <<'EOS'
+      expect(section.to_cfg(3, 1)).to eq(<<'EOS')
    <root>
       a = value1
    </root>
 EOS
-      section.to_cfg(3, 2).should == <<'EOS'
+      expect(section.to_cfg(3, 2)).to eq(<<'EOS')
       <root>
          a = value1
       </root>
@@ -75,7 +75,7 @@ EOS
       subsection1[:s2a] = 'some_other_value'
       subsection2[:key3] = 'next key'
       section[:foo] = 'bar'
-      section.to_cfg.should == <<'EOS'
+      expect(section.to_cfg).to eq(<<'EOS')
 <root>
    foo = bar
    <s1>
@@ -97,8 +97,8 @@ EOS
       section[:b] = 'value2'
       section.del_attr(:a)
 
-      section[:a].should be_nil
-      section.to_cfg.should == <<'EOS'
+      expect(section[:a]).to be_nil
+      expect(section.to_cfg).to eq(<<'EOS')
 <root>
    b = value2
 </root>
@@ -111,10 +111,10 @@ EOS
       section[:b] = 'value2'
       section.del_attr(:c)
 
-      section[:a].should == 'value1'
-      section[:b].should == 'value2'
-      section[:c].should be_nil
-      section.to_cfg.should == <<'EOS'
+      expect(section[:a]).to eq('value1')
+      expect(section[:b]).to eq('value2')
+      expect(section[:c]).to be_nil
+      expect(section.to_cfg).to eq(<<'EOS')
 <root>
    a = value1
    b = value2
@@ -126,7 +126,7 @@ EOS
   describe "keys_in_order" do
     it "should return an empty array if section has no attributes" do
       section = described_class.new('root')
-      section.keys_in_order.should be_empty
+      expect(section.keys_in_order).to be_empty
     end
 
     it "should return the keys in the correct order" do
@@ -136,14 +136,14 @@ EOS
       section[:remove_later] = '123'
       section[:third] = 'baz'
       section.del_attr(:remove_later)
-      section.keys_in_order.should == [:first, :second, :third ]
+      expect(section.keys_in_order).to eq([:first, :second, :third ])
     end
   end
 
   describe "values_in_order" do
     it "should return an empty array if section has no attributes" do
       section = described_class.new('root')
-      section.values_in_order.should be_empty
+      expect(section.values_in_order).to be_empty
     end
 
     it "should return the values in the correct order" do
@@ -153,21 +153,21 @@ EOS
       section[:remove_later] = '123'
       section[:third] = 'baz'
       section.del_attr(:remove_later)
-      section.values_in_order.should == %w{foo bar baz}
+      expect(section.values_in_order).to eq(%w{foo bar baz})
     end
   end
 
   describe "path" do
     it "should return self when no path is given" do
       section = described_class.new('root')
-      section.path(nil).should == section
+      expect(section.path(nil)).to eq(section)
     end
 
     it "should return the corresponding subsection" do
       section = described_class.new('root')
       s1 = described_class.new('level1_child1', section)
 
-      section.path('level1_child1').should == s1
+      expect(section.path('level1_child1')).to eq(s1)
     end
 
     it "should be possible to access a nested subsection" do
@@ -177,18 +177,16 @@ EOS
       l2c1 = described_class.new('level2_child1', l1c1)
       l3c1 = described_class.new('level3_child1', l2c1)
 
-      section.path('level1_child1/level2_child1/level3_child1').should == l3c1
+      expect(section.path('level1_child1/level2_child1/level3_child1')).to eq(l3c1)
     end
 
     it "should create missing sections" do
       section = described_class.new('root')
-      section.children.should be_empty
+      expect(section.children).to be_empty
 
       child = section.path('level1')
-      child.parent.should == section
-      section.children[0].should == child
+      expect(child.parent).to eq(section)
+      expect(section.children[0]).to eq(child)
     end
   end
-
-
 end

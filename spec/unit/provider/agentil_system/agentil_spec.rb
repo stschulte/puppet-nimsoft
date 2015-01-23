@@ -89,12 +89,12 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
     describe "exists?" do
       it "should return true if the instance is present" do
         instance = described_class.new(:name => 'foo', :ensure => :present)
-        instance.should be_exists
+        expect(instance).to be_exists
       end
 
       it "should return false otherwise" do
         instance = described_class.new(:name => 'foo')
-        instance.should_not be_exists
+        expect(instance).to_not be_exists
       end
     end
 
@@ -177,7 +177,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing sid" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:sid).returns 'PRO'
-      provider.sid.should == 'PRO'
+      expect(provider.sid).to eq('PRO')
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -189,7 +189,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing host" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:host).returns 'sappro01.example.com'
-      provider.host.should == 'sappro01.example.com'
+      expect(provider.host).to eq('sappro01.example.com')
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -201,7 +201,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing ip" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:ip).returns ['10.0.0.1']
-      provider.ip.should == [ '10.0.0.1' ]
+      expect(provider.ip).to eq([ '10.0.0.1' ])
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -213,7 +213,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing stack" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:stack).returns :abap
-      provider.stack.should == :abap
+      expect(provider.stack).to eq(:abap)
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -225,7 +225,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing client" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:client).returns '066'
-      provider.client.should == '066'
+      expect(provider.client).to eq('066')
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -237,7 +237,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing group" do
     it "should delegate the getter method to the AgentilLandscape class" do
       system.expects(:group).returns 'SPACE'
-      provider.group.should == 'SPACE'
+      expect(provider.group).to eq('SPACE')
     end
 
     it "should delegate the setter method to the AgentilLandscape class" do
@@ -249,12 +249,12 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
   describe "when managing user" do
     it "should return nil when no user assigned" do
       system.expects(:user).returns nil
-      provider.user.should be_nil
+      expect(provider.user).to be_nil
     end
 
     it "should return the user's name" do
       system.expects(:user).returns users[3]
-      provider.user.should == 'SAP_PRO'
+      expect(provider.user).to eq('SAP_PRO')
     end
 
     it "should look up the user name when assigning a new user" do

@@ -5,19 +5,19 @@ require 'spec_helper'
 describe Puppet::Type.type(:nimsoft_oracle_profile) do
 
   it "should have name as its keyattribute" do
-    described_class.key_attributes.should == [ :name ]
+    expect(described_class.key_attributes).to eq([ :name ])
   end
 
   describe "when validating attributes" do
     [:name, :provider].each do |param|
       it "should have a #{param} parameter" do
-        described_class.attrtype(param).should == :param
+        expect(described_class.attrtype(param)).to eq(:param)
       end
     end
 
     [:ensure, :description, :active, :connection, :source, :interval, :heartbeat, :clear_msg, :sql_timeout_msg, :profile_timeout_msg, :severity, :profile_timeout, :sql_timeout, :connection_failed_msg].each do |property|
       it "should have a #{property} property" do
-        described_class.attrtype(property).should == :property
+        expect(described_class.attrtype(property)).to eq(:property)
       end
     end
   end
@@ -25,11 +25,11 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
   describe "when validating values" do
     describe "for ensure" do
       it "should allow present" do
-        described_class.new(:name => 'FOO', :ensure => 'present')[:ensure].should == :present
+        expect(described_class.new(:name => 'FOO', :ensure => 'present')[:ensure]).to eq(:present)
       end
 
       it "should allow absent" do
-        described_class.new(:name => 'FOO', :ensure => 'absent')[:ensure].should == :absent
+        expect(described_class.new(:name => 'FOO', :ensure => 'absent')[:ensure]).to eq(:absent)
       end
 
       it "should not allow something else" do
@@ -39,11 +39,11 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
 
     describe "for active" do
       it "should allow yes" do
-        described_class.new(:name => 'FOO', :active => 'yes')[:active].should == :yes
+        expect(described_class.new(:name => 'FOO', :active => 'yes')[:active]).to eq(:yes)
       end
       
       it "should allow no" do
-        described_class.new(:name => 'FOO', :active => 'no')[:active].should == :no
+        expect(described_class.new(:name => 'FOO', :active => 'no')[:active]).to eq(:no)
       end
 
       it "should allow something else" do
@@ -53,38 +53,38 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
 
     describe "description" do
       it "should allow a single word" do
-        described_class.new(:name => 'FOO', :description => 'FOO')[:description].should == 'FOO'
+        expect(described_class.new(:name => 'FOO', :description => 'FOO')[:description]).to eq('FOO')
       end
 
       it "should allow spaces" do
-        described_class.new(:name => 'FOO', :description => 'Most critical database')[:description].should == 'Most critical database'
+        expect(described_class.new(:name => 'FOO', :description => 'Most critical database')[:description]).to eq('Most critical database')
       end
     end
 
     describe "connection" do
       it "should accept a simple name" do
-        described_class.new(:name => 'FOO', :connection => 'BAR')[:connection].should == 'BAR'
+        expect(described_class.new(:name => 'FOO', :connection => 'BAR')[:connection]).to eq('BAR')
       end
     end
 
     describe "source" do
       it "should allow a hostname" do
-        described_class.new(:name => 'FOO', :source => 'host01')[:source].should == 'host01'
+        expect(described_class.new(:name => 'FOO', :source => 'host01')[:source]).to eq('host01')
       end
 
       it "should allow a fqdn" do
-        described_class.new(:name => 'FOO', :source => 'host01.example.com')[:source].should == 'host01.example.com'
+        expect(described_class.new(:name => 'FOO', :source => 'host01.example.com')[:source]).to eq('host01.example.com')
       end
     end
 
     [:interval, :heartbeat, :profile_timeout, :sql_timeout].each do |time_property|
       describe time_property.to_s do
         it "should allow a timespan defined in seconds" do
-          described_class.new(:name => 'FOO', time_property => '10 sec')[time_property].should == '10 sec'
+          expect(described_class.new(:name => 'FOO', time_property => '10 sec')[time_property]).to eq('10 sec')
         end
 
         it "should allow a timespan defined in minutes" do
-          described_class.new(:name => 'FOO', time_property => '5 min')[time_property].should == '5 min'
+          expect(described_class.new(:name => 'FOO', time_property => '5 min')[time_property]).to eq('5 min')
         end
 
         it "should not allow a negative number" do
@@ -100,7 +100,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
     [:clear_msg, :profile_timeout_msg, :sql_timeout_msg, :connection_failed_msg].each do |msg_property|
       describe msg_property.to_s do
         it "should allow a message pool name" do
-          described_class.new(:name => 'FOO', msg_property => 'foo_timeout_1')[msg_property].should == 'foo_timeout_1'
+          expect(described_class.new(:name => 'FOO', msg_property => 'foo_timeout_1')[msg_property]).to eq('foo_timeout_1')
         end
       end
     end
@@ -108,7 +108,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
     describe "severity" do
       [ :info, :warning, :minor, :major, :critical ].each do |criticality|
         it "should support #{criticality}" do
-          described_class.new(:name => 'FOO', :severity => criticality.to_s)[:severity].should == criticality
+          expect(described_class.new(:name => 'FOO', :severity => criticality.to_s)[:severity]).to eq(criticality)
         end
       end
 
@@ -147,7 +147,7 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
     describe "connection" do
       it "should not autorequire a connection if none found" do
         catalog.add_resource instance
-        instance.autorequire.should be_empty
+        expect(instance.autorequire).to be_empty
       end
 
       it "should autorequire a matching connection" do
@@ -155,9 +155,9 @@ describe Puppet::Type.type(:nimsoft_oracle_profile) do
         catalog.add_resource connection
 
         reqs = instance.autorequire
-        reqs.size.should == 1
-        reqs[0].source.must == connection
-        reqs[0].target.must == instance
+        expect(reqs.size).to eq(1)
+        expect(reqs[0].source).to eq(connection)
+        expect(reqs[0].target).to eq(instance)
       end
     end
   end

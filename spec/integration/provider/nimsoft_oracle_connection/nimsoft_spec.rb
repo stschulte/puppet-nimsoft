@@ -84,15 +84,15 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
   describe "ensure => absent" do
     describe "when resource is currently absent" do
       it "should do nothing" do
-        run_in_catalog(resource_absent).changed?.should be_empty
-        File.read(input).should == File.read(my_fixture('oracle_monitor.cfg'))
+        expect(run_in_catalog(resource_absent).changed?).to be_empty
+        expect(File.read(input)).to eq(File.read(my_fixture('oracle_monitor.cfg')))
       end
     end
 
     describe "when resource is currently present" do
       it "should remove the resource" do
-        run_in_catalog(resource_destroy).changed?.should == [ resource_destroy ]
-        File.read(input).should == File.read(my_fixture('output_remove.cfg'))
+        expect(run_in_catalog(resource_destroy).changed?).to eq([ resource_destroy ])
+        expect(File.read(input)).to eq(File.read(my_fixture('output_remove.cfg')))
       end
     end
   end
@@ -100,20 +100,20 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
   describe "ensure => present" do
     describe "when resource is currently absent" do
       it "should add the resource" do
-        run_in_catalog(resource_create).changed?.should == [ resource_create ]
-        File.read(input).should == File.read(my_fixture('output_add.cfg'))
+        expect(run_in_catalog(resource_create).changed?).to eq([ resource_create ])
+        expect(File.read(input)).to eq(File.read(my_fixture('output_add.cfg')))
       end
     end
 
     describe "when resource is currently present" do
       it "should do nothing if in sync" do
-        run_in_catalog(resource_present).changed?.should be_empty
-        File.read(input).should == File.read(my_fixture('oracle_monitor.cfg'))
+        expect(run_in_catalog(resource_present).changed?).to be_empty
+        expect(File.read(input)).to eq(File.read(my_fixture('oracle_monitor.cfg')))
       end
 
       it "should modify attributes if not in sync" do
-        run_in_catalog(resource_modify).changed?.should == [ resource_modify ]
-        File.read(input).should == File.read(my_fixture('output_modify.cfg'))
+        expect(run_in_catalog(resource_modify).changed?).to eq([ resource_modify ])
+        expect(File.read(input)).to eq(File.read(my_fixture('output_modify.cfg')))
       end
     end
   end
@@ -121,7 +121,7 @@ describe Puppet::Type.type(:nimsoft_oracle_connection).provider(:nimsoft), '(int
   describe "adding multiple resources to the catalog" do
     it "should do the right thing" do
       run_in_catalog(resource_modify, resource_present, resource_create, resource_absent, resource_destroy )
-      File.read(input).should == File.read(my_fixture('output_multiple_resources.cfg'))
+      expect(File.read(input)).to eq(File.read(my_fixture('output_multiple_resources.cfg')))
     end
   end
 end
