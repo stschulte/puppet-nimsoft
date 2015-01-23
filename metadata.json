@@ -1,0 +1,18 @@
+{
+  "name": "stschulte-nimsoft",
+  "version": "0.9.0",
+  "author": "stschulte",
+  "summary": "Manage nimsoft monitoring resources through puppet",
+  "license": "Apache-2.0",
+  "source": "https://github.com/stschulte/puppet-nimsoft.git",
+  "project_page": "https://github.com/stschulte/puppet-nimsoft",
+  "issues_url": "https://github.com/stschulte/puppet-nimsoft/issues",
+  "dependencies": [ ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [ "6.0" ]
+    }
+  ],
+  "tags": ["nimsoft", "nimbus", "uim"]
+}
