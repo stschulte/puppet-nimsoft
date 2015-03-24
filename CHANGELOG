@@ -1,2 +1,4 @@
+* Fri Jan 23 2015 Stefan Schulte <stefan.schulte@taunusstein.net> 0.9.1
+- modify agentil providers to support sapbasis_agentil v5
 * Fri Jan 23 2015 Stefan Schulte <stefan.schulte@taunusstein.net> 0.9.0
 - Initial release for puppet forge

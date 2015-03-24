@@ -1,6 +1,6 @@
 {
   "name": "stschulte-nimsoft",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": "stschulte",
   "summary": "Manage nimsoft monitoring resources through puppet",
   "license": "Apache-2.0",
