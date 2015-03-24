@@ -50,7 +50,7 @@ describe Puppet::Util::AgentilUser do
       expect(user.password).to eq('some_encrypted_stuff')
     end
   end
-  
+
   describe "setting password" do
     it "should modify attribute ENCRYPTED_PASSWD" do
       user.element.expects(:[]=).with("ENCRYPTED_PASSWD", 'foo')

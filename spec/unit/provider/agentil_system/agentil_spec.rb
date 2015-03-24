@@ -154,7 +154,7 @@ describe Puppet::Type.type(:agentil_system).provider(:agentil) do
         expect { provider.create }.to raise_error Puppet::Error, 'Cannot create system with no sid'
       end
     end
-    
+
     describe "destroy" do
       it "should delete a system" do
         resource.provider = provider

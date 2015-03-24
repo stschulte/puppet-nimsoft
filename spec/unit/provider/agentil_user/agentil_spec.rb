@@ -69,7 +69,7 @@ describe Puppet::Type.type(:agentil_user).provider(:agentil) do
         expect { provider.create }.to raise_error(Puppet::Error, 'Unable to create a new user without a password')
       end
     end
-    
+
     describe "destroy" do
       it "should delete a user" do
         resource

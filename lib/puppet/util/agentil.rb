@@ -90,8 +90,9 @@ class Puppet::Util::Agentil
       id = 1
       id += 1 while @landscapes.include? id
       element = {
-        'ID'     => id.to_s,
-        'ACTIVE' => 'true',
+        'ID'                 => id.to_s,
+        'ACTIVE'             => 'true',
+        'MONITORTREE_MAXAGE' => '480'
       }
       @config["SYSTEMS"] ||= []
       @config["SYSTEMS"] << element
@@ -119,7 +120,9 @@ class Puppet::Util::Agentil
         'CCMS_STRICT_MODE'       => 'false',
         'CRYPTO_CONVERTED'       => 'true',
         'SNC_MODE'               => 'false',
-        'SNC_QUALITY_PROTECTION' => '3'
+        'SNC_QUALITY_PROTECTION' => '3',
+        'MESSAGE_SERVER_PORT'    => '0',
+        'LANGUAGE'               => 'EN'
       }
       @config["CONNECTORS"] ||= []
       @config["CONNECTORS"] << element
@@ -151,7 +154,7 @@ class Puppet::Util::Agentil
       id += 1 while @templates.include? id
       element = {
         'ID'      => id.to_s,
-        'VERSION' => '2.0'
+        'VERSION' => '1'
       }
       @config["TEMPLATES"] ||= []
       @config["TEMPLATES"] << element

@@ -26,18 +26,9 @@ describe Puppet::Util::AgentilTemplate do
       'SYSTEM_TEMPLATE' => 'true',
       'JOBS'            => [ 79, 78, 600, 601 ],
       'CUSTOMIZATION'   => {
-        177 => {
-          'ID'         => '177',
-          'CUSTOMIZED' => 'true'
-        },
-        '79' => {
-          'ID'         => '177',
-          'CUSTOMIZED' => 'true'
-        },
-        '78' => {
-          'ID'         => '177',
-          'CUSTOMIZED' => 'true'
-        },
+        '177' => { 'ID' => 177 },
+        '79'  => { 'ID' => 79 },
+        '78'  => { 'ID' => 78 }
       }
     }
   end
@@ -45,7 +36,7 @@ describe Puppet::Util::AgentilTemplate do
   let :new_template_element do
     {
       'ID'      => '1000004',
-      'VERSION' => '2.0'
+      'VERSION' => '1'
     }
   end
 
@@ -81,8 +72,7 @@ describe Puppet::Util::AgentilTemplate do
       new_child = template.element['CUSTOMIZATION']['600']
 
       expect(custom_job).to eq(new_child)
-      expect(new_child['ID']).to eq('600')
-      expect(new_child['CUSTOMIZED']).to eq('true')
+      expect(new_child['ID']).to eq(600)
     end
 
     it "should create the custo section if it does not already exist" do
@@ -120,13 +110,13 @@ describe Puppet::Util::AgentilTemplate do
     end
 
     it "should not touch other customizations" do
-      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '79', '78' )
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly('177', '79', '78' )
       template.del_custom_job 79
-      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '78')
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly('177', '78')
     end
 
     it "should remove the CUSTOMIZATION section if this was the last customization" do
-      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly(177, '79', '78')
+      expect(template.element['CUSTOMIZATION'].keys).to contain_exactly('177', '79', '78')
 
       template.del_custom_job 177
       template.del_custom_job 79

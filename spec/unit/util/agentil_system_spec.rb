@@ -20,22 +20,26 @@ describe Puppet::Util::AgentilSystem do
 
   let :system_element do
     {
-      "ID"                 => "13",
-      "JAVA_ENABLED"       => "false",
-      "ABAP_ENABLED"       => "true",
-      "NAME"               => "PRO_sap01",
-      "GROUP"              => "1",
-      "ACTIVE"             => "true",
-      "USER_PROFILE"       => "1",
-      "SYSTEM_ID"          => 'PRO',
-      "MAX_INVALID_TIME"   => '180000',
-      "MAX_RESPONSE_TIME"  => '30000',
-      "HOST"               => 'sap01.example.com',
-      "ABAP_CLIENT_NUMBER" => '000',
-      "DEFAULT_TEMPLATE"   => '1000001',
-      "PARENT_ID"          => '1',
-      "TEMPLATES"          => [ 1, 1000000 ],
-      "INSTANCE_IPS"       => [ '192.168.0.1' ]
+      "ID"                     => "13",
+      "JAVA_ENABLED"           => "false",
+      "ABAP_ENABLED"           => "true",
+      "NAME"                   => "PRO_sap01",
+      "GROUP"                  => "1",
+      "ACTIVE"                 => "true",
+      "USER_PROFILE"           => "1",
+      "SYSTEM_ID"              => 'PRO',
+      "MAX_INVALID_TIME"       => '180000',
+      "MAX_RESPONSE_TIME"      => '30000',
+      "HOST"                   => 'sap01.example.com',
+      "ABAP_CLIENT_NUMBER"     => '000',
+      "DEFAULT_TEMPLATE"       => '1000001',
+      "PARENT_ID"              => '1',
+      "TEMPLATES"              => [ 1, 1000000 ],
+      "INSTANCE_IPS"           => [ '192.168.0.1' ],
+      "SNC_MODE"               => "false",
+      "SNC_QUALITY_PROTECTION" => "3",
+      "LANGUAGE"               => "EN",
+      "MESSAGE_SERVER_PORT"    => "0"
     }
   end
 
@@ -68,7 +72,7 @@ describe Puppet::Util::AgentilSystem do
         expect(system.send(property)).to eq('foo')
       end
     end
-  
+
     describe "setting #{property}" do
       it "should modify attribute #{attribute}" do
         system.element.expects(:[]=).with(attribute, 'foo')
@@ -163,7 +167,7 @@ describe Puppet::Util::AgentilSystem do
       expect(new_system.element).to have_key('INSTANCE_IPS')
       expect(new_system.element['INSTANCE_IPS']).to eq(%w{192.168.100.100})
     end
-    
+
     it "should delete an INSTANCE_IPS section if new value is empty" do
       expect(system.element).to have_key('INSTANCE_IPS')
       system.ip = []

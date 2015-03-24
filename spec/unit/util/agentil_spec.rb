@@ -125,7 +125,7 @@ describe Puppet::Util::Agentil do
       # make sure we have not created a new system
       expect(described_class.config["SYSTEMS"].size).to eq(old_size)
     end
-      
+
     it "should append a new subtree if no element is provided" do
       old_size = described_class.config["SYSTEMS"].size
       new_landscape = described_class.add_landscape
@@ -157,7 +157,7 @@ describe Puppet::Util::Agentil do
 
       expect(described_class.config["CONNECTORS"].size).to eq(old_size)
     end
-      
+
     it "should append a new subtree if no element is provided" do
       old_size = described_class.config["CONNECTORS"].size
       new_system = described_class.add_system
@@ -189,7 +189,7 @@ describe Puppet::Util::Agentil do
 
       expect(described_class.config["USER_PROFILES"].size).to eq(old_size)
     end
-      
+
     it "should append a new subtree if no element is provided" do
       old_size = described_class.config["USER_PROFILES"].size
       new_user = described_class.add_user
@@ -216,7 +216,7 @@ describe Puppet::Util::Agentil do
 
       expect(described_class.config["TEMPLATES"].size).to eq(old_size)
     end
-      
+
     it "should append a new subtree if no element is provided" do
       old_size = described_class.config["TEMPLATES"].size
       new_template = described_class.add_template
@@ -230,9 +230,9 @@ describe Puppet::Util::Agentil do
       expect(new_template.element["ID"]).to eq("1000004")
     end
 
-    it "should set VERSION to 2.0 for a new template" do
+    it "should set VERSION to 1 for a new template" do
       new_template = described_class.add_template
-      expect(new_template.element["VERSION"]).to eq("2.0")
+      expect(new_template.element["VERSION"]).to eq("1")
     end
   end
 

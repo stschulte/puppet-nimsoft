@@ -55,12 +55,9 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
 
   def tablespace_used
     used = {}
-    if job = @property_hash[:agentil_template].custom_jobs[166] and parameters = job['PARAMETERS']
-      names = PSON.parse(parameters[0]["PARAMETER_VALUE"])
-      values = PSON.parse(parameters[1]["PARAMETER_VALUE"])
-
-      names.each_with_index do |tablespace, index|
-        used[tablespace.intern] = values[index].to_i
+    if job = @property_hash[:agentil_template].custom_jobs[624] and tablespaces = job['Tablespaces'] and tablespaces.is_a? Array
+      tablespaces.each do |ts|
+        used[ts["NAME"]] = ts["TS_SIZE_THRESHOLD"].to_i
       end
     end
     used
@@ -68,25 +65,28 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
 
   def tablespace_used=(new_value)
     if new_value.empty?
-      @property_hash[:agentil_template].del_custom_job 166
+      @property_hash[:agentil_template].del_custom_job 624
     else
-      job = @property_hash[:agentil_template].add_custom_job 166
-      names = []
-      values = []
-      new_value.keys.sort.each do |tablespace|
-        names  << tablespace.to_s
-        values << new_value[tablespace]
-      end
-      job['PARAMETERS'] = [
-        {
-          'IDX'             => '0',
-          'PARAMETER_VALUE' => names.to_pson
-        },
-        {
-          'IDX'             => '1',
-          'PARAMETER_VALUE' => values.to_pson
+      job = @property_hash[:agentil_template].add_custom_job 624
+      job['Tablespaces'] = []
+      job['GLOBAL_METRICS'] = []
+      new_value.keys.sort.each_with_index do |tablespace, index|
+        job['Tablespaces'] << {
+          'IDX'               => index.to_s,
+          'NAME'              => tablespace,
+          'TS_ACTIVE'         => true,
+          'TS_SIZE_THRESHOLD' => new_value[tablespace].to_s,
+          'TS_SEVERITY'       => 4,
+          'TS_AUTO_CLEAR'     => true,
+          'TS_ALARM_ENABLED'  => true,
+          'TS_METRIC_ENABLED' => false,
+          'TS_REPORT_ENABLED' => true
         }
-      ]
+        job['GLOBAL_METRICS'] << {
+          'IDX'       => index.to_s,
+          'TS_PREFIX' => ''
+        }
+      end
     end
   end
 
@@ -107,11 +107,13 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
       job['Default'] = []
       new_value.each_with_index do |instance, index|
         job['Default'] << {
-          'IDX'                => index.to_s,
-          'MANDATORY'          => 'true',
-          'SEVERITY'           => '5',
-          'AUTOCLEAR'          => 'true',
-          'EXPECTED_INSTANCES' => instance
+          'IDX'                    => index.to_s,
+          'MANDATORY'              => true,
+          'SEVERITY'               => 5,
+          'RESTART_CHECK_SEVERITY' => 2,
+          'AUTOCLEAR'              => true,
+          'EXPECTED_INSTANCES'     => instance,
+          'PREFIX'                 => ''
         }
       end
     end
@@ -136,14 +138,15 @@ Puppet::Type.type(:agentil_template).provide(:agentil) do
           'IDX'               => index.to_s,
           'ACTIVE'            => true,
           'DESTINATION'       => destination,
-          'EXCLUDED_INSTANCE' => ' ',
+          'EXCLUDED_INSTANCE' => '',
           'STRICT'            => true,
           'CHECK_MODE'        => 2,
           'SEVERITY'          => 4,
           'AUTO_CLEAR'        => true,
           'PREFIX'            => '',
           'ALARM_ENABLED'     => true,
-          'METRIC_ENABLED'    => true
+          'METRIC_ENABLED'    => true,
+          'REPORT_ENABLED'    => false
         }
       end
     end

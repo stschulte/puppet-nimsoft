@@ -17,15 +17,15 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
   end
 
   let :landscape_element do
-    element = Puppet::Util::NimsoftSection.new('LANDSCAPE43')
-    element[:ID] = 43
-    element[:NAME] = 'sap01.example.com'
-    element[:SYSTEM_ID] = 'PRO'
-    element[:MONITORTREE_MAXAGE] = '480'
-    element[:COMPANY] = 'examplesoft'
-    element[:ACTIVE] = 'true'
-    element[:DESCRIPTION] = 'managed by puppet'
-    element
+    {
+      'ID'                 => '43',
+      'NAME'               => 'sap01.example.com',
+      'SYSTEM_ID'          => 'PRO',
+      'MONITORTREE_MAXAGE' => '480',
+      'COMPANY'            => 'examplesoft',
+      'ACTIVE'             => 'true',
+      'DESCRIPTION'        => 'managed by puppet'
+    }
   end
 
   let :resource do
@@ -73,7 +73,7 @@ describe Puppet::Type.type(:agentil_landscape).provider(:agentil) do
         expect { provider.create }.to raise_error(Puppet::Error, 'Unable to create a new landscape with no sid beeing specified')
       end
     end
-    
+
     describe "destroy" do
       it "should delete a landscape" do
         resource

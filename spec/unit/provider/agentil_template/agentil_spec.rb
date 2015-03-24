@@ -25,43 +25,71 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   let :tablespace_element do
     {
-      'ID'         => '166',
-      'CUSTOMIZED' => 'true',
-      'PARAMETERS' => [
+      'ID'          => 624,
+      'Tablespaces' => [
         {
-          'IDX'             => '0',
-          'PARAMETER_VALUE' =>  '["TBL1","TBL2","TBL3"]'
+          'IDX'               => '0',
+          'NAME'              => 'TBL1',
+          'TS_ACTIVE'         => true,
+          'TS_SIZE_THRESHOLD' => '90',
+          'TS_SEVERITY'       => 4,
+          'TS_AUTO_CLEAR'     => true,
+          'TS_ALARM_ENABLED'  => true,
+          'TS_METRIC_ENABLED' => false,
+          'TS_REPORT_ENABLED' => true
         },
         {
-          'IDX'             => '1',
-          'PARAMETER_VALUE' => '[90,95,92]'
+          'IDX'               => '1',
+          'NAME'              => 'TBL2',
+          'TS_ACTIVE'         => true,
+          'TS_SIZE_THRESHOLD' => '95',
+          'TS_SEVERITY'       => 4,
+          'TS_AUTO_CLEAR'     => true,
+          'TS_ALARM_ENABLED'  => true,
+          'TS_METRIC_ENABLED' => false,
+          'TS_REPORT_ENABLED' => true
         },
         {
-          'IDX'             => '2',
-          'PARAMETER_VALUE' => '80'
+          'IDX'               => '2',
+          'NAME'              => 'TBL3',
+          'TS_ACTIVE'         => true,
+          'TS_SIZE_THRESHOLD' => '92',
+          'TS_SEVERITY'       => 4,
+          'TS_AUTO_CLEAR'     => true,
+          'TS_ALARM_ENABLED'  => true,
+          'TS_METRIC_ENABLED' => false,
+          'TS_REPORT_ENABLED' => true
         }
+      ],
+      'GLOBAL_METRICS' => [
+        { 'IDX' => '0', 'TS_PREFIX' => '' },
+        { 'IDX' => '1', 'TS_PREFIX' => '' },
+        { 'IDX' => '2', 'TS_PREFIX' => '' }
       ]
     }
   end
 
   let :instances_element do
     {
-      'ID' =>  '177',
-      'CUSTOMIZED' => 'true',
+      'ID'      => 177,
       'Default' =>  [
         {
-          'IDX'                => '0',
-          'SEVERITY'           => '5',
-          'EXPECTED_INSTANCES' => 'sap01_PRO_00',
-          'AUTOCLEAR'          => 'true',
-          'MANDATORY'          => 'true'
+          'IDX'                    => '0',
+          'SEVERITY'               => 5,
+          'RESTART_CHECK_SEVERITY' => 2,
+          'EXPECTED_INSTANCES'     => 'sap01_PRO_00',
+          'AUTOCLEAR'              => true,
+          'MANDATORY'              => true,
+          'PREFIX'                 => ''
         },
         {
-          'IDX'                => '0',
-          'SEVERITY'           => '5',
-          'EXPECTED_INSTANCES' => 'sap01_PRO_01',
-          'AUTOCLEAR'          => 'true',
-          'MANDATORY'          => 'true'
+          'IDX'                    => '0',
+          'SEVERITY'               => 5,
+          'RESTART_CHECK_SEVERITY' => 2,
+          'EXPECTED_INSTANCES'     => 'sap01_PRO_01',
+          'AUTOCLEAR'              => true,
+          'MANDATORY'              => true,
+          'PREFIX'                 => ''
         }
       ]
     }
@@ -69,34 +97,35 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   let :rfc_element do
     {
-      'ID'         => '602',
-      'CUSTOMIZED' => 'true',
-      'Default'    => [
+      'ID'      => 602,
+      'Default' => [
         {
           'IDX'               => '0',
           'ACTIVE'            => true,
           'DESTINATION'       => 'FOO',
-          'EXCLUDED_INSTANCE' => " ",
+          'EXCLUDED_INSTANCE' => "",
           'STRICT'            => true,
           'CHECK_MODE'        => 2,
           'SEVERITY'          => 4,
           'AUTO_CLEAR'        => true,
           'PREFIX'            => "",
           'ALARM_ENABLED'     => true,
-          'METRIC_ENABLED'    => true
+          'METRIC_ENABLED'    => true,
+          'REPORT_ENABLED'    => false
         },
         {
           'IDX'               => '1',
           'ACTIVE'            => true,
           'DESTINATION'       => 'BAR',
-          'EXCLUDED_INSTANCE' => " ",
+          'EXCLUDED_INSTANCE' => "",
           'STRICT'            => true,
           'CHECK_MODE'        => 2,
           'SEVERITY'          => 4,
           'AUTO_CLEAR'        => true,
           'PREFIX'            => "",
           'ALARM_ENABLED'     => true,
-          'METRIC_ENABLED'    => true
+          'METRIC_ENABLED'    => true,
+          'REPORT_ENABLED'    => false
         }
       ]
     }
@@ -104,10 +133,10 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
 
   let :resource do
     resource = Puppet::Type.type(:agentil_template).new(
-      :name      => 'NEW_TEMPLATE',
-      :ensure    => 'present',
-      :system    => 'true',
-      :jobs      => [ '122', '55' ]
+      :name   => 'NEW_TEMPLATE',
+      :ensure => 'present',
+      :system => 'true',
+      :jobs   => [ '122', '55' ]
     )
     resource.provider = provider
     resource
@@ -145,7 +174,7 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
         expect { provider.create }.to raise_error(Puppet::Error, 'Unable to create a new template without a system property')
       end
     end
-    
+
     describe "destroy" do
       it "should delete a template" do
         resource
@@ -180,54 +209,88 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
   end
 
   describe "when managing tablespace_used" do
-    it "should return an empty hash if job 166 is not modified" do
+    it "should return an empty hash if job 624 is not modified" do
       expect(provider.tablespace_used).to be_empty
     end
 
     it "should return a hash of the form { tablespace => value }" do
-      template.expects(:custom_jobs).returns({ 166 => tablespace_element })
+      template.expects(:custom_jobs).returns({ 624 => tablespace_element })
       expect(provider.tablespace_used).to eq({
-        :TBL1 => 90,
-        :TBL2 => 95,
-        :TBL3 => 92
+        'TBL1' => 90,
+        'TBL2' => 95,
+        'TBL3' => 92
       })
     end
 
-    it "should create a customization for job 166 if not already present" do
-      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
-      expect(template.custom_jobs).to have_key(166)
-      expect(template.custom_jobs[166]).to eq({
-        'ID'         => '166',
-        'CUSTOMIZED' => 'true',
-        'PARAMETERS' => [
+    it "should create a customization for job 624 if not already present" do
+      provider.tablespace_used = { 'TBLA' => 10, 'TBLB' => 20 }
+      expect(template.custom_jobs).to have_key(624)
+      expect(template.custom_jobs[624]).to eq({
+        'ID'          => 624,
+        'Tablespaces' => [
           {
-            'IDX' => '0',
-            'PARAMETER_VALUE' => '["TBLA","TBLB"]'
+            'IDX'               => '0',
+            'NAME'              => 'TBLA',
+            'TS_ACTIVE'         => true,
+            'TS_SIZE_THRESHOLD' => '10',
+            'TS_SEVERITY'       => 4,
+            'TS_AUTO_CLEAR'     => true,
+            'TS_ALARM_ENABLED'  => true,
+            'TS_METRIC_ENABLED' => false,
+            'TS_REPORT_ENABLED' => true
           },
           {
-            'IDX' => '1',
-            'PARAMETER_VALUE' => '[10,20]'
+            'IDX'               => '1',
+            'NAME'              => 'TBLB',
+            'TS_ACTIVE'         => true,
+            'TS_SIZE_THRESHOLD' => '20',
+            'TS_SEVERITY'       => 4,
+            'TS_AUTO_CLEAR'     => true,
+            'TS_ALARM_ENABLED'  => true,
+            'TS_METRIC_ENABLED' => false,
+            'TS_REPORT_ENABLED' => true
           }
+        ],
+        'GLOBAL_METRICS' => [
+          { 'IDX' => '0', 'TS_PREFIX' => '' },
+          { 'IDX' => '1', 'TS_PREFIX' => '' }
         ]
       })
     end
 
-    it "should update the parameters of job 166 if already present but out of sync" do
-      template.stubs(:custom_jobs).returns({ 166 => tablespace_element })
-      template.stubs(:add_custom_job).with(166).returns(tablespace_element)
-      provider.tablespace_used = { :TBLA => 10, :TBLB => 20 }
-      expect(template.custom_jobs[166]).to eq({
-        'ID' => '166',
-        'CUSTOMIZED' => 'true',
-        'PARAMETERS' => [
+    it "should update the parameters of job 624 if already present but out of sync" do
+      template.stubs(:custom_jobs).returns({ 624 => tablespace_element })
+      template.stubs(:add_custom_job).with(624).returns(tablespace_element)
+      provider.tablespace_used = { 'TBLA' => 10, 'TBLB' => 20 }
+      expect(template.custom_jobs[624]).to eq({
+        'ID'          => 624,
+        'Tablespaces' => [
           {
-            'IDX' => '0',
-            'PARAMETER_VALUE' => '["TBLA","TBLB"]'
+            'IDX'               => '0',
+            'NAME'              => 'TBLA',
+            'TS_ACTIVE'         => true,
+            'TS_SIZE_THRESHOLD' => '10',
+            'TS_SEVERITY'       => 4,
+            'TS_AUTO_CLEAR'     => true,
+            'TS_ALARM_ENABLED'  => true,
+            'TS_METRIC_ENABLED' => false,
+            'TS_REPORT_ENABLED' => true
           },
           {
-            'IDX' => '1',
-            'PARAMETER_VALUE' => '[10,20]'
+            'IDX'               => '1',
+            'NAME'              => 'TBLB',
+            'TS_ACTIVE'         => true,
+            'TS_SIZE_THRESHOLD' => '20',
+            'TS_SEVERITY'       => 4,
+            'TS_AUTO_CLEAR'     => true,
+            'TS_ALARM_ENABLED'  => true,
+            'TS_METRIC_ENABLED' => false,
+            'TS_REPORT_ENABLED' => true
           }
+        ],
+        'GLOBAL_METRICS' => [
+          { 'IDX' => '0', 'TS_PREFIX' => '' },
+          { 'IDX' => '1', 'TS_PREFIX' => '' },
         ]
       })
     end
@@ -246,29 +309,34 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     it "should create a customization for job 177 if not already present" do
       provider.expected_instances = [ 'i00', 'i01', 'i02']
       expect(template.custom_jobs[177]).to eq({
-        'ID'         => '177',
-        'CUSTOMIZED' => 'true',
-        'Default'    => [
+        'ID'      => 177,
+        'Default' => [
           {
-            'IDX'                => "0",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i00",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "0",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i00",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           },
           {
-            'IDX'                => "1",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i01",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "1",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i01",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           },
           {
-            'IDX'                => "2",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i02",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "2",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i02",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           }
         ]
       })
@@ -280,29 +348,34 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       provider.expected_instances = [ 'i00', 'i01', 'i02']
 
       expect(template.custom_jobs[177]).to eq({
-        'ID'         => '177',
-        'CUSTOMIZED' => 'true',
-        'Default'    => [
+        'ID'      => 177,
+        'Default' => [
           {
-            'IDX'                => "0",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i00",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "0",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i00",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           },
           {
-            'IDX'                => "1",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i01",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "1",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i01",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           },
           {
-            'IDX'                => "2",
-            'SEVERITY'           => "5",
-            'EXPECTED_INSTANCES' => "i02",
-            'AUTOCLEAR'          => "true",
-            'MANDATORY'          => "true"
+            'IDX'                    => "2",
+            'SEVERITY'               => 5,
+            'RESTART_CHECK_SEVERITY' => 2,
+            'EXPECTED_INSTANCES'     => "i02",
+            'AUTOCLEAR'              => true,
+            'MANDATORY'              => true,
+            'PREFIX'                 => ''
           }
         ]
       })
@@ -322,34 +395,35 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
     it "should create a customization for job 602 if not already present" do
       provider.rfc_destinations = [ 'B2B', 'SOLUTION_MANAGER' ]
       expect(template.custom_jobs[602]).to eq({
-        'ID'         => '602',
-        'CUSTOMIZED' => 'true',
-        'Default'    => [
+        'ID'      => 602,
+        'Default' => [
           {
             'IDX'               => "0",
             'ACTIVE'            => true,
             'DESTINATION'       => 'B2B',
-            'EXCLUDED_INSTANCE' => ' ',
+            'EXCLUDED_INSTANCE' => '',
             'STRICT'            => true,
             'CHECK_MODE'        => 2,
             'SEVERITY'          => 4,
             'AUTO_CLEAR'        => true,
             'PREFIX'            => '',
             'ALARM_ENABLED'     => true,
-            'METRIC_ENABLED'    => true
+            'METRIC_ENABLED'    => true,
+            'REPORT_ENABLED'    => false
           },
           {
             'IDX'               => "1",
             'ACTIVE'            => true,
             'DESTINATION'       => 'SOLUTION_MANAGER',
-            'EXCLUDED_INSTANCE' => ' ',
+            'EXCLUDED_INSTANCE' => '',
             'STRICT'            => true,
             'CHECK_MODE'        => 2,
             'SEVERITY'          => 4,
             'AUTO_CLEAR'        => true,
             'PREFIX'            => '',
             'ALARM_ENABLED'     => true,
-            'METRIC_ENABLED'    => true
+            'METRIC_ENABLED'    => true,
+            'REPORT_ENABLED'    => false
           }
         ]
       })
@@ -361,34 +435,35 @@ describe Puppet::Type.type(:agentil_template).provider(:agentil) do
       provider.rfc_destinations = [ 'B2B', 'SOLUTION_MANAGER' ]
 
       expect(template.custom_jobs[602]).to eq({
-        'ID'         => '602',
-        'CUSTOMIZED' => 'true',
-        'Default'    => [
+        'ID'      => 602,
+        'Default' => [
           {
             'IDX'               => "0",
             'ACTIVE'            => true,
             'DESTINATION'       => 'B2B',
-            'EXCLUDED_INSTANCE' => ' ',
+            'EXCLUDED_INSTANCE' => '',
             'STRICT'            => true,
             'CHECK_MODE'        => 2,
             'SEVERITY'          => 4,
             'AUTO_CLEAR'        => true,
             'PREFIX'            => '',
             'ALARM_ENABLED'     => true,
-            'METRIC_ENABLED'    => true
+            'METRIC_ENABLED'    => true,
+            'REPORT_ENABLED'    => false
           },
           {
             'IDX'               => "1",
             'ACTIVE'            => true,
             'DESTINATION'       => 'SOLUTION_MANAGER',
-            'EXCLUDED_INSTANCE' => ' ',
+            'EXCLUDED_INSTANCE' => '',
             'STRICT'            => true,
             'CHECK_MODE'        => 2,
             'SEVERITY'          => 4,
             'AUTO_CLEAR'        => true,
             'PREFIX'            => '',
             'ALARM_ENABLED'     => true,
-            'METRIC_ENABLED'    => true
+            'METRIC_ENABLED'    => true,
+            'REPORT_ENABLED'    => false
           }
         ]
       })

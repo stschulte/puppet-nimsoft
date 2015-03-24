@@ -62,8 +62,7 @@ class Puppet::Util::AgentilTemplate
     @element['CUSTOMIZATION'][jobid.to_s] ||= {}
 
     job = @element['CUSTOMIZATION'][jobid.to_s]
-    job['ID'] = jobid.to_s
-    job['CUSTOMIZED'] = 'true'
+    job['ID'] = jobid
     job
   end
 
