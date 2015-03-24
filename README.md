@@ -3,6 +3,7 @@ Puppet Nimsoft Module
 
 [![Build Status](https://travis-ci.org/stschulte/puppet-nimsoft.png?branch=master)](https://travis-ci.org/stschulte/puppet-nimsoft)
 [![Coverage Status](https://coveralls.io/repos/stschulte/puppet-nimsoft/badge.svg)](https://coveralls.io/r/stschulte/puppet-nimsoft)
+[![Puppet Forge](https://img.shields.io/puppetforge/v/stschulte/nimsoft.svg)](https://forge.puppetlabs.com/stschulte/nimsoft)
 
 
 What is Nimsoft?
