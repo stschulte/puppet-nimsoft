@@ -11,8 +11,10 @@ Puppet::Type.type(:nimsoft_disk).provide(:nimsoft, :parent => Puppet::Provider::
   map_property :missing, :attribute => :active, :section => 'missing', :symbolize => true
 
   {
-    :warning => 'warning',
-    :critical => 'error'
+    :warning  => 'warning',
+    :critical => 'error',
+    :delta_error => 'delta_error',
+    :delta_warning => 'delta_warning'
   }.each_pair do |property, section_name|
     define_method(property) do
       if section = element.child(section_name)

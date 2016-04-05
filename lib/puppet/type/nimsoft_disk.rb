@@ -8,6 +8,8 @@ Puppet::Type.newtype(:nimsoft_disk) do
           description => '/var managed by puppet',
           warning     => '20',
           critical    => '10',
+          delta_error => '200',
+          delta_warning => absent,
         }"
 
   newparam(:name) do
@@ -21,7 +23,7 @@ Puppet::Type.newtype(:nimsoft_disk) do
     desc "A short description of the Filesystem"
   end
 
-  newproperty(:device) do 
+  newproperty(:device) do
     desc "The underlying blockdevice or nfs share that is mounted"
   end
 
@@ -68,6 +70,38 @@ Puppet::Type.newtype(:nimsoft_disk) do
       if /^\d+$/.match(value)
         if value.to_i < 0 or value.to_i > 100
           raise Puppet::Error, "threshold has to between 0 and 100, not #{value}"
+        end
+      else
+        raise Puppet::Error, "threshold has to be numeric, not #{value}"
+      end
+    end
+  end
+
+  newproperty(:delta_error) do
+    desc "The delta error threshold size in MB. Set this to absent if you want to remove the delta_error threshold"
+    newvalues :absent, /^\d+$/
+
+    validate do |value|
+      return true if value == :absent or value == 'absent'
+      if /^\d+$/.match(value)
+        if value.to_i < 0
+          raise Puppet::Error, "threshold has to be > 0, not #{value}"
+        end
+      else
+        raise Puppet::Error, "threshold has to be numeric, not #{value}"
+      end
+    end
+  end
+
+  newproperty(:delta_warning) do
+    desc "The delta warning threshold size in MB. Set this to absent if you want to remove the delta_error threshold"
+    newvalues :absent, /^\d+$/
+
+    validate do |value|
+      return true if value == :absent or value == 'absent'
+      if /^\d+$/.match(value)
+        if value.to_i < 0
+          raise Puppet::Error, "threshold has to be > 0, not #{value}"
         end
       else
         raise Puppet::Error, "threshold has to be numeric, not #{value}"
