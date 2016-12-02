@@ -1,0 +1,7 @@
+domain=<%= @nimsoft_domain %>
+<% @index = rand(@hub_list.length) -%>
+hub=<%= @hub_list[@index][0] %>
+hubip=<%= @hub_list[@index][1] %>
+hubrobotname=<%= @hub_list[@index][2] %>
+hubport=48002
+robotip=<%= @ipaddress_eth0 %>
