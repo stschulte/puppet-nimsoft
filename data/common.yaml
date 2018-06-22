@@ -1,0 +1,7 @@
+nimsoft::hub_port: 48002
+nimsoft::package_name: 'nimsoft-robot'
+nimsoft::package_ensure: 'present'
+nimsoft::service_name: 'nimbus'
+nimsoft::service_ensure: running
+nimsoft::service_enable: true
+nimsoft::config_file: '/opt/nms-robot-vars.cfg'
